@@ -61,9 +61,11 @@ export class Tile extends React.Component<TileProps, {}> {
     const possibleCirclesUpside = [1, 2, 3, 4, 5].reverse();
     const numCircles =
       counter < 7 ? counter - 1 : possibleCirclesUpside[counter - 8];
+    let key = 0;
     for (let i = 0; i < numCircles; i++) {
       listOfCircles.push(
         <circle
+          key={key++}
           r={`${hexRad / 40}`}
           fill={counter === 6 || counter === 8 ? "red" : "black"}
           //First half is space between dots, second half is aligining them to be in the center

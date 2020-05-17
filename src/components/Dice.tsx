@@ -11,102 +11,123 @@ type DiceProps = {
 };
 
 const widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
-const heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
+// const heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
 const diceLength = widthOfSVG / 20;
 
 export class Dice extends React.Component<DiceProps, DiceState> {
   constructor(props: DiceProps) {
     super(props);
     this.state = {
-      diceOneValue: 3,
-      diceTwoValue: 3,
+      diceOneValue: 6,
+      diceTwoValue: 2,
     };
+
+    this.roll = this.roll.bind(this);
   }
-
-  // randn_bm(min: number, max: number, skew: number) {
-  //   let u = 0,
-  //     v = 0;
-  //   while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-  //   while (v === 0) v = Math.random();
-  //   let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-
-  //   num = num / 10.0 + 0.5; // Translate to 0 -> 1
-  //   if (num > 1 || num < 0) num = this.randn_bm(min, max, skew); // resample between 0 and 1 if out of range
-  //   num = Math.pow(num, skew); // Skew
-  //   num *= max - min; // Stretch to fill range
-  //   num += min; // offset to min
-  //   return num;
-  // }
 
   roll() {
     this.setState({
-      diceOneValue: 1,
-      diceTwoValue: 2,
+      diceOneValue: Math.floor(Math.random() * 6) + 1,
+      diceTwoValue: Math.floor(Math.random() * 6) + 1,
     });
   }
 
-  makeNumberCircles(color: string) {
+  // This whole method is a pile of garbage. Because the dots on a dice order in a weird way depending on the number
+  makeNumberCircles() {
     const { diceOneValue, diceTwoValue } = this.state;
     const { diceOneX, diceOneY } = this.props;
 
-    if (diceOneValue % 2 !== 0) {
-      let dotArr = [];
+    let dotArr = [];
+    let key = 0;
 
-      for (let i = 0; i < 5; i++) {
-        // More garbage to adjust for dynamic screen size - there's probably too much of this
-        let currentX = diceOneX + (i + 1) * (diceLength / 4);
-        let currentY = diceOneY + diceLength / 2 + (-i + 1) * (diceLength / 4);
+    // Draws all nine dots on each die and then just filters out the unneeded ones at the end
+    for (let die = 0; die < 2; die++) {
+      for (let i = 0; i < 9; i++) {
+        const limitedI = i > 5 ? i - 6 : i > 2 ? i - 3 : i;
+        let currX = diceOneX + (limitedI * diceLength) / 4 + diceLength / 4;
+        let currY =
+          diceOneY + (Math.floor(i / 3) * diceLength) / 4 + diceLength / 4;
 
-        if (i === 3) {
-          currentX = diceOneX + (i - 2) * (diceLength / 4);
-          currentY = diceOneY + diceLength / 2 + (-i + 2) * (diceLength / 4);
-        } else if (i === 4) {
-          currentX = diceOneX + (i - 1) * (diceLength / 4);
-          currentY = diceOneY + diceLength / 2 + (-i + 5) * (diceLength / 4);
+        if (die === 1) {
+          currX += diceLength * 1.125;
         }
 
         dotArr.push(
           <circle
-            cx={currentX}
-            cy={currentY}
+            key={key++}
+            onClick={this.roll}
             r={diceLength / 10}
-            fill={color}
+            fill={die === 0 ? "#bf0704" : "#efd601"}
+            cx={currX}
+            cy={currY}
           />
         );
       }
-      return dotArr;
     }
+    const dotsToPreserve = [
+      [],
+      [4],
+      [2, 6],
+      [2, 4, 6],
+      [0, 2, 6, 8],
+      [0, 2, 4, 6, 8],
+      [0, 2, 3, 5, 6, 8],
+    ];
+
+    const chosenOneDots = dotsToPreserve[diceOneValue];
+    const chosenTwoDots = dotsToPreserve[diceTwoValue];
+    console.log(diceTwoValue);
+    console.log(chosenTwoDots);
+
+    return dotArr.filter((el, idx) => {
+      for (let j = 0; j < chosenOneDots.length; j++) {
+        if (chosenOneDots[j] === idx) {
+          return true;
+        }
+      }
+
+      for (let k = 0; k < chosenTwoDots.length; k++) {
+        if (chosenTwoDots[k] + 9 === idx) {
+          return true;
+        }
+      }
+
+      return false;
+    });
   }
 
   render() {
     // let normd: { [key: number]: number } = {};
     // for (let i = 0; i < 100000; i++) {
-    //   const randDistr = Math.floor(this.randn_bm(2, 12, 1));
-    //   if (randDistr in normd) {
-    //     normd[randDistr] += 1;
+    //   const randDistr = Math.floor(Math.random() * 6) + 1;
+    //   const randDT = Math.floor(Math.random() * 6) + 1;
+    //   const sum = randDistr + randDT;
+    //   if (sum in normd) {
+    //     normd[sum] += 1;
     //   } else {
-    //     normd[randDistr] = 1;
+    //     normd[sum] = 1;
     //   }
     // }
     // console.log(normd);
-
-    const { diceOneX: diceOneCX, diceOneY: diceOneCY } = this.props;
+    const { diceOneX, diceOneY } = this.props;
 
     return (
       <g>
         <rect
+          onClick={this.roll}
           width={diceLength}
           height={diceLength}
-          x={diceOneCX}
-          y={diceOneCY}
+          x={diceOneX}
+          y={diceOneY}
           rx={diceLength / 5}
           fill="#efd601"
         />
         <rect
+          onClick={this.roll}
           width={diceLength}
           height={diceLength}
-          x={diceLength}
-          y="0"
+          x={diceOneX + diceLength * 1.125}
+          y={diceOneY}
           rx={diceLength / 5}
           fill="#bf0704"
         />
@@ -116,7 +137,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
           r={diceLength / 10}
           fill="#bf0704"
         /> */}
-        {this.makeNumberCircles("#bf0704")}
+        {this.makeNumberCircles()}
       </g>
     );
   }
