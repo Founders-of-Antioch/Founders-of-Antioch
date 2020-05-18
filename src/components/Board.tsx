@@ -5,7 +5,7 @@ import { Port } from "./Port";
 import { Robber } from "./Robber";
 
 //This should be fixed to be dynamic for screen size
-const hexRadius = 80;
+export const hexRadius = 80;
 //Approximate ratio, but might need to be changed for port design
 const frameRadius = 5.5 * hexRadius;
 
@@ -24,7 +24,7 @@ function shuffle(a: Array<any>) {
 }
 
 export interface BoardProps {
-  Tiles: Array<Tile>;
+  Tiles?: Array<Tile>;
 }
 
 export class Board extends React.Component<{}, {}> {
@@ -58,6 +58,7 @@ export class Board extends React.Component<{}, {}> {
         );
         tileKey++;
 
+        // Add two rows of tiles at the same time if it is not the middle row
         if (i !== 2) {
           y = 2 * hexRadius + heightOfSVG / 2 - (3 / 2) * hexRadius * i;
           arrTiles.push(
@@ -133,7 +134,7 @@ export class Board extends React.Component<{}, {}> {
           centerY={heightOfSVG / 2}
         />
         {this.makeTiles()}
-        {/* <Robber /> */}
+        <Robber />
       </g>
     );
   }

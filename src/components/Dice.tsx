@@ -76,8 +76,6 @@ export class Dice extends React.Component<DiceProps, DiceState> {
 
     const chosenOneDots = dotsToPreserve[diceOneValue];
     const chosenTwoDots = dotsToPreserve[diceTwoValue];
-    console.log(diceTwoValue);
-    console.log(chosenTwoDots);
 
     return dotArr.filter((el, idx) => {
       for (let j = 0; j < chosenOneDots.length; j++) {
