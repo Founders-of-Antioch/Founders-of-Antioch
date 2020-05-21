@@ -139,8 +139,6 @@ export class Tile extends React.Component<TileProps, {}> {
           strokeWidth="5"
           points={this.pointsString()}
         />
-        {this.makeCounter()}
-
         {/* <polyline
           id={this.props.resource}
           fill="url(#resourceClip)"

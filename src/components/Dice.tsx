@@ -3,6 +3,7 @@ import React from "react";
 type DiceState = {
   diceOneValue: number;
   diceTwoValue: number;
+  // currentPlayersTurn: number;
 };
 
 type DiceProps = {
@@ -21,7 +22,6 @@ export class Dice extends React.Component<DiceProps, DiceState> {
       diceOneValue: 6,
       diceTwoValue: 2,
     };
-
     this.roll = this.roll.bind(this);
   }
 

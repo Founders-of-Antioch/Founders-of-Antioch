@@ -26,7 +26,9 @@ export class Board extends React.Component<BoardProps, {}> {
     const heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
 
     let arrTiles = [];
-    const { resources, counters } = this.props;
+    const { resources } = this.props;
+    // Copy of them because the .pop() actually modifies it upstream in App.tsx
+    const counters = [...this.props.counters];
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < i + 3; j++) {
         //Absolute GARBAGE
@@ -97,6 +99,8 @@ export class Board extends React.Component<BoardProps, {}> {
         />
         {this.makeTiles()}
         <Robber boardResources={this.props.resources} />
+
+        {/* Vertical and horizontal center lines to check for styling. Uncomment if you want to check if something is centered */}
         {/* <polyline
           points={`${widthOfSVG / 2},0 ${widthOfSVG / 2},${heightOfSVG}`}
           stroke="yellow"
