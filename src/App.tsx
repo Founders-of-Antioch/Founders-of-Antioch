@@ -24,11 +24,13 @@ export class App extends React.Component<{}, AppState> {
       boardToBePlayed: {
         resources: [],
         counters: [],
-        gameID: 0,
+        gameID: -1,
       },
       numberOfPlayers: -1,
       currentPlayersTurn: -1,
     };
+
+    this.hasRolled = this.hasRolled.bind(this);
   }
 
   componentDidMount() {
@@ -36,10 +38,24 @@ export class App extends React.Component<{}, AppState> {
     this.getBoardOne();
   }
 
+  async hasRolled() {
+    const { currentPlayersTurn, numberOfPlayers } = this.state;
+    console.log("Rolled");
+    console.log(this.state);
+    const nextPlayer =
+      currentPlayersTurn === numberOfPlayers ? 1 : currentPlayersTurn + 1;
+    await this.changePlayerTurn(nextPlayer);
+    this.setState({
+      ...this.state,
+      currentPlayersTurn: nextPlayer,
+    });
+    console.log(this.state);
+  }
+
   changePlayerTurn(playerNumber: number) {
     return fetch(
       `http://localhost:3001/newTurn/${this.state.boardToBePlayed.gameID}&${playerNumber}`,
-      { method: "PUT", body: JSON.stringify({ currentPlayersTurn: 5 }) }
+      { method: "PUT" }
     )
       .then((resp) => resp.json())
       .then((res) => {
@@ -90,6 +106,7 @@ export class App extends React.Component<{}, AppState> {
         this.setState({
           ...this.state,
           numberOfPlayers: res.numberOfPlayers,
+          currentPlayersTurn: res.currentPlayersTurn,
         });
       });
   }
@@ -117,7 +134,11 @@ export class App extends React.Component<{}, AppState> {
             resources={boardToBePlayed.resources}
             counters={boardToBePlayed.counters}
           />
-          <Dice diceOneX={100} diceOneY={200} />
+          <Dice
+            hasRolledCallBack={this.hasRolled}
+            diceOneX={100}
+            diceOneY={100}
+          />
           <PlayerCard />
         </svg>
       );
