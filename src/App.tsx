@@ -3,6 +3,7 @@ import React from "react";
 import { Board } from "./components/Board";
 import test from "./tester.jpg";
 import { Dice } from "./components/Dice";
+import { PlayerCard } from "./components/PlayerCard";
 
 type AppState = {
   isLoading: boolean;
@@ -31,8 +32,8 @@ export class App extends React.Component<{}, AppState> {
   }
 
   componentDidMount() {
-    this.makeNewGame();
-    // this.getBoardOne();
+    // this.makeNewGame();
+    this.getBoardOne();
   }
 
   changePlayerTurn(playerNumber: number) {
@@ -46,22 +47,22 @@ export class App extends React.Component<{}, AppState> {
       });
   }
 
-  // getBoardOne() {
-  //   return fetch("http://localhost:3001/boards/1")
-  //     .then((resp) => resp.json())
-  //     .then((res) => {
-  //       if (this.state.isLoading) {
-  //         this.setState({
-  //           ...this.state,
-  //           isLoading: false,
-  //           boardToBePlayed: { ...res },
-  //         });
-  //       }
-  //       this.getGameInfo();
-  //       // this.changePlayerTurn();
-  //       return res;
-  //     });
-  // }
+  getBoardOne() {
+    return fetch("http://localhost:3001/boards/1")
+      .then((resp) => resp.json())
+      .then((res) => {
+        if (this.state.isLoading) {
+          this.setState({
+            ...this.state,
+            isLoading: false,
+            boardToBePlayed: { ...res },
+          });
+        }
+        this.getGameInfo();
+        // this.changePlayerTurn();
+        return res;
+      });
+  }
 
   makeNewGame() {
     return fetch("http://localhost:3001/games", { method: "POST" })
@@ -116,7 +117,8 @@ export class App extends React.Component<{}, AppState> {
             resources={boardToBePlayed.resources}
             counters={boardToBePlayed.counters}
           />
-          <Dice diceOneX={100} diceOneY={100} />
+          <Dice diceOneX={100} diceOneY={200} />
+          <PlayerCard />
         </svg>
       );
     }
