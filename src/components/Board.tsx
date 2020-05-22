@@ -9,10 +9,9 @@ export const hexRadius = 80;
 //Approximate ratio, but might need to be changed for port design
 const frameRadius = 5.5 * hexRadius;
 
-export const widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
-export const heightOfSVG = Number(
-  document.getElementById("root")?.offsetHeight
-);
+// TODO: Change these to be function instea of constants so the screen will update on a re-render
+export let widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
+export let heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
 
 export interface BoardProps {
   resources: Array<string>;
@@ -27,7 +26,7 @@ export class Board extends React.Component<BoardProps, {}> {
 
     let arrTiles = [];
     const { resources } = this.props;
-    // Copy of them because the .pop() actually modifies it upstream in App.tsx
+    // Copy of them because the .pop() actually modifies it upstream in App.tsx (dumb)
     const counters = [...this.props.counters];
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < i + 3; j++) {
