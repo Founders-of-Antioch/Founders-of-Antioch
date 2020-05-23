@@ -1,7 +1,7 @@
 import React from "react";
-import road from "../road.svg";
-import shield from "../shield.svg";
-import medal from "../medal.svg";
+import road from "../icons/road.svg";
+import shield from "../icons/shield.svg";
+import medal from "../icons/medal.svg";
 
 import { widthOfSVG, heightOfSVG } from "./Board";
 
@@ -42,6 +42,8 @@ export class PlayerCard extends React.Component<{}, {}> {
 
     return miniIcons;
   }
+
+  generateCardInformation(bkgX: number, bkgY: number) {}
 
   generatePlayerCard(bkgX: number, bkgY: number) {
     return (

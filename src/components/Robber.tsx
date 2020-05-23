@@ -1,5 +1,6 @@
 import React from "react";
 import { widthOfSVG, heightOfSVG, hexRadius } from "./Board";
+import robber from "../icons/robber.svg";
 
 // Center tile is 0,0 - going right is pos and left neg, up pos and down neg, just like a standard XY coordinate system. E.g. top left tile is -1, 2
 type RobberState = {
@@ -87,8 +88,21 @@ export class Robber extends React.Component<RobberProps, RobberState> {
   }
 
   render() {
+    const actX = this.actualX();
+    const actY = this.actualY();
+    const widthOfIcon = hexRadius / 2;
+
     return (
-      <circle fill="steelblue" r="30" cx={this.actualX()} cy={this.actualY()} />
+      <g>
+        <circle fill="black" r={hexRadius / 3} cx={actX} cy={actY} />
+        <image
+          href={robber}
+          x={actX - widthOfIcon / 2}
+          y={actY - widthOfIcon / 2}
+          width={widthOfIcon}
+          height={widthOfIcon}
+        />
+      </g>
     );
   }
 }
