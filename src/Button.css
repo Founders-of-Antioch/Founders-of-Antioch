@@ -1,0 +1,18 @@
+.buttonGroup:hover {
+  cursor: pointer;
+}
+
+.insideText {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+  color: white;
+}
+
+.insideButton {
+  fill: #b22222;
+}
+
+/* Stolen from https://jsfiddle.net/ThinkingStiff/dWHzF/ */
+.buttonGroup:hover .insideButton {
+  fill: #a22222;
+}

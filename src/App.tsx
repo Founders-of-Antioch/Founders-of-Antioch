@@ -4,6 +4,7 @@ import { Board } from "./components/Board";
 import test from "./tester.jpg";
 import { Dice } from "./components/Dice";
 import { PlayerCard } from "./components/PlayerCard";
+import { FoAButton } from "./components/FoAButton";
 
 type AppState = {
   isLoading: boolean;
@@ -14,6 +15,7 @@ type AppState = {
   };
   numberOfPlayers: number;
   currentPlayersTurn: number;
+  canEndTurn: boolean;
 };
 
 export class App extends React.Component<{}, AppState> {
@@ -28,8 +30,10 @@ export class App extends React.Component<{}, AppState> {
       },
       numberOfPlayers: -1,
       currentPlayersTurn: -1,
+      canEndTurn: false,
     };
 
+    this.endTurn = this.endTurn.bind(this);
     this.hasRolled = this.hasRolled.bind(this);
   }
 
@@ -38,10 +42,15 @@ export class App extends React.Component<{}, AppState> {
     this.getBoardOne();
   }
 
-  async hasRolled() {
+  hasRolled() {
+    this.setState({
+      ...this.state,
+      canEndTurn: true,
+    });
+  }
+
+  async endTurn() {
     const { currentPlayersTurn, numberOfPlayers } = this.state;
-    console.log("Rolled");
-    console.log(this.state);
     const nextPlayer =
       currentPlayersTurn === numberOfPlayers ? 1 : currentPlayersTurn + 1;
     await this.changePlayerTurn(nextPlayer);
@@ -49,7 +58,6 @@ export class App extends React.Component<{}, AppState> {
       ...this.state,
       currentPlayersTurn: nextPlayer,
     });
-    console.log(this.state);
   }
 
   changePlayerTurn(playerNumber: number) {
@@ -112,7 +120,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, canEndTurn } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     if (isLoading) {
@@ -137,9 +145,10 @@ export class App extends React.Component<{}, AppState> {
           <Dice
             hasRolledCallBack={this.hasRolled}
             diceOneX={100}
-            diceOneY={100}
+            diceOneY={200}
           />
           <PlayerCard />
+          <FoAButton canEndTurn={canEndTurn} width={100} height={100} />
         </svg>
       );
     }
