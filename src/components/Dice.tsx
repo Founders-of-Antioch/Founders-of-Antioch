@@ -3,9 +3,12 @@ import React from "react";
 type DiceState = {
   diceOneValue: number;
   diceTwoValue: number;
+  hasRolled: boolean;
+  // currentPlayersTurn: number;
 };
 
 type DiceProps = {
+  hasRolledCallBack: Function;
   diceOneX: number;
   diceOneY: number;
 };
@@ -18,18 +21,22 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   constructor(props: DiceProps) {
     super(props);
     this.state = {
-      diceOneValue: 6,
-      diceTwoValue: 2,
+      diceOneValue: 1,
+      diceTwoValue: 1,
+      hasRolled: false,
     };
-
     this.roll = this.roll.bind(this);
   }
 
   roll() {
-    this.setState({
-      diceOneValue: Math.floor(Math.random() * 6) + 1,
-      diceTwoValue: Math.floor(Math.random() * 6) + 1,
-    });
+    if (!this.state.hasRolled) {
+      this.setState({
+        diceOneValue: Math.floor(Math.random() * 6) + 1,
+        diceTwoValue: Math.floor(Math.random() * 6) + 1,
+        hasRolled: true,
+      });
+    }
+    this.props.hasRolledCallBack();
   }
 
   // This whole method is a pile of garbage. Because the dots on a dice order in a weird way depending on the number
