@@ -7,6 +7,8 @@ import { PlayerCard } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 
+const socket = socketIOClient.connect("http://localhost:3001");
+
 type AppState = {
   isLoading: boolean;
   boardToBePlayed: {
@@ -50,10 +52,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   socketer() {
-    const socket = socketIOClient.connect("http://localhost:3001");
     socket.emit("joinGame", "1");
-    // socket.emit("roll", 7);
-    // socket.emit("roll", 7);
     socket.on("joinedGame", (playerNum: number) => {
       this.setState({
         ...this.state,
@@ -93,16 +92,18 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
-  async endTurn() {
-    const { currentPlayersTurn, numberOfPlayers } = this.state;
-    const nextPlayer =
-      currentPlayersTurn === numberOfPlayers ? 1 : currentPlayersTurn + 1;
-    await this.changePlayerTurn(nextPlayer);
-    this.setState({
-      ...this.state,
-      currentPlayersTurn: nextPlayer,
-    });
-  }
+  // async endTurn() {
+  //   const { currentPlayersTurn, numberOfPlayers } = this.state;
+  //   const nextPlayer =
+  //     currentPlayersTurn === numberOfPlayers ? 1 : currentPlayersTurn + 1;
+  //   await this.changePlayerTurn(nextPlayer);
+  //   this.setState({
+  //     ...this.state,
+  //     currentPlayersTurn: nextPlayer,
+  //   });
+  // }
+
+  endTurn() {}
 
   changePlayerTurn(playerNumber: number) {
     return fetch(

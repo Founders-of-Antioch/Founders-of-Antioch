@@ -10,13 +10,6 @@ type btnProps = {
 };
 
 export class FoAButton extends React.Component<btnProps, {}> {
-  constructor(props: btnProps) {
-    super(props);
-    // this.state = {
-    //   disabled: true,
-    // };
-  }
-
   render() {
     const { width, height, canEndTurn } = this.props;
 

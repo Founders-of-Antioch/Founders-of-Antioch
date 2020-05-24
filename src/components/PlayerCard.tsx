@@ -50,6 +50,8 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generateCardInformation(bkgX: number, bkgY: number) {}
 
   generatePlayerCard(bkgX: number, bkgY: number, playerNumber: number) {
+    const playerTextMargin = 0.05 * playerCardHeight;
+
     return (
       <g>
         {/* Background */}
@@ -70,10 +72,10 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
           fill="#00a6e4"
         />
         <text
-          x={bkgX}
-          y={bkgY + 50}
+          x={bkgX + playerTextMargin}
+          y={bkgY + playerCardHeight - playerTextMargin}
           fontFamily="Courier New"
-          fontSize={widthOfMiniIcons}
+          fontSize={widthOfMiniIcons / 2}
           fill="white"
         >
           Player {playerNumber}{" "}
