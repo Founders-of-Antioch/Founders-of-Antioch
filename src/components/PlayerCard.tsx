@@ -10,7 +10,11 @@ const playerCardHeight = playerCardWidth / 2;
 const profileImageWidth = playerCardWidth / 4;
 const widthOfMiniIcons = playerCardWidth / 10;
 
-export class PlayerCard extends React.Component<{}, {}> {
+type PlayerCardProps = {
+  inGamePlayerNum: number;
+};
+
+export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generatePlayerHandInformation(bkgX: number, bkgY: number) {
     const imageMargin = playerCardHeight / 24;
 
@@ -45,7 +49,8 @@ export class PlayerCard extends React.Component<{}, {}> {
 
   generateCardInformation(bkgX: number, bkgY: number) {}
 
-  generatePlayerCard(bkgX: number, bkgY: number) {
+  generatePlayerCard(bkgX: number, bkgY: number, playerNumber: number) {
+    console.log(this.props.inGamePlayerNum);
     return (
       <g>
         {/* Background */}
@@ -65,6 +70,16 @@ export class PlayerCard extends React.Component<{}, {}> {
           height={profileImageWidth}
           fill="#00a6e4"
         />
+        <text
+          x={bkgX}
+          y={bkgY + 50}
+          fontFamily="Courier New"
+          fontSize={widthOfMiniIcons}
+          fill="white"
+        >
+          Player {playerNumber}{" "}
+          {this.props.inGamePlayerNum === playerNumber ? "(you)" : ""}
+        </text>
         {this.victoryPointsIcon(bkgX, bkgY)}
         {this.generatePlayerHandInformation(bkgX, bkgY)}
       </g>
@@ -73,6 +88,7 @@ export class PlayerCard extends React.Component<{}, {}> {
 
   generateFourCards() {
     let playerCards = [];
+    let playerNumber = 1;
     for (let x = 0; x < 2; x++) {
       for (let y = 0; y < 2; y++) {
         let currX = x * widthOfSVG;
@@ -86,7 +102,7 @@ export class PlayerCard extends React.Component<{}, {}> {
           currX -= playerCardWidth;
         }
 
-        playerCards.push(this.generatePlayerCard(currX, currY));
+        playerCards.push(this.generatePlayerCard(currX, currY, playerNumber++));
       }
     }
 

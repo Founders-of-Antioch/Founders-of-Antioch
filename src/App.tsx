@@ -17,7 +17,7 @@ type AppState = {
   numberOfPlayers: number;
   currentPlayersTurn: number;
   canEndTurn: boolean;
-  playerID: number;
+  inGamePlayerNum: number;
 };
 
 export class App extends React.Component<{}, AppState> {
@@ -33,7 +33,7 @@ export class App extends React.Component<{}, AppState> {
       numberOfPlayers: -1,
       currentPlayersTurn: -1,
       canEndTurn: false,
-      playerID: -1,
+      inGamePlayerNum: -1,
     };
 
     this.endTurn = this.endTurn.bind(this);
@@ -51,9 +51,15 @@ export class App extends React.Component<{}, AppState> {
 
   socketer() {
     const socket = socketIOClient.connect("http://localhost:3001");
-    socket.emit("joinGame", 1);
+    socket.emit("joinGame", "1");
     // socket.emit("roll", 7);
     // socket.emit("roll", 7);
+    socket.on("joinedGame", (playerNum: number) => {
+      this.setState({
+        ...this.state,
+        inGamePlayerNum: playerNum,
+      });
+    });
   }
 
   async componentDidMount() {
@@ -64,22 +70,21 @@ export class App extends React.Component<{}, AppState> {
     // window.addEventListener("beforeunload", this.removePlayer);
   }
 
-  componentWillUnmount() {
-    window.removeEventListener("beforeunload", this.removePlayer);
-  }
+  // componentWillUnmount() {
+  //   window.removeEventListener("beforeunload", this.removePlayer);
+  // }
 
-  async removePlayer() {
-    console.log(111111111111111111111111111111111111111111111);
-    const { playerID } = this.state;
-    const { gameID } = this.state.boardToBePlayed;
-    if (playerID !== -1) {
-      return await fetch(
-        `http://localhost:3001/removePlayerFromGame/${gameID}&${playerID}`
-      )
-        .then((res) => res.json)
-        .then((resp) => console.log(resp));
-    }
-  }
+  // async removePlayer() {
+  //   const { playerID } = this.state;
+  //   const { gameID } = this.state.boardToBePlayed;
+  //   if (playerID !== -1) {
+  //     return await fetch(
+  //       `http://localhost:3001/removePlayerFromGame/${gameID}&${playerID}`
+  //     )
+  //       .then((res) => res.json)
+  //       .then((resp) => console.log(resp));
+  //   }
+  // }
 
   hasRolled() {
     this.setState({
@@ -157,19 +162,19 @@ export class App extends React.Component<{}, AppState> {
       });
   }
 
-  createNewPlayer() {
-    return fetch(`http://localhost:3001/createNewPlayer/1`, { method: "POST" })
-      .then((resp) => resp.json())
-      .then((res) => {
-        this.setState({
-          ...this.state,
-          playerID: res.id,
-        });
-      });
-  }
+  // createNewPlayer() {
+  //   return fetch(`http://localhost:3001/createNewPlayer/1`, { method: "POST" })
+  //     .then((resp) => resp.json())
+  //     .then((res) => {
+  //       this.setState({
+  //         ...this.state,
+  //         playerID: res.id,
+  //       });
+  //     });
+  // }
 
   render() {
-    const { isLoading, canEndTurn } = this.state;
+    const { isLoading, canEndTurn, inGamePlayerNum } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     if (isLoading) {
@@ -196,7 +201,7 @@ export class App extends React.Component<{}, AppState> {
             diceOneX={100}
             diceOneY={200}
           />
-          <PlayerCard />
+          <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           <FoAButton canEndTurn={canEndTurn} width={100} height={100} />
         </svg>
       );
