@@ -1,4 +1,5 @@
 import React from "react";
+import socketIOClient from "socket.io-client";
 
 type DiceState = {
   diceOneValue: number;
@@ -30,11 +31,18 @@ export class Dice extends React.Component<DiceProps, DiceState> {
 
   roll() {
     if (!this.state.hasRolled) {
+      const diceOne = Math.floor(Math.random() * 6) + 1;
+      const diceTwo = Math.floor(Math.random() * 6) + 1;
+
       this.setState({
-        diceOneValue: Math.floor(Math.random() * 6) + 1,
-        diceTwoValue: Math.floor(Math.random() * 6) + 1,
+        diceOneValue: diceOne,
+        diceTwoValue: diceTwo,
         hasRolled: true,
       });
+
+      const socket = socketIOClient.connect("http://localhost:3001");
+      // socket.emit("roll", 7);
+      socket.emit("roll", diceOne, diceTwo);
     }
     this.props.hasRolledCallBack();
   }

@@ -5,6 +5,7 @@ import test from "./tester.jpg";
 import { Dice } from "./components/Dice";
 import { PlayerCard } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
+import socketIOClient from "socket.io-client";
 
 type AppState = {
   isLoading: boolean;
@@ -37,15 +38,30 @@ export class App extends React.Component<{}, AppState> {
 
     this.endTurn = this.endTurn.bind(this);
     this.hasRolled = this.hasRolled.bind(this);
+    // this.socketE();
+    this.socketer();
+  }
+
+  socketE() {
+    const socket = socketIOClient("http://localhost:3001");
+    socket.on("FromAPI", (data: any) => {
+      console.log(data);
+    });
+  }
+
+  socketer() {
+    const socket = socketIOClient.connect("http://localhost:3001");
+    socket.emit("joinGame", 1);
+    // socket.emit("roll", 7);
+    // socket.emit("roll", 7);
   }
 
   async componentDidMount() {
     // this.makeNewGame();
     await this.getBoardOne();
-    this.getGameInfo();
-    this.createNewPlayer();
-
-    window.addEventListener("beforeunload", this.removePlayer);
+    // this.getGameInfo();
+    // this.createNewPlayer();
+    // window.addEventListener("beforeunload", this.removePlayer);
   }
 
   componentWillUnmount() {
