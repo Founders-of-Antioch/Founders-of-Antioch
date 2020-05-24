@@ -16,6 +16,7 @@ type AppState = {
   numberOfPlayers: number;
   currentPlayersTurn: number;
   canEndTurn: boolean;
+  playerID: number;
 };
 
 export class App extends React.Component<{}, AppState> {
@@ -31,15 +32,37 @@ export class App extends React.Component<{}, AppState> {
       numberOfPlayers: -1,
       currentPlayersTurn: -1,
       canEndTurn: false,
+      playerID: -1,
     };
 
     this.endTurn = this.endTurn.bind(this);
     this.hasRolled = this.hasRolled.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     // this.makeNewGame();
-    this.getBoardOne();
+    await this.getBoardOne();
+    this.getGameInfo();
+    this.createNewPlayer();
+
+    window.addEventListener("beforeunload", this.removePlayer);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("beforeunload", this.removePlayer);
+  }
+
+  async removePlayer() {
+    console.log(111111111111111111111111111111111111111111111);
+    const { playerID } = this.state;
+    const { gameID } = this.state.boardToBePlayed;
+    if (playerID !== -1) {
+      return await fetch(
+        `http://localhost:3001/removePlayerFromGame/${gameID}&${playerID}`
+      )
+        .then((res) => res.json)
+        .then((resp) => console.log(resp));
+    }
   }
 
   hasRolled() {
@@ -82,7 +105,6 @@ export class App extends React.Component<{}, AppState> {
             boardToBePlayed: { ...res },
           });
         }
-        this.getGameInfo();
         // this.changePlayerTurn();
         return res;
       });
@@ -115,6 +137,17 @@ export class App extends React.Component<{}, AppState> {
           ...this.state,
           numberOfPlayers: res.numberOfPlayers,
           currentPlayersTurn: res.currentPlayersTurn,
+        });
+      });
+  }
+
+  createNewPlayer() {
+    return fetch(`http://localhost:3001/createNewPlayer/1`, { method: "POST" })
+      .then((resp) => resp.json())
+      .then((res) => {
+        this.setState({
+          ...this.state,
+          playerID: res.id,
         });
       });
   }

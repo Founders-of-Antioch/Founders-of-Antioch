@@ -4,14 +4,14 @@ import { Frame } from "./Frame";
 import { Port } from "./Port";
 import { Robber } from "./Robber";
 
-//This should be fixed to be dynamic for screen size
-export const hexRadius = 80;
-//Approximate ratio, but might need to be changed for port design
-const frameRadius = 5.5 * hexRadius;
-
 // TODO: Change these to be function instea of constants so the screen will update on a re-render
 export let widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
 export let heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
+
+//This should be fixed to be dynamic for screen size
+export const hexRadius = heightOfSVG / 12;
+//Approximate ratio, but might need to be changed for port design
+const frameRadius = 5.5 * hexRadius;
 
 export interface BoardProps {
   resources: Array<string>;

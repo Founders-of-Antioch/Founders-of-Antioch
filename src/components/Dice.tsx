@@ -29,13 +29,13 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   roll() {
-    // if (!this.state.hasRolled) {
-    this.setState({
-      diceOneValue: Math.floor(Math.random() * 6) + 1,
-      diceTwoValue: Math.floor(Math.random() * 6) + 1,
-      hasRolled: true,
-    });
-    // }
+    if (!this.state.hasRolled) {
+      this.setState({
+        diceOneValue: Math.floor(Math.random() * 6) + 1,
+        diceTwoValue: Math.floor(Math.random() * 6) + 1,
+        hasRolled: true,
+      });
+    }
     this.props.hasRolledCallBack();
   }
 
