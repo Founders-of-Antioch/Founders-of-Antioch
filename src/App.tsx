@@ -202,7 +202,7 @@ export class App extends React.Component<{}, AppState> {
             diceOneY={200}
           />
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
-          <FoAButton canEndTurn={canEndTurn} width={100} height={100} />
+          <FoAButton canEndTurn={canEndTurn} width={175} height={50} />
         </svg>
       );
     }

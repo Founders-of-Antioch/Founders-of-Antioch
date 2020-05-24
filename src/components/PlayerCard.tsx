@@ -50,7 +50,6 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generateCardInformation(bkgX: number, bkgY: number) {}
 
   generatePlayerCard(bkgX: number, bkgY: number, playerNumber: number) {
-    console.log(this.props.inGamePlayerNum);
     return (
       <g>
         {/* Background */}
