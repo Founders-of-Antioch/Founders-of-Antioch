@@ -7,7 +7,7 @@ import { PlayerCard } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 
-const socket = socketIOClient.connect("http://localhost:3001");
+export const socket = socketIOClient.connect("http://localhost:3001");
 
 type AppState = {
   isLoading: boolean;
@@ -201,7 +201,6 @@ export class App extends React.Component<{}, AppState> {
 
   render() {
     const { isLoading, canEndTurn, inGamePlayerNum } = this.state;
-    console.log(inGamePlayerNum);
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     if (isLoading) {

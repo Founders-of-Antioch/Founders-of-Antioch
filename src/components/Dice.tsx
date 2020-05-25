@@ -1,5 +1,6 @@
 import React from "react";
 import socketIOClient from "socket.io-client";
+import { socket } from "../App";
 
 type DiceState = {
   diceOneValue: number;
@@ -27,6 +28,18 @@ export class Dice extends React.Component<DiceProps, DiceState> {
       hasRolled: false,
     };
     this.roll = this.roll.bind(this);
+    this.setupSockets();
+  }
+
+  setupSockets() {
+    console.log(45);
+    socket.on("diceUpdate", (d1: number, d2: number) => {
+      this.setState({
+        ...this.state,
+        diceOneValue: d1,
+        diceTwoValue: d2,
+      });
+    });
   }
 
   roll() {
@@ -40,9 +53,8 @@ export class Dice extends React.Component<DiceProps, DiceState> {
         hasRolled: true,
       });
 
-      const socket = socketIOClient.connect("http://localhost:3001");
-      // socket.emit("roll", 7);
-      socket.emit("roll", diceOne, diceTwo);
+      // TODO: Fix to have actual gameID
+      socket.emit("roll", diceOne, diceTwo, "1");
     }
     this.props.hasRolledCallBack();
   }
