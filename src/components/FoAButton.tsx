@@ -7,11 +7,12 @@ type btnProps = {
   width: number;
   height: number;
   canEndTurn: boolean;
+  onClick: (event: React.MouseEvent) => void;
 };
 
 export class FoAButton extends React.Component<btnProps, {}> {
   render() {
-    const { width, height, canEndTurn } = this.props;
+    const { width, height, canEndTurn, onClick } = this.props;
 
     const buttonMarginX = height / 10;
     const buttonMarginY = height / 10;
@@ -38,7 +39,7 @@ export class FoAButton extends React.Component<btnProps, {}> {
 
         <g
           className={canEndTurn ? "buttonGroup" : ""}
-          onClick={() => console.log(1)}
+          onClick={canEndTurn ? onClick : () => {}}
         >
           <rect
             className={"insideButton"}

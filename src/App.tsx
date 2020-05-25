@@ -17,7 +17,7 @@ type AppState = {
     gameID: number;
   };
   numberOfPlayers: number;
-  currentPlayersTurn: number;
+  currentPersonPlaying: number;
   canEndTurn: boolean;
   inGamePlayerNum: number;
 };
@@ -33,30 +33,40 @@ export class App extends React.Component<{}, AppState> {
         gameID: -1,
       },
       numberOfPlayers: -1,
-      currentPlayersTurn: -1,
+      currentPersonPlaying: -1,
       canEndTurn: false,
       inGamePlayerNum: -1,
     };
 
     this.endTurn = this.endTurn.bind(this);
     this.hasRolled = this.hasRolled.bind(this);
+    this.endTurn = this.endTurn.bind(this);
     // this.socketE();
     this.socketer();
   }
 
-  socketE() {
-    const socket = socketIOClient("http://localhost:3001");
-    socket.on("FromAPI", (data: any) => {
-      console.log(data);
-    });
-  }
-
   socketer() {
-    socket.emit("joinGame", "1");
-    socket.on("joinedGame", (playerNum: number) => {
+    socket.on("getWhoseTurnItIs", (playNum: number) => {
       this.setState({
         ...this.state,
-        inGamePlayerNum: playerNum,
+        currentPersonPlaying: playNum,
+      });
+    });
+
+    socket.emit("joinGame", "1");
+    socket.emit("whoseTurnIsIt", "1");
+    socket.on("joinedGame", (playerNum: number) => {
+      if (this.state.inGamePlayerNum === -1) {
+        this.setState({
+          ...this.state,
+          inGamePlayerNum: playerNum,
+        });
+      }
+    });
+    socket.on("turnUpdate", (nextPlayer: number) => {
+      this.setState({
+        ...this.state,
+        currentPersonPlaying: nextPlayer,
       });
     });
   }
@@ -103,7 +113,9 @@ export class App extends React.Component<{}, AppState> {
   //   });
   // }
 
-  endTurn() {}
+  endTurn() {
+    socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+  }
 
   changePlayerTurn(playerNumber: number) {
     return fetch(
@@ -132,36 +144,36 @@ export class App extends React.Component<{}, AppState> {
       });
   }
 
-  makeNewGame() {
-    return fetch("http://localhost:3001/games", { method: "POST" })
-      .then((resp) => resp.json())
-      .then((res) => {
-        if (this.state.isLoading) {
-          this.setState({
-            ...this.state,
-            isLoading: false,
-            boardToBePlayed: { ...res },
-          });
-        }
-        this.getGameInfo();
+  // makeNewGame() {
+  //   return fetch("http://localhost:3001/games", { method: "POST" })
+  //     .then((resp) => resp.json())
+  //     .then((res) => {
+  //       if (this.state.isLoading) {
+  //         this.setState({
+  //           ...this.state,
+  //           isLoading: false,
+  //           boardToBePlayed: { ...res },
+  //         });
+  //       }
+  //       this.getGameInfo();
 
-        return res;
-      });
-  }
+  //       return res;
+  //     });
+  // }
 
-  getGameInfo() {
-    return fetch(
-      `http://localhost:3001/games/${this.state.boardToBePlayed.gameID}`
-    )
-      .then((resp) => resp.json())
-      .then((res) => {
-        this.setState({
-          ...this.state,
-          numberOfPlayers: res.numberOfPlayers,
-          currentPlayersTurn: res.currentPlayersTurn,
-        });
-      });
-  }
+  // getGameInfo() {
+  //   return fetch(
+  //     `http://localhost:3001/games/${this.state.boardToBePlayed.gameID}`
+  //   )
+  //     .then((resp) => resp.json())
+  //     .then((res) => {
+  //       this.setState({
+  //         ...this.state,
+  //         numberOfPlayers: res.numberOfPlayers,
+  //         currentPlayersTurn: res.currentPlayersTurn,
+  //       });
+  //     });
+  // }
 
   // createNewPlayer() {
   //   return fetch(`http://localhost:3001/createNewPlayer/1`, { method: "POST" })
@@ -174,8 +186,22 @@ export class App extends React.Component<{}, AppState> {
   //     });
   // }
 
+  endTurnButton() {
+    if (this.state.currentPersonPlaying === this.state.inGamePlayerNum) {
+      return (
+        <FoAButton
+          onClick={this.endTurn}
+          canEndTurn={this.state.canEndTurn}
+          width={175}
+          height={50}
+        />
+      );
+    }
+  }
+
   render() {
     const { isLoading, canEndTurn, inGamePlayerNum } = this.state;
+    console.log(inGamePlayerNum);
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     if (isLoading) {
@@ -203,7 +229,7 @@ export class App extends React.Component<{}, AppState> {
             diceOneY={200}
           />
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
-          <FoAButton canEndTurn={canEndTurn} width={175} height={50} />
+          {this.endTurnButton()}
         </svg>
       );
     }
