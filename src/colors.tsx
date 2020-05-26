@@ -7,3 +7,6 @@ export const DARK_WHEAT = "#ffc400";
 
 // General colors
 export const WHITE = "#ffffff";
+
+// Random
+export const SAND = "#ffe39f";

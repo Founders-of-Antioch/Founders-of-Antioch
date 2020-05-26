@@ -1,22 +1,20 @@
 import React from "react";
-import socketIOClient from "socket.io-client";
 import { socket } from "../App";
+import { widthOfSVG } from "./Board";
 
 type DiceState = {
   diceOneValue: number;
   diceTwoValue: number;
   hasRolled: boolean;
-  // currentPlayersTurn: number;
 };
 
 type DiceProps = {
   hasRolledCallBack: Function;
   diceOneX: number;
   diceOneY: number;
+  isPlayersTurn: boolean;
 };
 
-const widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
-// const heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
 const diceLength = widthOfSVG / 20;
 
 export class Dice extends React.Component<DiceProps, DiceState> {
@@ -60,7 +58,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   // This whole method is a pile of garbage. Because the dots on a dice order in a weird way depending on the number
-  makeNumberCircles() {
+  makeNumberCircles(op: number) {
     const { diceOneValue, diceTwoValue } = this.state;
     const { diceOneX, diceOneY } = this.props;
 
@@ -82,6 +80,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
         dotArr.push(
           <circle
             key={key++}
+            opacity={op}
             onClick={this.roll}
             r={diceLength / 10}
             fill={die === 0 ? "#bf0704" : "#efd601"}
@@ -91,6 +90,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
         );
       }
     }
+
     const dotsToPreserve = [
       [],
       [4],
@@ -122,39 +122,34 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   render() {
-    // let normd: { [key: number]: number } = {};
-    // for (let i = 0; i < 100000; i++) {
-    //   const randDistr = Math.floor(Math.random() * 6) + 1;
-    //   const randDT = Math.floor(Math.random() * 6) + 1;
-    //   const sum = randDistr + randDT;
-    //   if (sum in normd) {
-    //     normd[sum] += 1;
-    //   } else {
-    //     normd[sum] = 1;
-    //   }
-    // }
-    // console.log(normd);
-    const { diceOneX, diceOneY } = this.props;
+    const { diceOneX, diceOneY, isPlayersTurn } = this.props;
+    const { hasRolled } = this.state;
+
+    const shouldBeDisabled = hasRolled || !isPlayersTurn;
+    const op = shouldBeDisabled ? 0.7 : 1.0;
 
     return (
-      <g>
+      <g
+        cursor={shouldBeDisabled ? "default" : "pointer"}
+        onClick={shouldBeDisabled ? () => {} : this.roll}
+      >
         <rect
-          onClick={this.roll}
           width={diceLength}
           height={diceLength}
           x={diceOneX}
           y={diceOneY}
           rx={diceLength / 5}
           fill="#efd601"
+          opacity={op}
         />
         <rect
-          onClick={this.roll}
           width={diceLength}
           height={diceLength}
           x={diceOneX + diceLength * 1.125}
           y={diceOneY}
           rx={diceLength / 5}
           fill="#bf0704"
+          opacity={op}
         />
         {/* <circle
           cx={diceLength / 2}
@@ -162,7 +157,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
           r={diceLength / 10}
           fill="#bf0704"
         /> */}
-        {this.makeNumberCircles()}
+        {this.makeNumberCircles(op)}
       </g>
     );
   }

@@ -6,6 +6,8 @@ import { Dice } from "./components/Dice";
 import { PlayerCard } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
+import { ResourceCard } from "./components/ResourceCard";
+import { Settlement } from "./components/Settlement";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -17,8 +19,10 @@ type AppState = {
     gameID: number;
   };
   numberOfPlayers: number;
+  // Number 1-4 representing which 'player' is currently taking their turn
   currentPersonPlaying: number;
   canEndTurn: boolean;
+  // Number 1-4 representing which player the client is
   inGamePlayerNum: number;
 };
 
@@ -200,7 +204,12 @@ export class App extends React.Component<{}, AppState> {
   }
 
   render() {
-    const { isLoading, canEndTurn, inGamePlayerNum } = this.state;
+    const {
+      isLoading,
+      canEndTurn,
+      inGamePlayerNum,
+      currentPersonPlaying,
+    } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     if (isLoading) {
@@ -223,12 +232,14 @@ export class App extends React.Component<{}, AppState> {
             counters={boardToBePlayed.counters}
           />
           <Dice
+            isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
             hasRolledCallBack={this.hasRolled}
             diceOneX={100}
             diceOneY={200}
           />
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
+          <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} />
         </svg>
       );
     }
