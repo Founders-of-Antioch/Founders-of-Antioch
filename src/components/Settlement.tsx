@@ -49,14 +49,13 @@ export class Settlement extends React.Component<SettlementProps, {}> {
 
   actualY() {
     let centY = this.centerTileY();
-    const halfTile = (Math.sqrt(3) * hexRadius) / 2;
     const { corner } = this.props;
 
     if (corner === 1 || corner === 5) {
       return centY - hexRadius / 2;
     } else if (corner === 2 || corner === 4) {
       return centY + hexRadius / 2;
-    } else if (corner == 0) {
+    } else if (corner === 0) {
       return centY - hexRadius;
     } else {
       return centY + hexRadius;

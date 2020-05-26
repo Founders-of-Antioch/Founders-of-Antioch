@@ -1,6 +1,6 @@
 // Tile colors
 export const WHEAT = "#fec40d";
-export const BRICK = "#B22222";
+export const BRICK = "firebrick";
 
 // Alt tiles
 export const DARK_WHEAT = "#ffc400";

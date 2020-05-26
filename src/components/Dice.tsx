@@ -5,7 +5,6 @@ import { widthOfSVG } from "./Board";
 type DiceState = {
   diceOneValue: number;
   diceTwoValue: number;
-  hasRolled: boolean;
 };
 
 type DiceProps = {
@@ -13,6 +12,7 @@ type DiceProps = {
   diceOneX: number;
   diceOneY: number;
   isPlayersTurn: boolean;
+  hasRolled: boolean;
 };
 
 const diceLength = widthOfSVG / 20;
@@ -23,7 +23,6 @@ export class Dice extends React.Component<DiceProps, DiceState> {
     this.state = {
       diceOneValue: 1,
       diceTwoValue: 1,
-      hasRolled: false,
     };
     this.roll = this.roll.bind(this);
     this.setupSockets();
@@ -41,14 +40,13 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   roll() {
-    if (!this.state.hasRolled) {
+    if (!this.props.hasRolled) {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
 
       this.setState({
         diceOneValue: diceOne,
         diceTwoValue: diceTwo,
-        hasRolled: true,
       });
 
       // TODO: Fix to have actual gameID
@@ -122,8 +120,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   render() {
-    const { diceOneX, diceOneY, isPlayersTurn } = this.props;
-    const { hasRolled } = this.state;
+    const { diceOneX, diceOneY, isPlayersTurn, hasRolled } = this.props;
 
     const shouldBeDisabled = hasRolled || !isPlayersTurn;
     const op = shouldBeDisabled ? 0.7 : 1.0;

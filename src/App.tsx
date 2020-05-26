@@ -24,6 +24,7 @@ type AppState = {
   canEndTurn: boolean;
   // Number 1-4 representing which player the client is
   inGamePlayerNum: number;
+  hasRolled: boolean;
 };
 
 export class App extends React.Component<{}, AppState> {
@@ -40,6 +41,7 @@ export class App extends React.Component<{}, AppState> {
       currentPersonPlaying: -1,
       canEndTurn: false,
       inGamePlayerNum: -1,
+      hasRolled: false,
     };
 
     this.endTurn = this.endTurn.bind(this);
@@ -103,6 +105,7 @@ export class App extends React.Component<{}, AppState> {
     this.setState({
       ...this.state,
       canEndTurn: true,
+      hasRolled: true,
     });
   }
 
@@ -119,6 +122,11 @@ export class App extends React.Component<{}, AppState> {
 
   endTurn() {
     socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+    this.setState({
+      ...this.state,
+      canEndTurn: false,
+      hasRolled: false,
+    });
   }
 
   changePlayerTurn(playerNumber: number) {
@@ -232,6 +240,7 @@ export class App extends React.Component<{}, AppState> {
             counters={boardToBePlayed.counters}
           />
           <Dice
+            hasRolled={this.state.hasRolled}
             isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
             hasRolledCallBack={this.hasRolled}
             diceOneX={100}
@@ -239,7 +248,8 @@ export class App extends React.Component<{}, AppState> {
           />
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
-          <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} />
+          <ResourceCard />
+          {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}
         </svg>
       );
     }
