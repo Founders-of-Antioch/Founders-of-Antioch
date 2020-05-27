@@ -10,62 +10,66 @@ export interface SettlementProps {
   corner: number;
 }
 
+// Stolen from Robber comp
+// TODO: Adjust function in robber component to just use this
+export function centerTileX(boardXPos: number, boardYPos: number) {
+  // The first 'row' above the middle is shifted
+  let adjustXPos = boardXPos;
+  //If it is in the row above the middle and to the left of the center
+  if (boardXPos < 0 && (boardYPos === -1 || boardYPos === 1)) {
+    adjustXPos += 0.5;
+  } else if ((boardYPos === -1 || boardYPos === 1) && boardXPos > 0) {
+    //If it is in the row above the middle and to the right of the center
+    adjustXPos -= 0.5;
+  }
+
+  return adjustXPos * Math.sqrt(3) * hexRadius + widthOfSVG / 2;
+}
+
+export function centerTileY(boardYPos: number) {
+  return heightOfSVG / 2 - boardYPos * 1.5 * hexRadius;
+}
+
+// Gets the x value of a corner given a tile and a corner (0-5 starting at the tip and goig clockwise)
+export function xValofCorner(
+  boardXPos: number,
+  boardYPos: number,
+  corner: number
+) {
+  let centX = centerTileX(boardXPos, boardYPos);
+  const halfTile = (Math.sqrt(3) * hexRadius) / 2;
+
+  if (corner > 0 && corner < 3) {
+    return centX + halfTile;
+  } else if (corner < 6 && corner > 3) {
+    return centX - halfTile;
+  } else {
+    return centX;
+  }
+}
+
+export function yValofCorner(boardYPos: number, corner: number) {
+  let centY = centerTileY(boardYPos);
+
+  if (corner === 1 || corner === 5) {
+    return centY - hexRadius / 2;
+  } else if (corner === 2 || corner === 4) {
+    return centY + hexRadius / 2;
+  } else if (corner === 0) {
+    return centY - hexRadius;
+  } else {
+    return centY + hexRadius;
+  }
+}
+
 export class Settlement extends React.Component<SettlementProps, {}> {
-  // Stollen from Robber comp
-  centerTileX() {
-    const { boardXPos, boardYPos } = this.props;
-
-    // The first 'row' above the middle is shifted
-    let adjustXPos = boardXPos;
-    //If it is in the row above the middle and to the left of the center
-    if (boardXPos < 0 && (boardYPos === -1 || boardYPos === 1)) {
-      adjustXPos += 0.5;
-    } else if ((boardYPos === -1 || boardYPos === 1) && boardXPos > 0) {
-      //If it is in the row above the middle and to the right of the center
-      adjustXPos -= 0.5;
-    }
-
-    return adjustXPos * Math.sqrt(3) * hexRadius + widthOfSVG / 2;
-  }
-
-  centerTileY() {
-    const { boardYPos } = this.props;
-    return heightOfSVG / 2 - boardYPos * 1.5 * hexRadius;
-  }
-
-  actualX() {
-    let centX = this.centerTileX();
-    const halfTile = (Math.sqrt(3) * hexRadius) / 2;
-    const { corner } = this.props;
-
-    if (corner > 0 && corner < 3) {
-      return centX + halfTile;
-    } else if (corner < 6 && corner > 3) {
-      return centX - halfTile;
-    } else {
-      return centX;
-    }
-  }
-
-  actualY() {
-    let centY = this.centerTileY();
-    const { corner } = this.props;
-
-    if (corner === 1 || corner === 5) {
-      return centY - hexRadius / 2;
-    } else if (corner === 2 || corner === 4) {
-      return centY + hexRadius / 2;
-    } else if (corner === 0) {
-      return centY - hexRadius;
-    } else {
-      return centY + hexRadius;
-    }
-  }
-
   render() {
+    const { boardXPos, boardYPos, corner } = this.props;
+
     const settlementWidth = 30;
-    const startX = this.actualX() - settlementWidth / 2;
-    const startY = this.actualY() - settlementWidth / 2;
+    const startX =
+      xValofCorner(boardXPos, boardYPos, corner) - settlementWidth / 2;
+    const startY = yValofCorner(boardYPos, corner) - settlementWidth / 2;
 
     return (
       <g>

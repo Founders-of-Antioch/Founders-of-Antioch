@@ -14,16 +14,20 @@ type PlayerCardProps = {
   inGamePlayerNum: number;
 };
 
+// TODO: Try and not make this global, but I just wanted to get rid of the React error
+let keyForTag = 0;
+
 export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generatePlayerHandInformation(bkgX: number, bkgY: number) {
     const imageMargin = playerCardHeight / 24;
 
     let miniIcons = [];
+    let keyForGroup = 0;
     const listOfIcons = [road, shield];
     for (let i = 0; i < listOfIcons.length; i++) {
       const currentQuarterX = (playerCardWidth * (i + 2)) / 4 + bkgX;
       miniIcons.push(
-        <g>
+        <g key={keyForGroup++}>
           <image
             x={currentQuarterX - widthOfMiniIcons}
             y={bkgY + imageMargin}
@@ -47,13 +51,11 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
     return miniIcons;
   }
 
-  generateCardInformation(bkgX: number, bkgY: number) {}
-
   generatePlayerCard(bkgX: number, bkgY: number, playerNumber: number) {
     const playerTextMargin = 0.05 * playerCardHeight;
 
     return (
-      <g>
+      <g key={keyForTag++}>
         {/* Background */}
         <rect
           x={bkgX}

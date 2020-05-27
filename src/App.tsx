@@ -8,6 +8,7 @@ import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import { ResourceCard } from "./components/ResourceCard";
 import { Settlement } from "./components/Settlement";
+import HighlightPoint from "./components/HighlightPoint";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -248,7 +249,7 @@ export class App extends React.Component<{}, AppState> {
           />
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
-          <ResourceCard />
+          {/* <ResourceCard /> */}
           {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}
         </svg>
       );

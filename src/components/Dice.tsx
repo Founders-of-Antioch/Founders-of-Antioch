@@ -29,7 +29,6 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   setupSockets() {
-    console.log(45);
     socket.on("diceUpdate", (d1: number, d2: number) => {
       this.setState({
         ...this.state,
