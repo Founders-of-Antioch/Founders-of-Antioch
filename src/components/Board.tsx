@@ -75,46 +75,6 @@ export class Board extends React.Component<BoardProps, {}> {
     return arrTiles;
   }
 
-  highlightAvailableSpace() {
-    const spots = [];
-    let keyForHighlights = 0;
-
-    for (let y = -2; y <= 0; y++) {
-      for (let x = 0; x < y + 5; x++) {
-        for (let corner = 0; corner < 6; corner++) {
-          let adjX = y === -2 ? x - 1 : x - 2;
-          // Second rows don't have a 0 x tile, so just substitute for the end tile
-          if (Math.abs(y) === 1 && adjX === 0) {
-            adjX = 2;
-          }
-
-          spots.push(
-            <HighlightPoint
-              key={keyForHighlights++}
-              boardXPos={adjX}
-              boardYPos={y}
-              corner={corner}
-            />
-          );
-
-          // Render opposite rows at the same time
-          if (y !== 0) {
-            spots.push(
-              <HighlightPoint
-                key={keyForHighlights++}
-                boardXPos={adjX}
-                boardYPos={-y}
-                corner={corner}
-              />
-            );
-          }
-        }
-      }
-    }
-
-    return spots;
-  }
-
   constructPorts() {
     let portsArr = [];
     for (let i = 0; i < 9; i++) {
@@ -151,7 +111,6 @@ export class Board extends React.Component<BoardProps, {}> {
           stroke="yellow"
           strokeWidth="3"
         /> */}
-        {this.highlightAvailableSpace()}
       </g>
     );
   }
