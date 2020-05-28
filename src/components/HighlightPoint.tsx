@@ -11,6 +11,7 @@ type Props = {
   boardYPos: number;
   corner: number;
   finishedSelectingCallback: Function;
+  playerWhoSelected: number;
 };
 
 export default class HighlightPoint extends Component<Props, {}> {
@@ -21,9 +22,16 @@ export default class HighlightPoint extends Component<Props, {}> {
 
   // TODO: Replace with actual gameID
   selectedASpot(): void {
-    const { boardXPos, boardYPos, corner } = this.props;
+    const { boardXPos, boardYPos, corner, playerWhoSelected } = this.props;
     // Emit change for broadcast
-    socket.emit("addBuilding", "1", boardXPos, boardYPos, corner, 1);
+    socket.emit(
+      "addBuilding",
+      "1",
+      boardXPos,
+      boardYPos,
+      corner,
+      playerWhoSelected
+    );
     this.props.finishedSelectingCallback();
   }
 

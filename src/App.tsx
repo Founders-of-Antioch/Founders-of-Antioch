@@ -7,6 +7,8 @@ import { PlayerCard } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import HighlightPoint from "./components/HighlightPoint";
+import { Building } from "./entities/Building";
+import { Settlement } from "./components/Settlement";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -27,6 +29,7 @@ type AppState = {
   inGamePlayerNum: number;
   hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
+  settlements: Array<Building>;
 };
 
 export class App extends React.Component<{}, AppState> {
@@ -45,6 +48,7 @@ export class App extends React.Component<{}, AppState> {
       inGamePlayerNum: -1,
       hasRolled: false,
       isCurrentlyPlacingSettlement: true,
+      settlements: [],
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -100,6 +104,38 @@ export class App extends React.Component<{}, AppState> {
     playerNum: number;
   }) {
     console.log(building);
+    const build = new Building(
+      building.boardXPos,
+      building.boardYPos,
+      building.corner,
+      building.playerNum
+    );
+    this.setState({
+      ...this.state,
+      settlements: this.state.settlements.concat(build),
+    });
+    console.log(this.state);
+  }
+
+  renderBuildings(): Array<any> {
+    let buildingArr = [];
+    let key = 0;
+
+    const colors = ["blue", "red", "orange", "white"];
+
+    for (const i of this.state.settlements) {
+      buildingArr.push(
+        <Settlement
+          key={key++}
+          boardXPos={i.boardXPos}
+          boardYPos={i.boardYPos}
+          color={colors[i.playerNum - 1]}
+          corner={i.corner}
+        />
+      );
+    }
+
+    return buildingArr;
   }
 
   // Sets up basic socket listeners and initalizers
@@ -256,6 +292,7 @@ export class App extends React.Component<{}, AppState> {
                 boardYPos={y}
                 corner={corner}
                 finishedSelectingCallback={this.selectionCallBack}
+                playerWhoSelected={inGamePlayerNum}
               />
             );
 
@@ -268,6 +305,7 @@ export class App extends React.Component<{}, AppState> {
                   boardYPos={-y}
                   corner={corner}
                   finishedSelectingCallback={this.selectionCallBack}
+                  playerWhoSelected={inGamePlayerNum}
                 />
               );
             }
@@ -318,6 +356,7 @@ export class App extends React.Component<{}, AppState> {
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
           {this.highlightAvailableSpace()}
+          {this.renderBuildings()}
           {/* <ResourceCard /> */}
           {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}
         </svg>
