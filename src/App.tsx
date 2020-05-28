@@ -60,10 +60,11 @@ export class App extends React.Component<{}, AppState> {
       this
     );
 
-    // this.socketE();
     this.setupSockets();
   }
 
+  // Callback for socket event, see "setupSockets"
+  // Changes the current person playing when the backend sends an update
   changeCurrentPlayer(playNum: number) {
     this.setState({
       ...this.state,
@@ -71,6 +72,8 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
+  // Callback for socket event, see "setupSockets"
+  // Once the player 'enters' the game, it assigns them a player number from the backend
   joinedGame(playerNum: number) {
     if (this.state.inGamePlayerNum === -1) {
       this.setState({
@@ -80,6 +83,8 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
+  // Callback for socket event, see "setupSockets"
+  // Backend sockets will send turn updates, and this moves the state to the next player
   processTurnUpdate(nextPlayer: number) {
     this.setState({
       ...this.state,
@@ -87,6 +92,7 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
+  // WIP
   processBuildingUpdate(building: {
     boardXPos: number;
     boardYPos: number;
@@ -96,14 +102,23 @@ export class App extends React.Component<{}, AppState> {
     console.log(building);
   }
 
+  // Sets up basic socket listeners and initalizers
   setupSockets() {
+    // Listens for whose turn in the game it is. Every time it changes, it will go to changeCurrentPlayer
+    // Listens for the response to 'whose turn is it' (below)
     socket.on("getWhoseTurnItIs", this.changeCurrentPlayer);
 
+    // Start off by joining the
     socket.emit("joinGame", "1");
+    // This is essentially an API call, we ask whose turn it is and then it will send the result back up to ^
+    // 'get whose turn it is' which processes the response
     socket.emit("whoseTurnIsIt", "1");
 
+    // Backend sends an event once the player has joined
     socket.on("joinedGame", this.joinedGame);
+    // Backend sends an event when the turn changes
     socket.on("turnUpdate", this.processTurnUpdate);
+    // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
   }
 
@@ -131,6 +146,7 @@ export class App extends React.Component<{}, AppState> {
   //   }
   // }
 
+  // Callback function for the 'Dice' component
   hasRolled() {
     // evaluateTurnElg is callback after setState
     this.setState(
@@ -142,6 +158,7 @@ export class App extends React.Component<{}, AppState> {
     );
   }
 
+  // Determines if the player can end their turn or not
   evaluateEndTurnEligibility() {
     const { hasRolled, isCurrentlyPlacingSettlement } = this.state;
     if (hasRolled && !isCurrentlyPlacingSettlement) {
@@ -152,17 +169,8 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
-  // async endTurn() {
-  //   const { currentPlayersTurn, numberOfPlayers } = this.state;
-  //   const nextPlayer =
-  //     currentPlayersTurn === numberOfPlayers ? 1 : currentPlayersTurn + 1;
-  //   await this.changePlayerTurn(nextPlayer);
-  //   this.setState({
-  //     ...this.state,
-  //     currentPlayersTurn: nextPlayer,
-  //   });
-  // }
-
+  // Ends the players turn
+  // Should only be used as callback for the end turn button
   endTurn() {
     socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
     this.setState({
@@ -172,17 +180,8 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
-  changePlayerTurn(playerNumber: number) {
-    return fetch(
-      `http://localhost:3001/newTurn/${this.state.boardToBePlayed.gameID}&${playerNumber}`,
-      { method: "PUT" }
-    )
-      .then((resp) => resp.json())
-      .then((res) => {
-        console.log(res);
-      });
-  }
-
+  // TODO: Migrate this DB stuff to sockets
+  // Gets the board with id '1' from the DB
   getBoardOne() {
     return fetch("http://localhost:3001/boards/1")
       .then((resp) => resp.json())
@@ -199,49 +198,10 @@ export class App extends React.Component<{}, AppState> {
       });
   }
 
-  // makeNewGame() {
-  //   return fetch("http://localhost:3001/games", { method: "POST" })
-  //     .then((resp) => resp.json())
-  //     .then((res) => {
-  //       if (this.state.isLoading) {
-  //         this.setState({
-  //           ...this.state,
-  //           isLoading: false,
-  //           boardToBePlayed: { ...res },
-  //         });
-  //       }
-  //       this.getGameInfo();
-
-  //       return res;
-  //     });
-  // }
-
-  // getGameInfo() {
-  //   return fetch(
-  //     `http://localhost:3001/games/${this.state.boardToBePlayed.gameID}`
-  //   )
-  //     .then((resp) => resp.json())
-  //     .then((res) => {
-  //       this.setState({
-  //         ...this.state,
-  //         numberOfPlayers: res.numberOfPlayers,
-  //         currentPlayersTurn: res.currentPlayersTurn,
-  //       });
-  //     });
-  // }
-
-  // createNewPlayer() {
-  //   return fetch(`http://localhost:3001/createNewPlayer/1`, { method: "POST" })
-  //     .then((resp) => resp.json())
-  //     .then((res) => {
-  //       this.setState({
-  //         ...this.state,
-  //         playerID: res.id,
-  //       });
-  //     });
-  // }
-
+  // Returns the end turn button component
   endTurnButton() {
+    // Only render the button if it is the player's turn
+    // You can only end your turn if it IS your turn
     if (this.state.currentPersonPlaying === this.state.inGamePlayerNum) {
       return (
         <FoAButton
@@ -328,6 +288,7 @@ export class App extends React.Component<{}, AppState> {
     } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
+    // Should find a way to fix this/have a decent loading icon or screen
     if (isLoading) {
       return null;
     } else {

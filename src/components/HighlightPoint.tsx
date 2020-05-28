@@ -4,6 +4,8 @@ import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG } from "./Board";
 import { socket } from "../App";
 
+// Highlights a point where a player can build a settlement
+
 type Props = {
   boardXPos: number;
   boardYPos: number;

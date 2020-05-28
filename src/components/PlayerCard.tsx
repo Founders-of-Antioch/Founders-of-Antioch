@@ -5,6 +5,10 @@ import medal from "../icons/medal.svg";
 
 import { widthOfSVG, heightOfSVG } from "./Board";
 
+// Mini cards displaying player info
+// TODO: Design, make more minimal
+// TODO: Logic, class shouldn't have all four cards
+
 const playerCardWidth = widthOfSVG / 5;
 const playerCardHeight = playerCardWidth / 2;
 const profileImageWidth = playerCardWidth / 4;

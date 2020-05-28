@@ -1,7 +1,9 @@
 import React from "react";
-import { WHEAT, WHITE, DARK_WHEAT } from "../colors";
+import { WHEAT, WHITE } from "../colors";
 import "../Button.css";
 import { widthOfSVG, heightOfSVG } from "./Board";
+
+// TODO: class should be renamed
 
 type btnProps = {
   width: number;

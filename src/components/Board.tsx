@@ -3,7 +3,6 @@ import { Tile } from "./Tile";
 import { Frame } from "./Frame";
 import { Port } from "./Port";
 import { Robber } from "./Robber";
-import HighlightPoint from "./HighlightPoint";
 
 // TODO: Change these to be function instea of constants so the screen will update on a re-render
 export let widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
@@ -75,6 +74,7 @@ export class Board extends React.Component<BoardProps, {}> {
     return arrTiles;
   }
 
+  // WIP
   constructPorts() {
     let portsArr = [];
     for (let i = 0; i < 9; i++) {

@@ -8,7 +8,9 @@ type DiceState = {
 };
 
 type DiceProps = {
+  // Callback for when the dice have been rolled
   hasRolledCallBack: Function;
+  // X and Y of the first die
   diceOneX: number;
   diceOneY: number;
   isPlayersTurn: boolean;
@@ -20,6 +22,7 @@ const diceLength = widthOfSVG / 20;
 export class Dice extends React.Component<DiceProps, DiceState> {
   constructor(props: DiceProps) {
     super(props);
+    // TODO: should be fixed to whatever the current backend state is. GH issue open for this
     this.state = {
       diceOneValue: 1,
       diceTwoValue: 1,
@@ -29,6 +32,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   setupSockets() {
+    // Listens for when other players roll the dice
     socket.on("diceUpdate", (d1: number, d2: number) => {
       this.setState({
         ...this.state,
@@ -39,6 +43,7 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   roll() {
+    // Don't let the player roll more than once
     if (!this.props.hasRolled) {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
@@ -49,8 +54,10 @@ export class Dice extends React.Component<DiceProps, DiceState> {
       });
 
       // TODO: Fix to have actual gameID
+      // Tells the backend what the player has rolled
       socket.emit("roll", diceOne, diceTwo, "1");
     }
+    // Tells the app state that the dice have been rolled
     this.props.hasRolledCallBack();
   }
 
