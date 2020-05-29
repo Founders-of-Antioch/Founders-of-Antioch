@@ -30,7 +30,7 @@ export function centerTileY(boardYPos: number) {
   return heightOfSVG / 2 - boardYPos * 1.5 * hexRadius;
 }
 
-// Gets the x value of a corner given a tile and a corner (0-5 starting at the tip and goig clockwise)
+// Gets the x value of a corner given a tile and a corner (0-5 starting at the tip and going clockwise)
 export function xValofCorner(
   boardXPos: number,
   boardYPos: number,
@@ -48,6 +48,7 @@ export function xValofCorner(
   }
 }
 
+// Gets the y value of a corner given a tile and a corner (0-5 starting at the tip and going clockwise)
 export function yValofCorner(boardYPos: number, corner: number) {
   let centY = centerTileY(boardYPos);
 

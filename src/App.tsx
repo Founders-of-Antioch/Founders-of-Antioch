@@ -63,8 +63,10 @@ export class App extends React.Component<{}, AppState> {
     this.evaluateEndTurnEligibility = this.evaluateEndTurnEligibility.bind(
       this
     );
+    this.processGetGame = this.processGetGame.bind(this);
 
     this.setupSockets();
+    this.getBoardOne();
   }
 
   // Callback for socket event, see "setupSockets"
@@ -156,15 +158,35 @@ export class App extends React.Component<{}, AppState> {
     socket.on("turnUpdate", this.processTurnUpdate);
     // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
+
+    socket.on("giveGame", this.processGetGame);
   }
 
-  async componentDidMount() {
-    // this.makeNewGame();
-    await this.getBoardOne();
-    // this.getGameInfo();
-    // this.createNewPlayer();
-    // window.addEventListener("beforeunload", this.removePlayer);
+  processGetGame(game: {
+    currentPersonPlaying: number;
+    counters: Array<string>;
+    resources: Array<string>;
+  }) {
+    if (this.state.isLoading) {
+      this.setState({
+        ...this.state,
+        isLoading: false,
+        boardToBePlayed: {
+          resources: game.resources,
+          counters: game.counters,
+          gameID: 1,
+        },
+      });
+    }
   }
+
+  // componentDidMount() {
+  //   // this.makeNewGame();
+  //   this.getBoardOne();
+  //   // this.getGameInfo();
+  //   // this.createNewPlayer();
+  //   // window.addEventListener("beforeunload", this.removePlayer);
+  // }
 
   // componentWillUnmount() {
   //   window.removeEventListener("beforeunload", this.removePlayer);
@@ -218,20 +240,27 @@ export class App extends React.Component<{}, AppState> {
 
   // TODO: Migrate this DB stuff to sockets
   // Gets the board with id '1' from the DB
+  // getBoardOne() {
+  //   return fetch("http://localhost:3001/boards/1")
+  //     .then((resp) => resp.json())
+  //     .then((res) => {
+  //       if (this.state.isLoading) {
+  //         this.setState({
+  //           ...this.state,
+  //           isLoading: false,
+  //           boardToBePlayed: { ...res },
+  //         });
+  //       }
+  //       // this.changePlayerTurn();
+  //       return res;
+  //     });
+  // }
+
   getBoardOne() {
-    return fetch("http://localhost:3001/boards/1")
-      .then((resp) => resp.json())
-      .then((res) => {
-        if (this.state.isLoading) {
-          this.setState({
-            ...this.state,
-            isLoading: false,
-            boardToBePlayed: { ...res },
-          });
-        }
-        // this.changePlayerTurn();
-        return res;
-      });
+    //TODO: Fix ID
+    // socket.emit("needCounters", "1");
+    // socket.emit("needResources", "1");
+    socket.emit("needGame", "1");
   }
 
   // Returns the end turn button component
@@ -269,6 +298,7 @@ export class App extends React.Component<{}, AppState> {
       currentPersonPlaying,
       inGamePlayerNum,
       isCurrentlyPlacingSettlement,
+      settlements,
     } = this.state;
     const isTurn = currentPersonPlaying === inGamePlayerNum;
 
@@ -278,11 +308,23 @@ export class App extends React.Component<{}, AppState> {
 
       for (let y = -2; y <= 0; y++) {
         for (let x = 0; x < y + 5; x++) {
-          for (let corner = 0; corner < 6; corner++) {
+          cornerLoop: for (let corner = 0; corner < 6; corner++) {
             let adjX = y === -2 ? x - 1 : x - 2;
             // Second rows don't have a 0 x tile, so just substitute for the end tile
             if (Math.abs(y) === 1 && adjX === 0) {
               adjX = 2;
+            }
+
+            // If there is already a building in the spot, don't highlight it
+            for (const setl of settlements) {
+              if (
+                adjX === setl.boardXPos &&
+                y === setl.boardYPos &&
+                corner === setl.corner
+              ) {
+                console.log(1);
+                continue cornerLoop;
+              }
             }
 
             spots.push(
@@ -318,12 +360,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   render() {
-    const {
-      isLoading,
-      canEndTurn,
-      inGamePlayerNum,
-      currentPersonPlaying,
-    } = this.state;
+    const { isLoading, inGamePlayerNum, currentPersonPlaying } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     // Should find a way to fix this/have a decent loading icon or screen
