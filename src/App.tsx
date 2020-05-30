@@ -384,6 +384,7 @@ export class App extends React.Component<{}, AppState> {
       currentPersonPlaying,
     } = this.state;
 
+    // Only render the dice if we're done with initial placements
     if (currentTurnNumber > 2) {
       return (
         <Dice
@@ -398,7 +399,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   render() {
-    const { isLoading, inGamePlayerNum, currentPersonPlaying } = this.state;
+    const { isLoading, inGamePlayerNum } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     // Should find a way to fix this/have a decent loading icon or screen
