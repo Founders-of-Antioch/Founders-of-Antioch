@@ -30,6 +30,7 @@ type AppState = {
   hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
   settlements: Array<Building>;
+  currentTurnNumber: number;
 };
 
 export class App extends React.Component<{}, AppState> {
@@ -49,6 +50,7 @@ export class App extends React.Component<{}, AppState> {
       hasRolled: false,
       isCurrentlyPlacingSettlement: true,
       settlements: [],
+      currentTurnNumber: 1,
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -72,6 +74,7 @@ export class App extends React.Component<{}, AppState> {
   // Callback for socket event, see "setupSockets"
   // Changes the current person playing when the backend sends an update
   changeCurrentPlayer(playNum: number) {
+    console.log("should happen once");
     this.setState({
       ...this.state,
       currentPersonPlaying: playNum,
@@ -91,11 +94,21 @@ export class App extends React.Component<{}, AppState> {
 
   // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
-  processTurnUpdate(nextPlayer: number) {
+  processTurnUpdate(nextPlayer: number, incomingTurnNumber: number) {
+    const { inGamePlayerNum, currentTurnNumber } = this.state;
+    console.log(`Current turn: ${currentTurnNumber}`);
+    console.log(`Incoming turn num: ${incomingTurnNumber}`);
     this.setState({
       ...this.state,
       currentPersonPlaying: nextPlayer,
+      isCurrentlyPlacingSettlement:
+        inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
+      currentTurnNumber: incomingTurnNumber,
     });
+
+    console.log(`IGP ${inGamePlayerNum}`);
+    console.log(`next ${nextPlayer}`);
+    console.log(`currt ${currentTurnNumber}`);
   }
 
   // WIP
@@ -105,7 +118,6 @@ export class App extends React.Component<{}, AppState> {
     corner: number;
     playerNum: number;
   }) {
-    console.log(building);
     const build = new Building(
       building.boardXPos,
       building.boardYPos,
@@ -116,7 +128,6 @@ export class App extends React.Component<{}, AppState> {
       ...this.state,
       settlements: this.state.settlements.concat(build),
     });
-    console.log(this.state);
   }
 
   renderBuildings(): Array<any> {
@@ -218,8 +229,15 @@ export class App extends React.Component<{}, AppState> {
 
   // Determines if the player can end their turn or not
   evaluateEndTurnEligibility() {
-    const { hasRolled, isCurrentlyPlacingSettlement } = this.state;
-    if (hasRolled && !isCurrentlyPlacingSettlement) {
+    const {
+      hasRolled,
+      isCurrentlyPlacingSettlement,
+      currentTurnNumber,
+    } = this.state;
+    if (
+      (hasRolled || currentTurnNumber <= 2) &&
+      !isCurrentlyPlacingSettlement
+    ) {
       this.setState({
         ...this.state,
         canEndTurn: true,
@@ -272,6 +290,7 @@ export class App extends React.Component<{}, AppState> {
         <FoAButton
           onClick={this.endTurn}
           canEndTurn={this.state.canEndTurn}
+          // TODO: Change for dynamic size
           width={175}
           height={50}
         />
@@ -282,7 +301,6 @@ export class App extends React.Component<{}, AppState> {
   // Callback for when a player is done selecting where their settlement should go
   // TODO: Rename
   selectionCallBack() {
-    console.log("Selected first settlement");
     this.setState(
       {
         isCurrentlyPlacingSettlement: false,
@@ -301,6 +319,7 @@ export class App extends React.Component<{}, AppState> {
       settlements,
     } = this.state;
     const isTurn = currentPersonPlaying === inGamePlayerNum;
+    // console.log(object)
 
     if (isTurn && isCurrentlyPlacingSettlement) {
       const spots = [];
@@ -322,7 +341,6 @@ export class App extends React.Component<{}, AppState> {
                 y === setl.boardYPos &&
                 corner === setl.corner
               ) {
-                console.log(1);
                 continue cornerLoop;
               }
             }
@@ -359,6 +377,26 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
+  renderDice() {
+    const {
+      currentTurnNumber,
+      inGamePlayerNum,
+      currentPersonPlaying,
+    } = this.state;
+
+    if (currentTurnNumber > 2) {
+      return (
+        <Dice
+          hasRolled={this.state.hasRolled}
+          isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
+          hasRolledCallBack={this.hasRolled}
+          diceOneX={100}
+          diceOneY={200}
+        />
+      );
+    }
+  }
+
   render() {
     const { isLoading, inGamePlayerNum, currentPersonPlaying } = this.state;
 
@@ -383,13 +421,7 @@ export class App extends React.Component<{}, AppState> {
             resources={boardToBePlayed.resources}
             counters={boardToBePlayed.counters}
           />
-          <Dice
-            hasRolled={this.state.hasRolled}
-            isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
-            hasRolledCallBack={this.hasRolled}
-            diceOneX={100}
-            diceOneY={200}
-          />
+          {this.renderDice()}
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
           {this.highlightAvailableSpace()}
