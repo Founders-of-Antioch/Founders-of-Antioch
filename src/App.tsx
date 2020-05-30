@@ -9,6 +9,7 @@ import socketIOClient from "socket.io-client";
 import HighlightPoint from "./components/HighlightPoint";
 import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
+import Road from "./components/Road";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -134,7 +135,8 @@ export class App extends React.Component<{}, AppState> {
     let buildingArr = [];
     let key = 0;
 
-    const colors = ["blue", "red", "orange", "white"];
+    // Blue red orange white
+    const colors = ["#1569C7", "#e91d26", "#fb8c23", "white"];
 
     for (const i of this.state.settlements) {
       buildingArr.push(
@@ -275,7 +277,7 @@ export class App extends React.Component<{}, AppState> {
   // }
 
   getBoardOne() {
-    //TODO: Fix ID
+    // TODO: Fix ID
     // socket.emit("needCounters", "1");
     // socket.emit("needResources", "1");
     socket.emit("needGame", "1");
@@ -426,6 +428,7 @@ export class App extends React.Component<{}, AppState> {
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
           {this.highlightAvailableSpace()}
+          {/* <Road /> */}
           {this.renderBuildings()}
           {/* <ResourceCard /> */}
           {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}

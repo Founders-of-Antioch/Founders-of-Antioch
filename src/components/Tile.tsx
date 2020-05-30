@@ -137,6 +137,7 @@ export class Tile extends React.Component<TileProps, {}> {
           id={this.props.resource}
           fill={this.colorOfTile()}
           stroke={SAND}
+          // TODO: Change to be dynamic
           strokeWidth="5"
           points={this.pointsString()}
         />
