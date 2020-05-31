@@ -30,6 +30,7 @@ type AppState = {
   inGamePlayerNum: number;
   hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
+  isCurrentlyPlacingRoad: boolean;
   settlements: Array<Building>;
   currentTurnNumber: number;
 };
@@ -50,6 +51,7 @@ export class App extends React.Component<{}, AppState> {
       inGamePlayerNum: -1,
       hasRolled: false,
       isCurrentlyPlacingSettlement: true,
+      isCurrentlyPlacingRoad: false,
       settlements: [],
       currentTurnNumber: 1,
     };
@@ -62,7 +64,8 @@ export class App extends React.Component<{}, AppState> {
     this.joinedGame = this.joinedGame.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
-    this.selectionCallBack = this.selectionCallBack.bind(this);
+    this.selectSettlementSpotCB = this.selectSettlementSpotCB.bind(this);
+    this.selectRoadSpotCB = this.selectRoadSpotCB.bind(this);
     this.evaluateEndTurnEligibility = this.evaluateEndTurnEligibility.bind(
       this
     );
@@ -75,7 +78,6 @@ export class App extends React.Component<{}, AppState> {
   // Callback for socket event, see "setupSockets"
   // Changes the current person playing when the backend sends an update
   changeCurrentPlayer(playNum: number) {
-    console.log("should happen once");
     this.setState({
       ...this.state,
       currentPersonPlaying: playNum,
@@ -96,20 +98,16 @@ export class App extends React.Component<{}, AppState> {
   // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
   processTurnUpdate(nextPlayer: number, incomingTurnNumber: number) {
-    const { inGamePlayerNum, currentTurnNumber } = this.state;
-    console.log(`Current turn: ${currentTurnNumber}`);
-    console.log(`Incoming turn num: ${incomingTurnNumber}`);
+    const { inGamePlayerNum } = this.state;
+
     this.setState({
       ...this.state,
       currentPersonPlaying: nextPlayer,
+      // Is true if it's still in the snake draft and it's the player's turn
       isCurrentlyPlacingSettlement:
         inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
       currentTurnNumber: incomingTurnNumber,
     });
-
-    console.log(`IGP ${inGamePlayerNum}`);
-    console.log(`next ${nextPlayer}`);
-    console.log(`currt ${currentTurnNumber}`);
   }
 
   // WIP
@@ -235,10 +233,12 @@ export class App extends React.Component<{}, AppState> {
       hasRolled,
       isCurrentlyPlacingSettlement,
       currentTurnNumber,
+      isCurrentlyPlacingRoad,
     } = this.state;
     if (
       (hasRolled || currentTurnNumber <= 2) &&
-      !isCurrentlyPlacingSettlement
+      !isCurrentlyPlacingSettlement &&
+      !isCurrentlyPlacingRoad
     ) {
       this.setState({
         ...this.state,
@@ -301,29 +301,47 @@ export class App extends React.Component<{}, AppState> {
   }
 
   // Callback for when a player is done selecting where their settlement should go
-  // TODO: Rename
-  selectionCallBack() {
+  selectSettlementSpotCB() {
     this.setState(
       {
         isCurrentlyPlacingSettlement: false,
+        isCurrentlyPlacingRoad: this.state.currentTurnNumber <= 2,
+      },
+      this.evaluateEndTurnEligibility
+    );
+  }
+
+  // Callback for when a player is done selecting where the road should go
+  selectRoadSpotCB() {
+    this.setState(
+      {
+        isCurrentlyPlacingRoad: false,
       },
       this.evaluateEndTurnEligibility
     );
   }
 
   // Highlights the available places to put settlements
-  // TODO: Rename
-  highlightAvailableSpace() {
+  highlightSettlingSpaces(typeofHighlight: string) {
     const {
       currentPersonPlaying,
       inGamePlayerNum,
       isCurrentlyPlacingSettlement,
+      isCurrentlyPlacingRoad,
       settlements,
     } = this.state;
-    const isTurn = currentPersonPlaying === inGamePlayerNum;
-    // console.log(object)
 
-    if (isTurn && isCurrentlyPlacingSettlement) {
+    const isTurn = currentPersonPlaying === inGamePlayerNum;
+    const placing =
+      typeofHighlight === "road"
+        ? isCurrentlyPlacingRoad
+        : isCurrentlyPlacingSettlement;
+    const callback =
+      typeofHighlight === "road"
+        ? this.selectRoadSpotCB
+        : this.selectSettlementSpotCB;
+
+    if (isTurn && placing) {
       const spots = [];
       let keyForHighlights = 0;
 
@@ -353,8 +371,9 @@ export class App extends React.Component<{}, AppState> {
                 boardXPos={adjX}
                 boardYPos={y}
                 corner={corner}
-                finishedSelectingCallback={this.selectionCallBack}
+                finishedSelectingCallback={callback}
                 playerWhoSelected={inGamePlayerNum}
+                typeOfHighlight={typeofHighlight}
               />
             );
 
@@ -366,8 +385,9 @@ export class App extends React.Component<{}, AppState> {
                   boardXPos={adjX}
                   boardYPos={-y}
                   corner={corner}
-                  finishedSelectingCallback={this.selectionCallBack}
+                  finishedSelectingCallback={callback}
                   playerWhoSelected={inGamePlayerNum}
+                  typeOfHighlight={typeofHighlight}
                 />
               );
             }
@@ -400,6 +420,15 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
+  highlightNeededSpaces() {
+    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    if (isCurrentlyPlacingRoad) {
+      return this.highlightSettlingSpaces("road");
+    } else if (isCurrentlyPlacingSettlement) {
+      return this.highlightSettlingSpaces("settlement");
+    }
+  }
+
   render() {
     const { isLoading, inGamePlayerNum } = this.state;
 
@@ -427,7 +456,7 @@ export class App extends React.Component<{}, AppState> {
           {this.renderDice()}
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
-          {this.highlightAvailableSpace()}
+          {this.highlightNeededSpaces()}
           {/* <Road /> */}
           {this.renderBuildings()}
           {/* <ResourceCard /> */}
