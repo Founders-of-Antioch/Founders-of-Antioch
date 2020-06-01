@@ -10,6 +10,7 @@ import HighlightPoint from "./components/HighlightPoint";
 import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
+import { RoadModel } from "./components/RoadModel";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -32,6 +33,7 @@ type AppState = {
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
   settlements: Array<Building>;
+  roads: Array<RoadModel>;
   currentTurnNumber: number;
 };
 
@@ -53,6 +55,7 @@ export class App extends React.Component<{}, AppState> {
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
       settlements: [],
+      roads: [],
       currentTurnNumber: 1,
     };
 
@@ -70,6 +73,8 @@ export class App extends React.Component<{}, AppState> {
       this
     );
     this.processGetGame = this.processGetGame.bind(this);
+    this.processRoadUpdate = this.processRoadUpdate.bind(this);
+    this.renderRoads = this.renderRoads.bind(this);
 
     this.setupSockets();
     this.getBoardOne();
@@ -169,8 +174,20 @@ export class App extends React.Component<{}, AppState> {
     socket.on("turnUpdate", this.processTurnUpdate);
     // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
+    // Backend sends an event when someone places a new road
+    socket.on("roadUpdate", this.processRoadUpdate);
 
     socket.on("giveGame", this.processGetGame);
+  }
+
+  processRoadUpdate(r: RoadModel) {
+    console.log("road update");
+    console.log(r);
+
+    this.setState({
+      ...this.state,
+      roads: this.state.roads.concat(r),
+    });
   }
 
   processGetGame(game: {
@@ -429,6 +446,26 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
+  renderRoads() {
+    const { roads } = this.state;
+    let roadArr = [];
+    let key = 0;
+
+    for (const r of roads) {
+      console.log(r);
+      roadArr.push(
+        <Road
+          key={key++}
+          boardXPos={r.boardXPos}
+          boardYPos={r.boardYPos}
+          hexEdge={r.hexEdgeNumber}
+        />
+      );
+    }
+
+    return roadArr;
+  }
+
   render() {
     const { isLoading, inGamePlayerNum } = this.state;
 
@@ -457,7 +494,8 @@ export class App extends React.Component<{}, AppState> {
           <PlayerCard inGamePlayerNum={inGamePlayerNum} />
           {this.endTurnButton()}
           {this.highlightNeededSpaces()}
-          {/* <Road /> */}
+          {this.renderRoads()}
+          {/* <Road boardXPos={0} boardYPos={0} hexEdge={5} /> */}
           {this.renderBuildings()}
           {/* <ResourceCard /> */}
           {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}
