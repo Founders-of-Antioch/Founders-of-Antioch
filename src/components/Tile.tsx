@@ -1,5 +1,6 @@
 import React from "react";
 import brick from "../img/brick.jpeg";
+import { SAND, BRICK, WHEAT } from "../colors";
 // import sheep from "../img/sheep.jpg";
 
 // Tip is the top 'tip' of the resource hexagon tile
@@ -40,7 +41,7 @@ export class Tile extends React.Component<TileProps, {}> {
       case "ore":
         return "grey";
       case "wheat":
-        return "#fec40d";
+        return WHEAT;
       case "sheep":
         return "gainsboro";
       case "wood":
@@ -48,7 +49,7 @@ export class Tile extends React.Component<TileProps, {}> {
       case "desert":
         return "#e9b13f";
       case "brick":
-        return "#B22222";
+        return BRICK;
       default:
         return "purple";
     }
@@ -135,7 +136,7 @@ export class Tile extends React.Component<TileProps, {}> {
         <polyline
           id={this.props.resource}
           fill={this.colorOfTile()}
-          stroke="#ffe39f"
+          stroke={SAND}
           strokeWidth="5"
           points={this.pointsString()}
         />

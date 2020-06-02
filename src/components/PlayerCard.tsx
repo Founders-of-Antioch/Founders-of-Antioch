@@ -5,21 +5,33 @@ import medal from "../icons/medal.svg";
 
 import { widthOfSVG, heightOfSVG } from "./Board";
 
+// Mini cards displaying player info
+// TODO: Design, make more minimal
+// TODO: Logic, class shouldn't have all four cards
+
 const playerCardWidth = widthOfSVG / 5;
 const playerCardHeight = playerCardWidth / 2;
 const profileImageWidth = playerCardWidth / 4;
 const widthOfMiniIcons = playerCardWidth / 10;
 
-export class PlayerCard extends React.Component<{}, {}> {
+type PlayerCardProps = {
+  inGamePlayerNum: number;
+};
+
+// TODO: Try and not make this global, but I just wanted to get rid of the React error
+let keyForTag = 0;
+
+export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generatePlayerHandInformation(bkgX: number, bkgY: number) {
     const imageMargin = playerCardHeight / 24;
 
     let miniIcons = [];
+    let keyForGroup = 0;
     const listOfIcons = [road, shield];
     for (let i = 0; i < listOfIcons.length; i++) {
       const currentQuarterX = (playerCardWidth * (i + 2)) / 4 + bkgX;
       miniIcons.push(
-        <g>
+        <g key={keyForGroup++}>
           <image
             x={currentQuarterX - widthOfMiniIcons}
             y={bkgY + imageMargin}
@@ -43,11 +55,11 @@ export class PlayerCard extends React.Component<{}, {}> {
     return miniIcons;
   }
 
-  generateCardInformation(bkgX: number, bkgY: number) {}
+  generatePlayerCard(bkgX: number, bkgY: number, playerNumber: number) {
+    const playerTextMargin = 0.05 * playerCardHeight;
 
-  generatePlayerCard(bkgX: number, bkgY: number) {
     return (
-      <g>
+      <g key={keyForTag++}>
         {/* Background */}
         <rect
           x={bkgX}
@@ -65,6 +77,16 @@ export class PlayerCard extends React.Component<{}, {}> {
           height={profileImageWidth}
           fill="#00a6e4"
         />
+        <text
+          x={bkgX + playerTextMargin}
+          y={bkgY + playerCardHeight - playerTextMargin}
+          fontFamily="Courier New"
+          fontSize={widthOfMiniIcons / 2}
+          fill="white"
+        >
+          Player {playerNumber}{" "}
+          {this.props.inGamePlayerNum === playerNumber ? "(you)" : ""}
+        </text>
         {this.victoryPointsIcon(bkgX, bkgY)}
         {this.generatePlayerHandInformation(bkgX, bkgY)}
       </g>
@@ -73,6 +95,7 @@ export class PlayerCard extends React.Component<{}, {}> {
 
   generateFourCards() {
     let playerCards = [];
+    let playerNumber = 1;
     for (let x = 0; x < 2; x++) {
       for (let y = 0; y < 2; y++) {
         let currX = x * widthOfSVG;
@@ -86,7 +109,7 @@ export class PlayerCard extends React.Component<{}, {}> {
           currX -= playerCardWidth;
         }
 
-        playerCards.push(this.generatePlayerCard(currX, currY));
+        playerCards.push(this.generatePlayerCard(currX, currY, playerNumber++));
       }
     }
 

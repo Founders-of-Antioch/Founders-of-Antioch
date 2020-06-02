@@ -1,57 +1,69 @@
 import React from "react";
-import { WHEAT, WHITE, DARK_WHEAT } from "../colors";
+import { WHEAT, WHITE } from "../colors";
 import "../Button.css";
+import { widthOfSVG, heightOfSVG } from "./Board";
+
+// TODO: class should be renamed
 
 type btnProps = {
   width: number;
   height: number;
   canEndTurn: boolean;
+  onClick: (event: React.MouseEvent) => void;
 };
 
 export class FoAButton extends React.Component<btnProps, {}> {
-  constructor(props: btnProps) {
-    super(props);
-    // this.state = {
-    //   disabled: true,
-    // };
-  }
-
   render() {
-    const { width, height, canEndTurn } = this.props;
+    const { width, height, canEndTurn, onClick } = this.props;
 
-    const buttonMarginX = width / 10;
+    const buttonMarginX = height / 10;
     const buttonMarginY = height / 10;
 
     const textHeight = height * 0.6;
 
+    const bkgX = widthOfSVG / 2 - width / 2;
+    const bkgY = heightOfSVG - height;
+
+    const op = canEndTurn ? 1.0 : 0.7;
+
     return (
       <g>
         <rect
-          x={0}
-          y={0}
+          x={bkgX}
+          y={bkgY - buttonMarginY}
           fill={WHEAT}
           width={width}
+          rx={15}
           height={height}
           onClick={() => console.log(1)}
+          opacity={op}
         />
 
-        <g className={"buttonGroup"} onClick={() => console.log(1)}>
+        <g
+          className={canEndTurn ? "buttonGroup" : ""}
+          onClick={canEndTurn ? onClick : () => {}}
+        >
           <rect
-            className="insideButton"
-            x={0 + buttonMarginX}
-            y={0 + buttonMarginY}
+            className={"insideButton"}
+            x={bkgX + buttonMarginX}
+            y={bkgY}
+            opacity={op}
+            rx={15}
             width={width - 2 * buttonMarginX}
             height={height - 2 * buttonMarginY}
           />
 
           <text
             className={"insideText"}
-            x={0 + buttonMarginX}
-            y={0 + buttonMarginY + textHeight}
-            fill={canEndTurn ? WHITE : "black"}
+            x={"50%"}
+            y={bkgY + textHeight}
+            textAnchor={"middle"}
+            fill={WHITE}
+            opacity={op}
+            fontWeight={"bold"}
             fontSize={textHeight}
           >
-            E
+            End Turn
           </text>
         </g>
       </g>

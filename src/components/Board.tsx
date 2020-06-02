@@ -8,9 +8,9 @@ import { Robber } from "./Robber";
 export let widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
 export let heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
 
-//This should be fixed to be dynamic for screen size
+// TODO: Change to be based off the width(?)
 export const hexRadius = heightOfSVG / 12;
-//Approximate ratio, but might need to be changed for port design
+// Approximate ratio, but might need to be changed for port design
 const frameRadius = 5.5 * hexRadius;
 
 export interface BoardProps {
@@ -74,6 +74,7 @@ export class Board extends React.Component<BoardProps, {}> {
     return arrTiles;
   }
 
+  // WIP
   constructPorts() {
     let portsArr = [];
     for (let i = 0; i < 9; i++) {
