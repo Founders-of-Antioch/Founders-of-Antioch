@@ -10,8 +10,9 @@ import HighlightPoint from "./components/HighlightPoint";
 import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
-import { RoadModel } from "./components/RoadModel";
+import { RoadModel } from "./entities/RoadModel";
 import { PLAYER_COLORS } from "./colors";
+import { Player } from "./entities/Player";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -24,7 +25,6 @@ type AppState = {
     counters: Array<string>;
     gameID: number;
   };
-  numberOfPlayers: number;
   // Number 1-4 representing which 'player' is currently taking their turn
   currentPersonPlaying: number;
   canEndTurn: boolean;
@@ -33,14 +33,19 @@ type AppState = {
   hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
-  settlements: Array<Building>;
-  roads: Array<RoadModel>;
   currentTurnNumber: number;
+  listOfPlayers: Array<Player>;
 };
 
 export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
+
+    let players = [];
+    for (let i = 0; i < 4; i++) {
+      players.push(new Player());
+    }
+
     this.state = {
       isLoading: true,
       boardToBePlayed: {
@@ -48,16 +53,14 @@ export class App extends React.Component<{}, AppState> {
         counters: [],
         gameID: -1,
       },
-      numberOfPlayers: -1,
       currentPersonPlaying: -1,
       canEndTurn: false,
       inGamePlayerNum: -1,
       hasRolled: false,
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
-      settlements: [],
-      roads: [],
       currentTurnNumber: 1,
+      listOfPlayers: players,
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -116,7 +119,6 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
-  // WIP
   processBuildingUpdate(building: {
     boardXPos: number;
     boardYPos: number;
@@ -129,9 +131,22 @@ export class App extends React.Component<{}, AppState> {
       building.corner,
       building.playerNum
     );
+    const { listOfPlayers } = this.state;
+
+    // Buckle up for this grossness
+    // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
+    const updatedPlayer = new Player();
+    updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
+    updatedPlayer.buildings.push(build);
+
+    // Push copy to state
     this.setState({
       ...this.state,
-      settlements: this.state.settlements.concat(build),
+      listOfPlayers: [
+        ...listOfPlayers.slice(0, build.playerNum - 1),
+        updatedPlayer,
+        ...listOfPlayers.slice(build.playerNum),
+      ],
     });
   }
 
@@ -139,16 +154,18 @@ export class App extends React.Component<{}, AppState> {
     let buildingArr = [];
     let key = 0;
 
-    for (const i of this.state.settlements) {
-      buildingArr.push(
-        <Settlement
-          key={key++}
-          boardXPos={i.boardXPos}
-          boardYPos={i.boardYPos}
-          color={PLAYER_COLORS[i.playerNum - 1]}
-          corner={i.corner}
-        />
-      );
+    for (const p of this.state.listOfPlayers) {
+      for (const i of p.buildings) {
+        buildingArr.push(
+          <Settlement
+            key={key++}
+            boardXPos={i.boardXPos}
+            boardYPos={i.boardYPos}
+            color={PLAYER_COLORS[i.playerNum - 1]}
+            corner={i.corner}
+          />
+        );
+      }
     }
 
     return buildingArr;
@@ -179,12 +196,22 @@ export class App extends React.Component<{}, AppState> {
   }
 
   processRoadUpdate(r: RoadModel) {
-    console.log("road update");
-    console.log(r);
+    const { listOfPlayers } = this.state;
+    listOfPlayers[r.playerNum - 1].roads.push(r);
 
+    // Basically same as processBuildingUpdate
+    const updatedPlayer = new Player();
+    updatedPlayer.copyFromPlayer(listOfPlayers[r.playerNum - 1]);
+    updatedPlayer.roads.push(r);
+
+    // Push copy to state
     this.setState({
       ...this.state,
-      roads: this.state.roads.concat(r),
+      listOfPlayers: [
+        ...listOfPlayers.slice(0, r.playerNum - 1),
+        updatedPlayer,
+        ...listOfPlayers.slice(r.playerNum),
+      ],
     });
   }
 
@@ -205,30 +232,6 @@ export class App extends React.Component<{}, AppState> {
       });
     }
   }
-
-  // componentDidMount() {
-  //   // this.makeNewGame();
-  //   this.getBoardOne();
-  //   // this.getGameInfo();
-  //   // this.createNewPlayer();
-  //   // window.addEventListener("beforeunload", this.removePlayer);
-  // }
-
-  // componentWillUnmount() {
-  //   window.removeEventListener("beforeunload", this.removePlayer);
-  // }
-
-  // async removePlayer() {
-  //   const { playerID } = this.state;
-  //   const { gameID } = this.state.boardToBePlayed;
-  //   if (playerID !== -1) {
-  //     return await fetch(
-  //       `http://localhost:3001/removePlayerFromGame/${gameID}&${playerID}`
-  //     )
-  //       .then((res) => res.json)
-  //       .then((resp) => console.log(resp));
-  //   }
-  // }
 
   // Callback function for the 'Dice' component
   hasRolled() {
@@ -272,24 +275,6 @@ export class App extends React.Component<{}, AppState> {
       hasRolled: false,
     });
   }
-
-  // TODO: Migrate this DB stuff to sockets
-  // Gets the board with id '1' from the DB
-  // getBoardOne() {
-  //   return fetch("http://localhost:3001/boards/1")
-  //     .then((resp) => resp.json())
-  //     .then((res) => {
-  //       if (this.state.isLoading) {
-  //         this.setState({
-  //           ...this.state,
-  //           isLoading: false,
-  //           boardToBePlayed: { ...res },
-  //         });
-  //       }
-  //       // this.changePlayerTurn();
-  //       return res;
-  //     });
-  // }
 
   getBoardOne() {
     // TODO: Fix ID
@@ -343,7 +328,7 @@ export class App extends React.Component<{}, AppState> {
       inGamePlayerNum,
       isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad,
-      settlements,
+      listOfPlayers,
     } = this.state;
 
     const isTurn = currentPersonPlaying === inGamePlayerNum;
@@ -370,13 +355,15 @@ export class App extends React.Component<{}, AppState> {
             }
 
             // If there is already a building in the spot, don't highlight it
-            for (const setl of settlements) {
-              if (
-                adjX === setl.boardXPos &&
-                y === setl.boardYPos &&
-                corner === setl.corner
-              ) {
-                continue cornerLoop;
+            for (const pl of listOfPlayers) {
+              for (const setl of pl.buildings) {
+                if (
+                  adjX === setl.boardXPos &&
+                  y === setl.boardYPos &&
+                  corner === setl.corner
+                ) {
+                  continue cornerLoop;
+                }
               }
             }
 
@@ -445,21 +432,22 @@ export class App extends React.Component<{}, AppState> {
   }
 
   renderRoads() {
-    const { roads } = this.state;
+    const { listOfPlayers } = this.state;
     let roadArr = [];
     let key = 0;
 
-    for (const r of roads) {
-      console.log(r);
-      roadArr.push(
-        <Road
-          key={key++}
-          boardXPos={r.boardXPos}
-          boardYPos={r.boardYPos}
-          hexEdge={r.hexEdgeNumber}
-          playerNum={r.playerNum}
-        />
-      );
+    for (const p of listOfPlayers) {
+      for (const r of p.roads) {
+        roadArr.push(
+          <Road
+            key={key++}
+            boardXPos={r.boardXPos}
+            boardYPos={r.boardYPos}
+            hexEdge={r.hexEdgeNumber}
+            playerNum={r.playerNum}
+          />
+        );
+      }
     }
 
     return roadArr;
