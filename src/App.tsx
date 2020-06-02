@@ -11,6 +11,7 @@ import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./components/RoadModel";
+import { PLAYER_COLORS } from "./colors";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -138,16 +139,13 @@ export class App extends React.Component<{}, AppState> {
     let buildingArr = [];
     let key = 0;
 
-    // Blue red orange white
-    const colors = ["#1569C7", "#e91d26", "#fb8c23", "white"];
-
     for (const i of this.state.settlements) {
       buildingArr.push(
         <Settlement
           key={key++}
           boardXPos={i.boardXPos}
           boardYPos={i.boardYPos}
-          color={colors[i.playerNum - 1]}
+          color={PLAYER_COLORS[i.playerNum - 1]}
           corner={i.corner}
         />
       );
@@ -459,6 +457,7 @@ export class App extends React.Component<{}, AppState> {
           boardXPos={r.boardXPos}
           boardYPos={r.boardYPos}
           hexEdge={r.hexEdgeNumber}
+          playerNum={r.playerNum}
         />
       );
     }

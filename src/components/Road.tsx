@@ -1,16 +1,18 @@
 import React, { Component } from "react";
 import { hexRadius } from "./Board";
 import { centerTileX, centerTileY } from "./Settlement";
+import { PLAYER_COLORS } from "../colors";
 
 type RoadProps = {
   boardXPos: number;
   boardYPos: number;
   hexEdge: number;
+  playerNum: number;
 };
 
 export default class Road extends Component<RoadProps, {}> {
   render() {
-    const { boardXPos, boardYPos, hexEdge } = this.props;
+    const { boardXPos, boardYPos, hexEdge, playerNum } = this.props;
 
     let adjX = centerTileX(boardXPos, boardYPos);
     let adjY = centerTileY(boardYPos) - hexRadius / 2;
@@ -42,11 +44,12 @@ export default class Road extends Component<RoadProps, {}> {
     return (
       <g>
         <rect
+          // Put it in the middle of the two tiles
           x={adjX - width / 2}
           y={adjY}
           width={width}
           height={hexRadius}
-          fill={"white"}
+          fill={PLAYER_COLORS[playerNum - 1]}
           stroke="black"
           strokeWidth="2"
           transform={`rotate(${rotation},${rotateX}, ${rotateY})`}

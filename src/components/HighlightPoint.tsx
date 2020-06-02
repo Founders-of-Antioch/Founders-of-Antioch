@@ -38,11 +38,10 @@ export default class HighlightPoint extends Component<Props, {}> {
     this.props.finishedSelectingCallback();
   }
 
-  // TODO: Replace with actual gameID
   selectedARoadSpot(): void {
     const { boardXPos, boardYPos, playerWhoSelected, corner } = this.props;
 
-    // TODO: Fix hexedge number
+    // TODO: Replace with actual gameID
     socket.emit(
       "addRoad",
       "1",
@@ -51,7 +50,6 @@ export default class HighlightPoint extends Component<Props, {}> {
       corner,
       playerWhoSelected
     );
-    console.log("road placed");
     this.props.finishedSelectingCallback();
   }
 
