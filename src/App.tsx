@@ -1,9 +1,13 @@
 import React from "react";
 // import './App.css';
-import { Board } from "./components/Board";
+import { Board, widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
-import { Dice } from "./components/Dice";
-import { PlayerCard } from "./components/PlayerCard";
+import { Dice, diceLength } from "./components/Dice";
+import {
+  PlayerCard,
+  playerCardWidth,
+  playerCardHeight,
+} from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import HighlightPoint from "./components/HighlightPoint";
@@ -43,7 +47,7 @@ export class App extends React.Component<{}, AppState> {
 
     let players = [];
     for (let i = 0; i < 4; i++) {
-      players.push(new Player());
+      players.push(new Player(i + 1));
     }
 
     this.state = {
@@ -135,7 +139,7 @@ export class App extends React.Component<{}, AppState> {
 
     // Buckle up for this grossness
     // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
-    const updatedPlayer = new Player();
+    const updatedPlayer = new Player(build.playerNum);
     updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
     updatedPlayer.buildings.push(build);
 
@@ -200,7 +204,7 @@ export class App extends React.Component<{}, AppState> {
     listOfPlayers[r.playerNum - 1].roads.push(r);
 
     // Basically same as processBuildingUpdate
-    const updatedPlayer = new Player();
+    const updatedPlayer = new Player(r.playerNum);
     updatedPlayer.copyFromPlayer(listOfPlayers[r.playerNum - 1]);
     updatedPlayer.roads.push(r);
 
@@ -415,8 +419,8 @@ export class App extends React.Component<{}, AppState> {
           hasRolled={this.state.hasRolled}
           isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
           hasRolledCallBack={this.hasRolled}
-          diceOneX={100}
-          diceOneY={200}
+          diceOneX={(widthOfSVG * 4) / 5}
+          diceOneY={heightOfSVG / 2 - diceLength / 2}
         />
       );
     }
@@ -453,8 +457,46 @@ export class App extends React.Component<{}, AppState> {
     return roadArr;
   }
 
+  generateAllPlayerCards() {
+    const { listOfPlayers, currentPersonPlaying, inGamePlayerNum } = this.state;
+
+    let playerCards = [];
+    let key = 0;
+    let topX = 0;
+
+    for (let x = 0; x < 4; x++) {
+      if (x === inGamePlayerNum - 1) {
+        playerCards.push(
+          <PlayerCard
+            key={key++}
+            bkgX={widthOfSVG / 2 - playerCardWidth / 2}
+            bkgY={heightOfSVG - playerCardHeight}
+            playerModel={listOfPlayers[key - 1]}
+            currentPersonPlaying={currentPersonPlaying}
+          />
+        );
+      } else {
+        // Junk but equally distributes three cards across top
+        let currX = (widthOfSVG - playerCardWidth) * (topX++ / 2);
+        let currY = 0;
+
+        playerCards.push(
+          <PlayerCard
+            key={key++}
+            bkgX={currX}
+            bkgY={currY}
+            playerModel={listOfPlayers[key - 1]}
+            currentPersonPlaying={currentPersonPlaying}
+          />
+        );
+      }
+    }
+
+    return playerCards;
+  }
+
   render() {
-    const { isLoading, inGamePlayerNum } = this.state;
+    const { isLoading } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     // Should find a way to fix this/have a decent loading icon or screen
@@ -478,7 +520,7 @@ export class App extends React.Component<{}, AppState> {
             counters={boardToBePlayed.counters}
           />
           {this.renderDice()}
-          <PlayerCard inGamePlayerNum={inGamePlayerNum} />
+          {this.generateAllPlayerCards()}
           {this.endTurnButton()}
           {this.highlightNeededSpaces()}
           {this.renderRoads()}

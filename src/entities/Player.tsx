@@ -2,6 +2,7 @@ import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
 
 export class Player {
+  playerNum: number;
   victoryPoints: number;
   buildings: Array<Building>;
   roads: Array<RoadModel>;
@@ -10,7 +11,8 @@ export class Player {
   // cards
   // dev cards
 
-  constructor() {
+  constructor(playNum: number) {
+    this.playerNum = playNum;
     this.victoryPoints = 0;
     this.buildings = [];
     this.roads = [];

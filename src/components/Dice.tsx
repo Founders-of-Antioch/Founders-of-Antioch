@@ -17,7 +17,7 @@ type DiceProps = {
   hasRolled: boolean;
 };
 
-const diceLength = widthOfSVG / 20;
+export const diceLength = widthOfSVG / 20;
 
 export class Dice extends React.Component<DiceProps, DiceState> {
   constructor(props: DiceProps) {
