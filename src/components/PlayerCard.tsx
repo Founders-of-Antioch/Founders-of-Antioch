@@ -3,7 +3,7 @@ import road from "../icons/road.svg";
 import shield from "../icons/shield.svg";
 import medal from "../icons/medal.svg";
 
-import { widthOfSVG, heightOfSVG } from "./Board";
+import { widthOfSVG } from "./Board";
 import { Player } from "../entities/Player";
 import { PLAYER_COLORS } from "../colors";
 

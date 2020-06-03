@@ -17,6 +17,7 @@ import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { PLAYER_COLORS } from "./colors";
 import { Player } from "./entities/Player";
+import { ResourceCard } from "./components/ResourceCard";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -495,6 +496,26 @@ export class App extends React.Component<{}, AppState> {
     return playerCards;
   }
 
+  generateResourceCards() {
+    const resourcesList = ["wood", "brick", "sheep", "rock", "wheat"];
+    let key = 0;
+
+    const cardWidth = widthOfSVG / 15;
+    const cardHeight = (cardWidth * 4) / 3;
+    let cardX = widthOfSVG * 0.01;
+    const cardY = heightOfSVG - cardHeight;
+
+    let resCardArr = [];
+    for (const res of resourcesList) {
+      resCardArr.push(
+        <ResourceCard x={cardX} y={cardY} key={key++} resource={res} />
+      );
+      cardX += widthOfSVG * 0.05;
+    }
+
+    return resCardArr;
+  }
+
   render() {
     const { isLoading } = this.state;
 
@@ -524,10 +545,8 @@ export class App extends React.Component<{}, AppState> {
           {this.endTurnButton()}
           {this.highlightNeededSpaces()}
           {this.renderRoads()}
-          {/* <Road boardXPos={0} boardYPos={0} hexEdge={5} /> */}
           {this.renderBuildings()}
-          {/* <ResourceCard /> */}
-          {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}
+          {this.generateResourceCards()}
         </svg>
       );
     }
