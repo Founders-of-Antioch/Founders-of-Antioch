@@ -1,6 +1,7 @@
 import React from "react";
 import { widthOfSVG, heightOfSVG, hexRadius } from "./Board";
 import robber from "../icons/robber.svg";
+import { TileModel } from "../entities/TIleModel";
 
 // Center tile is 0,0 - going right is pos and left neg, up pos and down neg, just like a standard XY coordinate system. E.g. top left tile is -1, 2
 type RobberState = {
@@ -9,7 +10,7 @@ type RobberState = {
 };
 
 type RobberProps = {
-  boardResources: Array<string>;
+  listOfTiles: Array<TileModel>;
 };
 
 export class Robber extends React.Component<RobberProps, RobberState> {
@@ -25,45 +26,19 @@ export class Robber extends React.Component<RobberProps, RobberState> {
     this.findDesertTileCoordinates();
   }
 
-  findDesertTileCoordinates(): Array<number> {
-    const { boardResources } = this.props;
-
-    let desertX = -1;
-    let desertY = 2;
-    for (let i = 0; i < boardResources.length; i++) {
-      const currentRes = boardResources[i];
-      // Dumpster fire
-      if (i < 6) {
-        if (i % 2 === 0 && i !== 0) {
-          desertX++;
-        }
-        desertY = 2 * ((i + 1) % 2 === 0 ? -1 : 1);
-      } else if (i >= 6 && i < 14) {
-        if (i === 6) {
-          desertX = -2;
-        } else if (i % 2 === 0) {
-          desertX++;
-        }
-
-        if (desertX === 0) {
-          desertX = 1;
-        }
-        desertY = i % 2 === 0 ? 1 : -1;
-      } else if (i >= 14) {
-        desertX = i - 16;
-        desertY = 0;
-      }
-
-      if (currentRes === "desert") {
+  findDesertTileCoordinates() {
+    console.log(this.props.listOfTiles);
+    for (const t of this.props.listOfTiles) {
+      if (t.resource === "desert") {
         this.setState({
-          boardXPos: desertX,
-          boardYPos: desertY,
+          boardXPos: t.boardXPos,
+          boardYPos: t.boardYPos,
         });
-        return [desertX, desertY];
       }
     }
 
-    return [0, 0];
+    // Will stay at 0,0 from construction
+    console.log("Desert could not be found :/");
   }
 
   actualX() {

@@ -5,6 +5,7 @@ import { SAND, BRICK, WHEAT } from "../colors";
 
 // Tip is the top 'tip' of the resource hexagon tile
 // Counter is the proability counter that should be place on the resource tile. Use -1 for no counter
+// TODO: Refactor now that we have 'TileModel'
 export interface TileProps {
   resource: string;
   hexRad: number;

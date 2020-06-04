@@ -18,6 +18,8 @@ import { RoadModel } from "./entities/RoadModel";
 import { PLAYER_COLORS } from "./colors";
 import { Player } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
+import { TileModel } from "./entities/TIleModel";
+import { Tile } from "./components/Tile";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -26,8 +28,7 @@ export const socket = socketIOClient.connect("http://localhost:3001");
 type AppState = {
   isLoading: boolean;
   boardToBePlayed: {
-    resources: Array<string>;
-    counters: Array<string>;
+    listOfTiles: Array<TileModel>;
     gameID: number;
   };
   // Number 1-4 representing which 'player' is currently taking their turn
@@ -54,8 +55,7 @@ export class App extends React.Component<{}, AppState> {
     this.state = {
       isLoading: true,
       boardToBePlayed: {
-        resources: [],
-        counters: [],
+        listOfTiles: [],
         gameID: -1,
       },
       currentPersonPlaying: -1,
@@ -87,6 +87,10 @@ export class App extends React.Component<{}, AppState> {
 
     this.setupSockets();
     this.getBoardOne();
+  }
+
+  componentDidMount() {
+    // this.seed();
   }
 
   // Callback for socket event, see "setupSockets"
@@ -226,12 +230,39 @@ export class App extends React.Component<{}, AppState> {
     resources: Array<string>;
   }) {
     if (this.state.isLoading) {
+      let tileList: Array<TileModel> = [];
+      let resIdx = 0;
+
+      for (let y = 2; y >= -2; y--) {
+        let x = -2;
+        if (y === 2 || y === -2) {
+          x = -1;
+        }
+        const maximumX = Math.abs(x);
+
+        while (x <= maximumX) {
+          const resourceToAdd = game.resources[resIdx++];
+          let counterToAdd = -1;
+          if (resourceToAdd !== "desert") {
+            counterToAdd = Number(game.counters.pop());
+          }
+
+          const tileToAdd = new TileModel(resourceToAdd, counterToAdd, x, y);
+          tileList.push(tileToAdd);
+          if ((y === 1 || y === -1) && x === -1) {
+            x += 2;
+          } else {
+            x++;
+          }
+        }
+      }
+
+      // TODO: Fix GameID
       this.setState({
         ...this.state,
         isLoading: false,
         boardToBePlayed: {
-          resources: game.resources,
-          counters: game.counters,
+          listOfTiles: tileList,
           gameID: 1,
         },
       });
@@ -536,10 +567,7 @@ export class App extends React.Component<{}, AppState> {
             width="100%"
             height="100%"
           />
-          <Board
-            resources={boardToBePlayed.resources}
-            counters={boardToBePlayed.counters}
-          />
+          <Board listOfTiles={boardToBePlayed.listOfTiles} />
           {this.renderDice()}
           {this.generateAllPlayerCards()}
           {this.endTurnButton()}

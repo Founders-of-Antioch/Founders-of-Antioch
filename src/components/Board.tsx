@@ -3,6 +3,8 @@ import { Tile } from "./Tile";
 import { Frame } from "./Frame";
 import { Port } from "./Port";
 import { Robber } from "./Robber";
+import { TileModel } from "../entities/TIleModel";
+import { centerTileX, centerTileY } from "./Settlement";
 
 // TODO: Change these to be function instea of constants so the screen will update on a re-render
 export let widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
@@ -14,64 +16,35 @@ export const hexRadius = heightOfSVG / 12;
 const frameRadius = 5.5 * hexRadius;
 
 export interface BoardProps {
-  resources: Array<string>;
-  counters: Array<string>;
+  listOfTiles: Array<TileModel>;
 }
 
 export class Board extends React.Component<BoardProps, {}> {
-  makeTiles() {
-    let tileKey = 0;
-    const widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
-    const heightOfSVG = Number(document.getElementById("root")?.offsetHeight);
+  createTiles() {
+    const { listOfTiles } = this.props;
+    let tileCompoonentList = [];
+    let key = 0;
 
-    let arrTiles = [];
-    const { resources } = this.props;
-    // Copy of them because the .pop() actually modifies it upstream in App.tsx (dumb)
-    const counters = [...this.props.counters];
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < i + 3; j++) {
-        //Absolute GARBAGE
-        const x =
-          -(hexRadius * Math.sqrt(3)) +
-          widthOfSVG / 2 -
-          (i * Math.sqrt(3) * hexRadius) / 2 +
-          hexRadius * j * Math.sqrt(3);
-        let y = -4 * hexRadius + heightOfSVG / 2 + (3 / 2) * hexRadius * i;
+    for (const tileToRender of listOfTiles) {
+      const centerX = centerTileX(
+        tileToRender.boardXPos,
+        tileToRender.boardYPos
+      );
+      const centerY = centerTileY(tileToRender.boardYPos);
 
-        arrTiles.push(
-          <Tile
-            key={tileKey}
-            hexRad={hexRadius}
-            resource={resources[tileKey]}
-            tipX={x}
-            tipY={y}
-            counter={
-              resources[tileKey] === "desert" ? -1 : Number(counters.pop())
-            }
-          />
-        );
-        tileKey++;
-
-        // Add two rows of tiles at the same time if it is not the middle row
-        if (i !== 2) {
-          y = 2 * hexRadius + heightOfSVG / 2 - (3 / 2) * hexRadius * i;
-          arrTiles.push(
-            <Tile
-              key={tileKey}
-              hexRad={hexRadius}
-              resource={resources[tileKey]}
-              tipX={x}
-              tipY={y}
-              counter={
-                resources[tileKey] === "desert" ? -1 : Number(counters.pop())
-              }
-            />
-          );
-          tileKey++;
-        }
-      }
+      tileCompoonentList.push(
+        <Tile
+          key={key++}
+          hexRad={hexRadius}
+          resource={tileToRender.resource}
+          tipX={centerX}
+          tipY={centerY - hexRadius}
+          counter={tileToRender.counter}
+        />
+      );
     }
-    return arrTiles;
+
+    return tileCompoonentList;
   }
 
   // WIP
@@ -97,8 +70,8 @@ export class Board extends React.Component<BoardProps, {}> {
           centerX={widthOfSVG / 2}
           centerY={heightOfSVG / 2}
         />
-        {this.makeTiles()}
-        <Robber boardResources={this.props.resources} />
+        {this.createTiles()}
+        <Robber listOfTiles={this.props.listOfTiles} />
 
         {/* Vertical and horizontal center lines to check for styling. Uncomment if you want to check if something is centered */}
         {/* <polyline

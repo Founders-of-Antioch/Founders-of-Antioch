@@ -59,6 +59,7 @@ export class ResourceCard extends React.Component<RCardProps, RCardState> {
           height={iconWidth}
         />
         <text
+          // TODO: Dynamic change
           x={x + 10}
           y={y + 40}
           fontFamily="Courier New"
