@@ -2,6 +2,7 @@ import React from "react";
 import { widthOfSVG, heightOfSVG, hexRadius } from "./Board";
 import robber from "../icons/robber.svg";
 import { TileModel } from "../entities/TIleModel";
+import { centerTileX, centerTileY } from "./Settlement";
 
 // Center tile is 0,0 - going right is pos and left neg, up pos and down neg, just like a standard XY coordinate system. E.g. top left tile is -1, 2
 type RobberState = {
@@ -27,7 +28,6 @@ export class Robber extends React.Component<RobberProps, RobberState> {
   }
 
   findDesertTileCoordinates() {
-    console.log(this.props.listOfTiles);
     for (const t of this.props.listOfTiles) {
       if (t.resource === "desert") {
         this.setState({
@@ -36,35 +36,34 @@ export class Robber extends React.Component<RobberProps, RobberState> {
         });
       }
     }
-
-    // Will stay at 0,0 from construction
-    console.log("Desert could not be found :/");
   }
 
-  actualX() {
-    const { boardXPos, boardYPos } = this.state;
+  // actualX() {
+  //   const { boardXPos, boardYPos } = this.state;
 
-    // The first 'row' above the middle is shifted
-    let adjustXPos = boardXPos;
-    //If it is in the row above the middle and to the left of the center
-    if (boardXPos < 0 && (boardYPos === -1 || boardYPos === 1)) {
-      adjustXPos += 0.5;
-    } else if ((boardYPos === -1 || boardYPos === 1) && boardXPos > 0) {
-      //If it is in the row above the middle and to the right of the center
-      adjustXPos -= 0.5;
-    }
+  //   // The first 'row' above the middle is shifted
+  //   let adjustXPos = boardXPos;
+  //   //If it is in the row above the middle and to the left of the center
+  //   if (boardXPos < 0 && (boardYPos === -1 || boardYPos === 1)) {
+  //     adjustXPos += 0.5;
+  //   } else if ((boardYPos === -1 || boardYPos === 1) && boardXPos > 0) {
+  //     //If it is in the row above the middle and to the right of the center
+  //     adjustXPos -= 0.5;
+  //   }
 
-    return adjustXPos * Math.sqrt(3) * hexRadius + widthOfSVG / 2;
-  }
+  //   return adjustXPos * Math.sqrt(3) * hexRadius + widthOfSVG / 2;
+  // }
 
-  actualY() {
-    const { boardYPos } = this.state;
-    return heightOfSVG / 2 - boardYPos * 1.5 * hexRadius;
-  }
+  // actualY() {
+  //   const { boardYPos } = this.state;
+  //   return heightOfSVG / 2 - boardYPos * 1.5 * hexRadius;
+  // }
 
   render() {
-    const actX = this.actualX();
-    const actY = this.actualY();
+    const { boardXPos, boardYPos } = this.state;
+
+    const actX = centerTileX(boardXPos, boardYPos);
+    const actY = centerTileY(boardYPos);
     const widthOfIcon = hexRadius / 2;
 
     return (

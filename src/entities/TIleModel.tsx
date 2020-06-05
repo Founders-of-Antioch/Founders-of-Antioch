@@ -19,4 +19,9 @@ export class TileModel {
     this.boardYPos = boardYpos;
     this.buildings = [];
   }
+
+  copyOverBuildings(t: TileModel) {
+    const cpy = [...t.buildings];
+    this.buildings = cpy;
+  }
 }

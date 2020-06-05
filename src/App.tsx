@@ -19,7 +19,6 @@ import { PLAYER_COLORS } from "./colors";
 import { Player } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
-import { Tile } from "./components/Tile";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -84,6 +83,7 @@ export class App extends React.Component<{}, AppState> {
     this.processGetGame = this.processGetGame.bind(this);
     this.processRoadUpdate = this.processRoadUpdate.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
+    this.distributeResources = this.distributeResources.bind(this);
 
     this.setupSockets();
     this.getBoardOne();
@@ -128,6 +128,50 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
+  // Returns strings in an array representing the resources the building touches
+  resourcesForBuilding(knownBuilding: Building) {
+    const { boardToBePlayed } = this.state;
+
+    let adjTiles: Array<TileModel> = [];
+    // https://www.redblobgames.com/grids/hexagons/#neighbors
+    let directions = [
+      [1, 1],
+      [1, 0],
+      [0, -1],
+      [-1, -1],
+      [-1, 0],
+      [0, 1],
+    ];
+
+    // This filters out checking for any tiles that are not touching the building
+    directions = directions.filter((el, idx) => {
+      const checkOne = knownBuilding.corner;
+      let checkTwo = checkOne - 1;
+      if (checkTwo === -1) {
+        checkTwo = 5;
+      }
+
+      return idx === checkOne || idx === checkTwo;
+    });
+    // Count the tile it is on as well
+    directions.push([0, 0]);
+
+    for (const currDirection of directions) {
+      const expecX = currDirection[0] + knownBuilding.boardXPos;
+      const expecY = currDirection[1] + knownBuilding.boardYPos;
+
+      for (const currTile of boardToBePlayed.listOfTiles) {
+        if (currTile.boardXPos === expecX && currTile.boardYPos === expecY) {
+          adjTiles.push(currTile);
+        }
+      }
+    }
+    console.log(knownBuilding);
+    console.log(adjTiles);
+
+    return adjTiles.map((el) => el.resource);
+  }
+
   processBuildingUpdate(building: {
     boardXPos: number;
     boardYPos: number;
@@ -140,13 +184,35 @@ export class App extends React.Component<{}, AppState> {
       building.corner,
       building.playerNum
     );
-    const { listOfPlayers } = this.state;
+    const { listOfPlayers, boardToBePlayed } = this.state;
 
     // Buckle up for this grossness
     // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
     const updatedPlayer = new Player(build.playerNum);
     updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
     updatedPlayer.buildings.push(build);
+
+    let newListOfTiles = [];
+    for (const oldTile of boardToBePlayed.listOfTiles) {
+      const addTile = new TileModel(
+        oldTile.resource,
+        oldTile.counter,
+        oldTile.boardXPos,
+        oldTile.boardYPos
+      );
+      addTile.copyOverBuildings(oldTile);
+
+      // Needs fixing for surrouding tiles
+      if (
+        oldTile.boardXPos === build.boardXPos &&
+        oldTile.boardYPos === build.boardYPos
+      ) {
+        addTile.buildings.push(build);
+      }
+
+      newListOfTiles.push(addTile);
+    }
+    console.log(this.resourcesForBuilding(build));
 
     // Push copy to state
     this.setState({
@@ -156,6 +222,10 @@ export class App extends React.Component<{}, AppState> {
         updatedPlayer,
         ...listOfPlayers.slice(build.playerNum),
       ],
+      boardToBePlayed: {
+        gameID: boardToBePlayed.gameID,
+        listOfTiles: newListOfTiles,
+      },
     });
   }
 
@@ -233,14 +303,15 @@ export class App extends React.Component<{}, AppState> {
       let tileList: Array<TileModel> = [];
       let resIdx = 0;
 
-      for (let y = 2; y >= -2; y--) {
-        let x = -2;
-        if (y === 2 || y === -2) {
-          x = -1;
+      for (let x = 2; x >= -2; x--) {
+        const numRows = 5 - Math.abs(x);
+        let y = 2;
+        if (x < 0) {
+          y -= Math.abs(x);
         }
-        const maximumX = Math.abs(x);
 
-        while (x <= maximumX) {
+        let numRowsDone = 0;
+        for (; numRowsDone < numRows; y--) {
           const resourceToAdd = game.resources[resIdx++];
           let counterToAdd = -1;
           if (resourceToAdd !== "desert") {
@@ -249,12 +320,20 @@ export class App extends React.Component<{}, AppState> {
 
           const tileToAdd = new TileModel(resourceToAdd, counterToAdd, x, y);
           tileList.push(tileToAdd);
-          if ((y === 1 || y === -1) && x === -1) {
-            x += 2;
-          } else {
-            x++;
-          }
+          numRowsDone++;
         }
+
+        // while (x <= maximumX) {
+        //   const resourceToAdd = game.resources[resIdx++];
+        //   let counterToAdd = -1;
+        //   if (resourceToAdd !== "desert") {
+        //     counterToAdd = Number(game.counters.pop());
+        //   }
+
+        //   const tileToAdd = new TileModel(resourceToAdd, counterToAdd, x, y);
+        //   tileList.push(tileToAdd);
+        //   x++;
+        // }
       }
 
       // TODO: Fix GameID
@@ -269,8 +348,30 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
+  distributeResources(diceSum: number) {
+    const { listOfPlayers, boardToBePlayed } = this.state;
+
+    // We have to copy over because state should be 'immutable' see issue #30 on GH for more details
+    let newPlayersList = [];
+    for (const oldPlayer of listOfPlayers) {
+      const addPlayer = new Player(oldPlayer.playerNum);
+      addPlayer.copyFromPlayer(oldPlayer);
+      newPlayersList.push(addPlayer);
+    }
+
+    for (const currTile of boardToBePlayed.listOfTiles) {
+      if (currTile.counter === diceSum) {
+        for (const currBuild of currTile.buildings) {
+          // newPlayersList[currBuild.playerNum - 1]
+          // Update hand(s?) here
+        }
+      }
+    }
+  }
+
   // Callback function for the 'Dice' component
-  hasRolled() {
+  hasRolled(diceSum: number) {
+    this.distributeResources(diceSum);
     // evaluateTurnElg is callback after setState
     this.setState(
       {
@@ -381,20 +482,21 @@ export class App extends React.Component<{}, AppState> {
       const spots = [];
       let keyForHighlights = 0;
 
-      for (let y = -2; y <= 0; y++) {
-        for (let x = 0; x < y + 5; x++) {
-          cornerLoop: for (let corner = 0; corner < 6; corner++) {
-            let adjX = y === -2 ? x - 1 : x - 2;
-            // Second rows don't have a 0 x tile, so just substitute for the end tile
-            if (Math.abs(y) === 1 && adjX === 0) {
-              adjX = 2;
-            }
+      for (let x = 2; x >= -2; x--) {
+        const numRows = 5 - Math.abs(x);
+        let y = 2;
+        if (x < 0) {
+          y -= Math.abs(x);
+        }
 
+        let numRowsDone = 0;
+        for (; numRowsDone < numRows; y--) {
+          cornerLoop: for (let corner = 0; corner <= 5; corner++) {
             // If there is already a building in the spot, don't highlight it
             for (const pl of listOfPlayers) {
               for (const setl of pl.buildings) {
                 if (
-                  adjX === setl.boardXPos &&
+                  x === setl.boardXPos &&
                   y === setl.boardYPos &&
                   corner === setl.corner
                 ) {
@@ -406,7 +508,7 @@ export class App extends React.Component<{}, AppState> {
             spots.push(
               <HighlightPoint
                 key={keyForHighlights++}
-                boardXPos={adjX}
+                boardXPos={x}
                 boardYPos={y}
                 corner={corner}
                 finishedSelectingCallback={callback}
@@ -414,25 +516,11 @@ export class App extends React.Component<{}, AppState> {
                 typeOfHighlight={typeofHighlight}
               />
             );
-
-            // Render opposite rows at the same time
-            if (y !== 0) {
-              spots.push(
-                <HighlightPoint
-                  key={keyForHighlights++}
-                  boardXPos={adjX}
-                  boardYPos={-y}
-                  corner={corner}
-                  finishedSelectingCallback={callback}
-                  playerWhoSelected={inGamePlayerNum}
-                  typeOfHighlight={typeofHighlight}
-                />
-              );
-            }
           }
+
+          numRowsDone++;
         }
       }
-
       return spots;
     }
   }

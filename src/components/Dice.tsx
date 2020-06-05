@@ -56,9 +56,10 @@ export class Dice extends React.Component<DiceProps, DiceState> {
       // TODO: Fix to have actual gameID
       // Tells the backend what the player has rolled
       socket.emit("roll", diceOne, diceTwo, "1");
+
+      // Tells the app state that the dice have been rolled
+      this.props.hasRolledCallBack(diceOne + diceTwo);
     }
-    // Tells the app state that the dice have been rolled
-    this.props.hasRolledCallBack();
   }
 
   // This whole method is a pile of garbage. Because the dots on a dice order in a weird way depending on the number

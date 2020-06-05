@@ -13,15 +13,9 @@ export interface SettlementProps {
 // Stolen from Robber comp
 // TODO: Adjust function in robber component to just use this
 export function centerTileX(boardXPos: number, boardYPos: number) {
-  // The first 'row' above the middle is shifted
   let adjustXPos = boardXPos;
-  //If it is in the row above the middle and to the left of the center
-  if (boardXPos < 0 && (boardYPos === -1 || boardYPos === 1)) {
-    adjustXPos += 0.5;
-  } else if ((boardYPos === -1 || boardYPos === 1) && boardXPos > 0) {
-    //If it is in the row above the middle and to the right of the center
-    adjustXPos -= 0.5;
-  }
+
+  adjustXPos -= 0.5 * boardYPos;
 
   return adjustXPos * Math.sqrt(3) * hexRadius + widthOfSVG / 2;
 }

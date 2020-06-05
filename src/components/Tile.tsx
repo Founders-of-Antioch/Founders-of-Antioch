@@ -15,7 +15,7 @@ export interface TileProps {
 }
 
 export class Tile extends React.Component<TileProps, {}> {
-  //Special garbage code
+  // Special garbage code
   pointsString() {
     const stt = Math.sqrt(3) / 2;
     return `
