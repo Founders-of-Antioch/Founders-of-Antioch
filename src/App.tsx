@@ -16,7 +16,7 @@ import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { PLAYER_COLORS } from "./colors";
-import { Player } from "./entities/Player";
+import { Player, LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
 
@@ -41,7 +41,7 @@ type AppState = {
   currentTurnNumber: number;
   listOfPlayers: Array<Player>;
 };
-
+let hasSeeded = false;
 export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
@@ -90,7 +90,61 @@ export class App extends React.Component<{}, AppState> {
   }
 
   componentDidMount() {
-    // this.seed();
+    this.seed();
+  }
+
+  // TODO: Move to backend
+  seed() {
+    if (!hasSeeded) {
+      socket.emit("setSeedMode");
+
+      let players = [];
+      for (let i = 1; i <= 4; i++) {
+        players.push(new Player(i));
+      }
+
+      for (let i = 0; i < 4; i++) {
+        socket.emit("joinGame", "1");
+      }
+
+      // x,y,corner,playnum
+      const buildingSeed = [
+        new Building(0, 0, 0, 1),
+        new Building(0, 0, 2, 1),
+        new Building(1, 1, 2, 2),
+        new Building(2, 0, 5, 2),
+        new Building(-2, -2, 0, 3),
+        new Building(-1, -1, 2, 3),
+        new Building(0, 2, 2, 4),
+        new Building(0, 0, 4, 4),
+      ];
+
+      for (const build of buildingSeed) {
+        // socket.emit(
+        //   "addBuilding",
+        //   "1",
+        //   build.boardXPos,
+        //   build.boardYPos,
+        //   build.corner,
+        //   build.playerNum
+        // );
+        players[build.playerNum - 1].buildings.push(build);
+      }
+
+      for (let i = 0; i < 8; i++) {
+        socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+      }
+
+      this.setState({
+        listOfPlayers: players,
+        currentTurnNumber: 3,
+        currentPersonPlaying: 1,
+        isCurrentlyPlacingSettlement: false,
+        inGamePlayerNum: 1,
+      });
+
+      hasSeeded = true;
+    }
   }
 
   // Callback for socket event, see "setupSockets"
@@ -128,8 +182,8 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
-  // Returns strings in an array representing the resources the building touches
-  resourcesForBuilding(knownBuilding: Building) {
+  // Returns an array of TileModel representing the resources the building touches
+  tilesBuildingIsOn(knownBuilding: Building) {
     const { boardToBePlayed } = this.state;
 
     let adjTiles: Array<TileModel> = [];
@@ -166,10 +220,10 @@ export class App extends React.Component<{}, AppState> {
         }
       }
     }
-    console.log(knownBuilding);
-    console.log(adjTiles);
+    // console.log(knownBuilding);
+    // console.log(adjTiles);
 
-    return adjTiles.map((el) => el.resource);
+    return adjTiles;
   }
 
   processBuildingUpdate(building: {
@@ -190,6 +244,7 @@ export class App extends React.Component<{}, AppState> {
     // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
     const updatedPlayer = new Player(build.playerNum);
     updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
+    console.log(build);
     updatedPlayer.buildings.push(build);
 
     let newListOfTiles = [];
@@ -200,19 +255,19 @@ export class App extends React.Component<{}, AppState> {
         oldTile.boardXPos,
         oldTile.boardYPos
       );
-      addTile.copyOverBuildings(oldTile);
+      // addTile.copyOverBuildings(oldTile);
 
       // Needs fixing for surrouding tiles
-      if (
-        oldTile.boardXPos === build.boardXPos &&
-        oldTile.boardYPos === build.boardYPos
-      ) {
-        addTile.buildings.push(build);
-      }
+      // if (
+      //   oldTile.boardXPos === build.boardXPos &&
+      //   oldTile.boardYPos === build.boardYPos
+      // ) {
+      //   addTile.buildings.push(build);
+      // }
 
       newListOfTiles.push(addTile);
     }
-    console.log(this.resourcesForBuilding(build));
+    // console.log(this.tilesBuildingIsOn(build));
 
     // Push copy to state
     this.setState({
@@ -256,7 +311,7 @@ export class App extends React.Component<{}, AppState> {
     // Listens for the response to 'whose turn is it' (below)
     socket.on("getWhoseTurnItIs", this.changeCurrentPlayer);
 
-    // Start off by joining the
+    // Start off by joining the game, ID
     socket.emit("joinGame", "1");
     // This is essentially an API call, we ask whose turn it is and then it will send the result back up to ^
     // 'get whose turn it is' which processes the response
@@ -322,18 +377,6 @@ export class App extends React.Component<{}, AppState> {
           tileList.push(tileToAdd);
           numRowsDone++;
         }
-
-        // while (x <= maximumX) {
-        //   const resourceToAdd = game.resources[resIdx++];
-        //   let counterToAdd = -1;
-        //   if (resourceToAdd !== "desert") {
-        //     counterToAdd = Number(game.counters.pop());
-        //   }
-
-        //   const tileToAdd = new TileModel(resourceToAdd, counterToAdd, x, y);
-        //   tileList.push(tileToAdd);
-        //   x++;
-        // }
       }
 
       // TODO: Fix GameID
@@ -350,6 +393,7 @@ export class App extends React.Component<{}, AppState> {
 
   distributeResources(diceSum: number) {
     const { listOfPlayers, boardToBePlayed } = this.state;
+    console.log(this.state);
 
     // We have to copy over because state should be 'immutable' see issue #30 on GH for more details
     let newPlayersList = [];
@@ -359,14 +403,26 @@ export class App extends React.Component<{}, AppState> {
       newPlayersList.push(addPlayer);
     }
 
-    for (const currTile of boardToBePlayed.listOfTiles) {
-      if (currTile.counter === diceSum) {
-        for (const currBuild of currTile.buildings) {
-          // newPlayersList[currBuild.playerNum - 1]
-          // Update hand(s?) here
+    for (const currPlayer of newPlayersList) {
+      for (const currBuilding of currPlayer.buildings) {
+        // Need to look out for doubling counting
+        const buildingTiles = this.tilesBuildingIsOn(currBuilding);
+        for (const currTile of buildingTiles) {
+          if (currTile.counter === diceSum) {
+            currPlayer.addResource(currTile.resource);
+          }
         }
       }
     }
+    console.log(newPlayersList);
+
+    this.setState(
+      {
+        ...this.state,
+        listOfPlayers: [...newPlayersList],
+      },
+      () => console.log(this.state.listOfPlayers)
+    );
   }
 
   // Callback function for the 'Dice' component
@@ -533,17 +589,6 @@ export class App extends React.Component<{}, AppState> {
     } = this.state;
 
     // Only render the dice if we're done with initial placements
-    if (currentTurnNumber > 2) {
-      return (
-        <Dice
-          hasRolled={this.state.hasRolled}
-          isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
-          hasRolledCallBack={this.hasRolled}
-          diceOneX={(widthOfSVG * 4) / 5}
-          diceOneY={heightOfSVG / 2 - diceLength / 2}
-        />
-      );
-    }
   }
 
   highlightNeededSpaces() {
@@ -616,7 +661,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   generateResourceCards() {
-    const resourcesList = ["wood", "brick", "sheep", "rock", "wheat"];
+    console.log(this.state.listOfPlayers);
     let key = 0;
 
     const cardWidth = widthOfSVG / 15;
@@ -625,9 +670,19 @@ export class App extends React.Component<{}, AppState> {
     const cardY = heightOfSVG - cardHeight;
 
     let resCardArr = [];
-    for (const res of resourcesList) {
+    for (const res of LIST_OF_RESOURCES) {
+      const resAmount = this.state.listOfPlayers[
+        this.state.inGamePlayerNum - 1
+      ].getNumberOfResources(res);
+
       resCardArr.push(
-        <ResourceCard x={cardX} y={cardY} key={key++} resource={res} />
+        <ResourceCard
+          x={cardX}
+          y={cardY}
+          key={key++}
+          resource={res}
+          amount={resAmount}
+        />
       );
       cardX += widthOfSVG * 0.05;
     }

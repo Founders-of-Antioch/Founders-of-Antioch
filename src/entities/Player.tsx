@@ -1,6 +1,9 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
 
+// Should be moved into helper
+export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
+
 export class Player {
   playerNum: number;
   victoryPoints: number;
@@ -8,6 +11,7 @@ export class Player {
   roads: Array<RoadModel>;
   contiguousRoads: number;
   knights: number;
+  resourceHand: Map<string, number>;
   // cards
   // dev cards
 
@@ -18,6 +22,11 @@ export class Player {
     this.roads = [];
     this.contiguousRoads = 0;
     this.knights = 0;
+    this.resourceHand = new Map();
+
+    for (const res of LIST_OF_RESOURCES) {
+      this.resourceHand.set(res, 0);
+    }
   }
 
   // Someone please fix this garbage
@@ -27,5 +36,23 @@ export class Player {
     this.roads = [...p.roads];
     this.contiguousRoads = p.contiguousRoads;
     this.knights = p.knights;
+    this.resourceHand = new Map(this.resourceHand);
+  }
+
+  addResource(res: string) {
+    const stored = this.resourceHand.get(res);
+    console.log(res);
+    if (typeof stored === "number") {
+      this.resourceHand.set(res, stored + 1);
+    }
+  }
+
+  getNumberOfResources(res: string): number {
+    const stored = this.resourceHand.get(res);
+    if (typeof stored === "number") {
+      return stored;
+    } else {
+      return -1;
+    }
   }
 }

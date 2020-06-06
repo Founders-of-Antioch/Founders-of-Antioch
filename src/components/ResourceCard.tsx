@@ -10,27 +10,21 @@ type RCardProps = {
   resource: string;
   x: number;
   y: number;
-};
-
-type RCardState = {
   amount: number;
 };
 
-export class ResourceCard extends React.Component<RCardProps, RCardState> {
-  constructor(props: RCardProps) {
-    super(props);
-    this.state = {
-      amount: 0,
-    };
-  }
+// type RCardState = {
+// amount: number;
+// };
 
+export class ResourceCard extends React.Component<RCardProps, {}> {
   render() {
-    const { resource, x, y } = this.props;
+    const { resource, x, y, amount } = this.props;
     type resMapType = Record<string, string>;
     const resMap: resMapType = {
       wood: trees,
       sheep: cloud,
-      rock: rock,
+      ore: rock,
       wheat: wheat,
       brick: brick,
     };
@@ -69,7 +63,7 @@ export class ResourceCard extends React.Component<RCardProps, RCardState> {
           strokeWidth="0.5"
           fill="white"
         >
-          {this.state.amount}
+          {amount}
         </text>
       </g>
     );

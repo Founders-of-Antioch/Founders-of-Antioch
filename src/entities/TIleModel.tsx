@@ -1,11 +1,11 @@
-import { Building } from "./Building";
+// import { Building } from "./Building";
 
 export class TileModel {
   resource: string;
   counter: number;
   boardXPos: number;
   boardYPos: number;
-  buildings: Array<Building>;
+  // buildings: Array<Building>;
 
   constructor(
     resource: string,
@@ -17,11 +17,11 @@ export class TileModel {
     this.counter = counter;
     this.boardXPos = boardXPos;
     this.boardYPos = boardYpos;
-    this.buildings = [];
+    // this.buildings = [];
   }
 
-  copyOverBuildings(t: TileModel) {
-    const cpy = [...t.buildings];
-    this.buildings = cpy;
-  }
+  // copyOverBuildings(t: TileModel) {
+  //   const cpy = [...t.buildings];
+  //   this.buildings = cpy;
+  // }
 }

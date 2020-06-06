@@ -1,7 +1,8 @@
 import React from "react";
-import brick from "../img/brick.jpeg";
+import brick from "../icons/brick.svg";
+import wheatcpy from "../icons/wheatcopy.svg";
 import { SAND, BRICK, WHEAT } from "../colors";
-// import sheep from "../img/sheep.jpg";
+import cloud from "../icons/cloud.svg";
 
 // Tip is the top 'tip' of the resource hexagon tile
 // Counter is the proability counter that should be place on the resource tile. Use -1 for no counter
@@ -112,6 +113,8 @@ export class Tile extends React.Component<TileProps, {}> {
   }
 
   render() {
+    const iconWidth = this.props.hexRad / 3;
+
     return (
       <g>
         {/* <defs>
@@ -148,6 +151,15 @@ export class Tile extends React.Component<TileProps, {}> {
           stroke="#ffe39f"
           strokeWidth="5"
           points={this.pointsString()}
+        /> */}
+
+        {/* <image
+          fill="white"
+          x={this.props.tipX - iconWidth / 2}
+          y={this.props.tipY + iconWidth / 1.5}
+          href={wheatcpy}
+          width={iconWidth}
+          height={iconWidth}
         /> */}
         {this.makeCounter()}
       </g>
