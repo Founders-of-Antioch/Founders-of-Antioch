@@ -21,7 +21,7 @@ import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
 import { createStore } from "redux";
 import FoApp from "./reducers";
-import { changePlayer } from "./Actions";
+import { changePlayer, PlayerNumbers } from "./Actions";
 
 const store = createStore(FoApp);
 
@@ -60,8 +60,8 @@ export class App extends React.Component<{}, AppState> {
     super(props);
 
     let players = [];
-    for (let i = 0; i < 4; i++) {
-      players.push(new Player(i + 1));
+    for (let i: PlayerNumbers = 1; i <= 4; i++) {
+      players.push(new Player(i));
     }
 
     this.state = {
@@ -243,7 +243,7 @@ export class App extends React.Component<{}, AppState> {
     boardXPos: number;
     boardYPos: number;
     corner: number;
-    playerNum: number;
+    playerNum: PlayerNumbers;
   }) {
     const build = new Building(
       building.boardXPos,
@@ -602,6 +602,17 @@ export class App extends React.Component<{}, AppState> {
     } = this.state;
 
     // Only render the dice if we're done with initial placements
+    if (currentTurnNumber > 2) {
+      return (
+        <Dice
+          hasRolled={this.state.hasRolled}
+          isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
+          hasRolledCallBack={this.hasRolled}
+          diceOneX={(widthOfSVG * 4) / 5}
+          diceOneY={heightOfSVG / 2 - diceLength / 2}
+        />
+      );
+    }
   }
 
   highlightNeededSpaces() {

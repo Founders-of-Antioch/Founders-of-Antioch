@@ -1,26 +1,25 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
+import { PlayerNumbers } from "../Actions";
 
 // Should be moved into helper
 export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
 
 export class Player {
-  playerNum: number;
+  playerNum: PlayerNumbers;
   victoryPoints: number;
   buildings: Array<Building>;
   roads: Array<RoadModel>;
-  contiguousRoads: number;
   knights: number;
   resourceHand: Map<string, number>;
   // cards
   // dev cards
 
-  constructor(playNum: number) {
+  constructor(playNum: PlayerNumbers) {
     this.playerNum = playNum;
     this.victoryPoints = 0;
     this.buildings = [];
     this.roads = [];
-    this.contiguousRoads = 0;
     this.knights = 0;
     this.resourceHand = new Map();
 
@@ -34,7 +33,6 @@ export class Player {
     this.victoryPoints = p.victoryPoints;
     this.buildings = [...p.buildings];
     this.roads = [...p.roads];
-    this.contiguousRoads = p.contiguousRoads;
     this.knights = p.knights;
     this.resourceHand = new Map(this.resourceHand);
   }
