@@ -19,6 +19,19 @@ import { PLAYER_COLORS } from "./colors";
 import { Player, LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
+import { createStore } from "redux";
+import FoApp from "./reducers";
+import { changePlayer } from "./Actions";
+
+const store = createStore(FoApp);
+
+console.log(store.getState());
+
+const unsubscribe = store.subscribe(() => console.log(store.getState()));
+
+store.dispatch(changePlayer(4));
+
+unsubscribe();
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
