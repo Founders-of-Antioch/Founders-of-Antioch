@@ -1,12 +1,12 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
-import { PlayerNumbers } from "../Actions";
+import { PlayerNumber } from "../Actions";
 
 // Should be moved into helper
 export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
 
 export class Player {
-  playerNum: PlayerNumbers;
+  playerNum: PlayerNumber;
   victoryPoints: number;
   buildings: Array<Building>;
   roads: Array<RoadModel>;
@@ -15,7 +15,7 @@ export class Player {
   // cards
   // dev cards
 
-  constructor(playNum: PlayerNumbers) {
+  constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
     this.victoryPoints = 0;
     this.buildings = [];

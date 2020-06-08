@@ -21,7 +21,7 @@ import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
 import { createStore } from "redux";
 import FoApp from "./reducers";
-import { changePlayer, PlayerNumbers } from "./Actions";
+import { changePlayer, PlayerNumber, declarePlayerNumber } from "./Actions";
 
 const store = createStore(FoApp);
 
@@ -29,9 +29,7 @@ console.log(store.getState());
 
 const unsubscribe = store.subscribe(() => console.log(store.getState()));
 
-store.dispatch(changePlayer(4));
-
-unsubscribe();
+// store.dispatch(changePlayer(4));
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -43,11 +41,7 @@ type AppState = {
     listOfTiles: Array<TileModel>;
     gameID: number;
   };
-  // Number 1-4 representing which 'player' is currently taking their turn
-  currentPersonPlaying: number;
   canEndTurn: boolean;
-  // Number 1-4 representing which player the client is
-  inGamePlayerNum: number;
   hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
@@ -60,8 +54,9 @@ export class App extends React.Component<{}, AppState> {
     super(props);
 
     let players = [];
-    for (let i: PlayerNumbers = 1; i <= 4; i++) {
-      players.push(new Player(i));
+    const pnums: Array<PlayerNumber> = [1, 2, 3, 4];
+    for (const pnum of pnums) {
+      players.push(new Player(pnum));
     }
 
     this.state = {
@@ -70,9 +65,7 @@ export class App extends React.Component<{}, AppState> {
         listOfTiles: [],
         gameID: -1,
       },
-      currentPersonPlaying: -1,
       canEndTurn: false,
-      inGamePlayerNum: -1,
       hasRolled: false,
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
@@ -84,8 +77,6 @@ export class App extends React.Component<{}, AppState> {
     this.endTurn = this.endTurn.bind(this);
     this.hasRolled = this.hasRolled.bind(this);
     this.endTurn = this.endTurn.bind(this);
-    this.changeCurrentPlayer = this.changeCurrentPlayer.bind(this);
-    this.joinedGame = this.joinedGame.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
     this.selectSettlementSpotCB = this.selectSettlementSpotCB.bind(this);
@@ -103,7 +94,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   componentDidMount() {
-    this.seed();
+    // this.seed();
   }
 
   // TODO: Move to backend
@@ -112,8 +103,9 @@ export class App extends React.Component<{}, AppState> {
       socket.emit("setSeedMode");
 
       let players = [];
-      for (let i = 1; i <= 4; i++) {
-        players.push(new Player(i));
+      const pnums: Array<PlayerNumber> = [1, 2, 3, 4];
+      for (const pnum of pnums) {
+        players.push(new Player(pnum));
       }
 
       for (let i = 0; i < 4; i++) {
@@ -148,12 +140,11 @@ export class App extends React.Component<{}, AppState> {
         socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
       }
 
+      // Fix with redux
       this.setState({
         listOfPlayers: players,
         currentTurnNumber: 3,
-        currentPersonPlaying: 1,
         isCurrentlyPlacingSettlement: false,
-        inGamePlayerNum: 1,
       });
 
       hasSeeded = true;
@@ -162,32 +153,30 @@ export class App extends React.Component<{}, AppState> {
 
   // Callback for socket event, see "setupSockets"
   // Changes the current person playing when the backend sends an update
-  changeCurrentPlayer(playNum: number) {
-    this.setState({
-      ...this.state,
-      currentPersonPlaying: playNum,
-    });
-  }
+  // changeCurrentPlayer(playNum: number) {
+  //   this.setState({
+  //     ...this.state,
+  //     currentPersonPlaying: playNum,
+  //   });
+  // }
 
   // Callback for socket event, see "setupSockets"
   // Once the player 'enters' the game, it assigns them a player number from the backend
-  joinedGame(playerNum: number) {
-    if (this.state.inGamePlayerNum === -1) {
-      this.setState({
-        ...this.state,
-        inGamePlayerNum: playerNum,
-      });
-    }
-  }
+  // joinedGame(playerNum: PlayerNumber) {
+  //   this.setState({
+  //     ...this.state,
+  //     inGamePlayerNum: playerNum,
+  //   });
+  // }
 
   // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
-  processTurnUpdate(nextPlayer: number, incomingTurnNumber: number) {
-    const { inGamePlayerNum } = this.state;
+  processTurnUpdate(nextPlayer: PlayerNumber, incomingTurnNumber: number) {
+    const inGamePlayerNum = store.getState().inGamePlayerNumber;
 
+    store.dispatch(changePlayer(nextPlayer));
     this.setState({
       ...this.state,
-      currentPersonPlaying: nextPlayer,
       // Is true if it's still in the snake draft and it's the player's turn
       isCurrentlyPlacingSettlement:
         inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
@@ -243,7 +232,7 @@ export class App extends React.Component<{}, AppState> {
     boardXPos: number;
     boardYPos: number;
     corner: number;
-    playerNum: PlayerNumbers;
+    playerNum: PlayerNumber;
   }) {
     const build = new Building(
       building.boardXPos,
@@ -257,7 +246,6 @@ export class App extends React.Component<{}, AppState> {
     // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
     const updatedPlayer = new Player(build.playerNum);
     updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
-    console.log(build);
     updatedPlayer.buildings.push(build);
 
     let newListOfTiles = [];
@@ -308,7 +296,8 @@ export class App extends React.Component<{}, AppState> {
             key={key++}
             boardXPos={i.boardXPos}
             boardYPos={i.boardYPos}
-            color={PLAYER_COLORS[i.playerNum - 1]}
+            // TODO: Fix garbage
+            playerNum={i.playerNum}
             corner={i.corner}
           />
         );
@@ -322,7 +311,9 @@ export class App extends React.Component<{}, AppState> {
   setupSockets() {
     // Listens for whose turn in the game it is. Every time it changes, it will go to changeCurrentPlayer
     // Listens for the response to 'whose turn is it' (below)
-    socket.on("getWhoseTurnItIs", this.changeCurrentPlayer);
+    socket.on("getWhoseTurnItIs", (pNum: PlayerNumber) =>
+      store.dispatch(changePlayer(pNum))
+    );
 
     // Start off by joining the game, ID
     socket.emit("joinGame", "1");
@@ -331,7 +322,11 @@ export class App extends React.Component<{}, AppState> {
     socket.emit("whoseTurnIsIt", "1");
 
     // Backend sends an event once the player has joined
-    socket.on("joinedGame", this.joinedGame);
+    socket.on("joinedGame", (inGamePNum: PlayerNumber) => {
+      if (store.getState().inGamePlayerNumber === -1) {
+        store.dispatch(declarePlayerNumber(inGamePNum));
+      }
+    });
     // Backend sends an event when the turn changes
     socket.on("turnUpdate", this.processTurnUpdate);
     // Backend sends an event when someone places a new building
@@ -493,7 +488,9 @@ export class App extends React.Component<{}, AppState> {
   endTurnButton() {
     // Only render the button if it is the player's turn
     // You can only end your turn if it IS your turn
-    if (this.state.currentPersonPlaying === this.state.inGamePlayerNum) {
+    // TODO: Make better redux code
+    const storeState = store.getState();
+    if (storeState.currentPersonPlaying === storeState.inGamePlayerNumber) {
       return (
         <FoAButton
           onClick={this.endTurn}
@@ -530,14 +527,16 @@ export class App extends React.Component<{}, AppState> {
   // Highlights the available places to put settlements
   highlightSettlingSpaces(typeofHighlight: string) {
     const {
-      currentPersonPlaying,
-      inGamePlayerNum,
       isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad,
       listOfPlayers,
     } = this.state;
 
-    const isTurn = currentPersonPlaying === inGamePlayerNum;
+    // TODO: Write better redux
+    const storeState = store.getState();
+
+    const isTurn =
+      storeState.currentPersonPlaying === storeState.inGamePlayerNumber;
     const placing =
       typeofHighlight === "road"
         ? isCurrentlyPlacingRoad
@@ -581,7 +580,7 @@ export class App extends React.Component<{}, AppState> {
                 boardYPos={y}
                 corner={corner}
                 finishedSelectingCallback={callback}
-                playerWhoSelected={inGamePlayerNum}
+                playerWhoSelected={storeState.inGamePlayerNumber}
                 typeOfHighlight={typeofHighlight}
               />
             );
@@ -595,18 +594,17 @@ export class App extends React.Component<{}, AppState> {
   }
 
   renderDice() {
-    const {
-      currentTurnNumber,
-      inGamePlayerNum,
-      currentPersonPlaying,
-    } = this.state;
+    const { currentTurnNumber } = this.state;
+    const storeState = store.getState();
 
     // Only render the dice if we're done with initial placements
     if (currentTurnNumber > 2) {
       return (
         <Dice
           hasRolled={this.state.hasRolled}
-          isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
+          isPlayersTurn={
+            storeState.inGamePlayerNumber === storeState.currentPersonPlaying
+          }
           hasRolledCallBack={this.hasRolled}
           diceOneX={(widthOfSVG * 4) / 5}
           diceOneY={heightOfSVG / 2 - diceLength / 2}
@@ -647,21 +645,22 @@ export class App extends React.Component<{}, AppState> {
   }
 
   generateAllPlayerCards() {
-    const { listOfPlayers, currentPersonPlaying, inGamePlayerNum } = this.state;
+    const { listOfPlayers } = this.state;
+    const storeState = store.getState();
 
     let playerCards = [];
     let key = 0;
     let topX = 0;
 
     for (let x = 0; x < 4; x++) {
-      if (x === inGamePlayerNum - 1) {
+      if (x === storeState.inGamePlayerNumber - 1) {
         playerCards.push(
           <PlayerCard
             key={key++}
             bkgX={widthOfSVG / 2 - playerCardWidth / 2}
             bkgY={heightOfSVG - playerCardHeight}
             playerModel={listOfPlayers[key - 1]}
-            currentPersonPlaying={currentPersonPlaying}
+            currentPersonPlaying={storeState.currentPersonPlaying}
           />
         );
       } else {
@@ -675,7 +674,7 @@ export class App extends React.Component<{}, AppState> {
             bkgX={currX}
             bkgY={currY}
             playerModel={listOfPlayers[key - 1]}
-            currentPersonPlaying={currentPersonPlaying}
+            currentPersonPlaying={storeState.currentPersonPlaying}
           />
         );
       }
@@ -685,7 +684,6 @@ export class App extends React.Component<{}, AppState> {
   }
 
   generateResourceCards() {
-    console.log(this.state.listOfPlayers);
     let key = 0;
 
     const cardWidth = widthOfSVG / 15;
@@ -696,7 +694,7 @@ export class App extends React.Component<{}, AppState> {
     let resCardArr = [];
     for (const res of LIST_OF_RESOURCES) {
       const resAmount = this.state.listOfPlayers[
-        this.state.inGamePlayerNum - 1
+        store.getState().inGamePlayerNumber - 1
       ].getNumberOfResources(res);
 
       resCardArr.push(

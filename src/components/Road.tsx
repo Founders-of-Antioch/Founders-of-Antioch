@@ -2,12 +2,13 @@ import React, { Component } from "react";
 import { hexRadius } from "./Board";
 import { centerTileX, centerTileY } from "./Settlement";
 import { PLAYER_COLORS } from "../colors";
+import { PlayerNumber } from "../Actions";
 
 type RoadProps = {
   boardXPos: number;
   boardYPos: number;
   hexEdge: number;
-  playerNum: number;
+  playerNum: PlayerNumber;
 };
 
 export default class Road extends Component<RoadProps, {}> {
@@ -49,7 +50,7 @@ export default class Road extends Component<RoadProps, {}> {
           y={adjY}
           width={width}
           height={hexRadius}
-          fill={PLAYER_COLORS[playerNum - 1]}
+          fill={PLAYER_COLORS.get(playerNum)}
           stroke="black"
           strokeWidth="2"
           transform={`rotate(${rotation},${rotateX}, ${rotateY})`}

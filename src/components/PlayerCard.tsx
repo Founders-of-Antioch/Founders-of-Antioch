@@ -6,6 +6,7 @@ import medal from "../icons/medal.svg";
 import { widthOfSVG } from "./Board";
 import { Player } from "../entities/Player";
 import { PLAYER_COLORS } from "../colors";
+import { PlayerNumber } from "../Actions";
 
 // Mini cards displaying player info
 // TODO: Design, make more minimal
@@ -20,7 +21,7 @@ type PlayerCardProps = {
   playerModel: Player;
   bkgX: number;
   bkgY: number;
-  currentPersonPlaying: number;
+  currentPersonPlaying: PlayerNumber;
 };
 
 // TODO: Try and not make this global, but I just wanted to get rid of the React error
@@ -151,7 +152,7 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
           height={playerCardHeight}
           fill={"#484848"}
           opacity={0.8}
-          stroke={isTurn ? PLAYER_COLORS[playerModel.playerNum - 1] : "none"}
+          stroke={isTurn ? PLAYER_COLORS.get(playerModel.playerNum) : "none"}
           strokeWidth={playerCardWidth / 45}
         />
         {/* Profile Image */}
@@ -160,7 +161,7 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
           y={bkgY}
           width={profileImageWidth}
           height={profileImageWidth}
-          fill={PLAYER_COLORS[playerModel.playerNum - 1]}
+          fill={PLAYER_COLORS.get(playerModel.playerNum)}
         />
         <text
           x={bkgX + playerTextMargin}

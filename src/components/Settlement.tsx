@@ -1,8 +1,10 @@
 import React from "react";
 import { heightOfSVG, hexRadius, widthOfSVG } from "./Board";
+import { PlayerNumber } from "../Actions";
+import { PLAYER_COLORS } from "../colors";
 
 export interface SettlementProps {
-  color: string;
+  playerNum: PlayerNumber;
   // Like Robber coordinates
   boardXPos: number;
   boardYPos: number;
@@ -77,7 +79,7 @@ export class Settlement extends React.Component<SettlementProps, {}> {
           y={startY}
           width={settlementWidth}
           height={settlementWidth}
-          fill={this.props.color}
+          fill={PLAYER_COLORS.get(this.props.playerNum)}
           stroke="black"
           strokeWidth={stroke}
         />
@@ -85,7 +87,7 @@ export class Settlement extends React.Component<SettlementProps, {}> {
           points={`${startX},${startY} ${startX + settlementWidth / 2},${
             startY - settlementWidth / 2
           } ${startX + settlementWidth},${startY}`}
-          fill={this.props.color}
+          fill={PLAYER_COLORS.get(this.props.playerNum)}
           stroke="black"
           strokeWidth={stroke}
         />

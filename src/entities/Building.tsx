@@ -1,13 +1,13 @@
-import { PlayerNumbers } from "../Actions";
+import { PlayerNumber } from "../Actions";
 
 // Stolen from the API repo
 export class Building {
   boardXPos: number;
   boardYPos: number;
   corner: number;
-  playerNum: PlayerNumbers;
+  playerNum: PlayerNumber;
 
-  constructor(bX: number, bY: number, corn: number, playerNum: PlayerNumbers) {
+  constructor(bX: number, bY: number, corn: number, playerNum: PlayerNumber) {
     this.boardXPos = bX;
     this.boardYPos = bY;
     this.corner = corn;

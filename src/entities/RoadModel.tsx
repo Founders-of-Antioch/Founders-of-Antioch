@@ -1,15 +1,15 @@
-import { PlayerNumbers } from "../Actions";
+import { PlayerNumber } from "../Actions";
 
 export class RoadModel {
   boardXPos: number;
   boardYPos: number;
-  playerNum: PlayerNumbers;
+  playerNum: PlayerNumber;
   hexEdgeNumber: number;
 
   constructor(
     boardXPos: number,
     boardYPos: number,
-    playerNum: PlayerNumbers,
+    playerNum: PlayerNumber,
     hexEdgeNumber: number
   ) {
     this.boardXPos = boardXPos;
