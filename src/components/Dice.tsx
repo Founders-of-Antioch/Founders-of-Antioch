@@ -1,6 +1,8 @@
 import React from "react";
-import { socket } from "../App";
+import { socket, store } from "../App";
 import { widthOfSVG } from "./Board";
+import { createStore } from "redux";
+import FoApp from "../reducers";
 
 type DiceState = {
   diceOneValue: number;
@@ -13,8 +15,6 @@ type DiceProps = {
   // X and Y of the first die
   diceOneX: number;
   diceOneY: number;
-  isPlayersTurn: boolean;
-  hasRolled: boolean;
 };
 
 export const diceLength = widthOfSVG / 20;
@@ -43,8 +43,10 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   roll() {
+    const { hasRolled } = store.getState();
+    console.log(hasRolled);
     // Don't let the player roll more than once
-    if (!this.props.hasRolled) {
+    if (!hasRolled) {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
 
@@ -127,7 +129,14 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   render() {
-    const { diceOneX, diceOneY, isPlayersTurn, hasRolled } = this.props;
+    const { diceOneX, diceOneY } = this.props;
+    const {
+      hasRolled,
+      currentPersonPlaying,
+      inGamePlayerNumber,
+    } = store.getState();
+
+    const isPlayersTurn = currentPersonPlaying === inGamePlayerNumber;
 
     const shouldBeDisabled = hasRolled || !isPlayersTurn;
     const op = shouldBeDisabled ? 0.7 : 1.0;

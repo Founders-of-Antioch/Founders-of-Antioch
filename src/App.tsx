@@ -21,9 +21,16 @@ import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
 import { createStore } from "redux";
 import FoApp from "./reducers";
-import { changePlayer, PlayerNumber, declarePlayerNumber } from "./Actions";
+import {
+  changePlayer,
+  PlayerNumber,
+  declarePlayerNumber,
+  hasRolled,
+  nextTurn,
+} from "./Actions";
 
-const store = createStore(FoApp);
+// Change to not export once fully migrated
+export const store = createStore(FoApp);
 
 console.log(store.getState());
 
@@ -42,10 +49,8 @@ type AppState = {
     gameID: number;
   };
   canEndTurn: boolean;
-  hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
-  currentTurnNumber: number;
   listOfPlayers: Array<Player>;
 };
 let hasSeeded = false;
@@ -66,16 +71,14 @@ export class App extends React.Component<{}, AppState> {
         gameID: -1,
       },
       canEndTurn: false,
-      hasRolled: false,
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
-      currentTurnNumber: 1,
       listOfPlayers: players,
     };
 
     // Probably change to arrow functions to we don't have to do this
     this.endTurn = this.endTurn.bind(this);
-    this.hasRolled = this.hasRolled.bind(this);
+    this.hasRolledCB = this.hasRolledCB.bind(this);
     this.endTurn = this.endTurn.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
@@ -143,7 +146,6 @@ export class App extends React.Component<{}, AppState> {
       // Fix with redux
       this.setState({
         listOfPlayers: players,
-        currentTurnNumber: 3,
         isCurrentlyPlacingSettlement: false,
       });
 
@@ -152,35 +154,17 @@ export class App extends React.Component<{}, AppState> {
   }
 
   // Callback for socket event, see "setupSockets"
-  // Changes the current person playing when the backend sends an update
-  // changeCurrentPlayer(playNum: number) {
-  //   this.setState({
-  //     ...this.state,
-  //     currentPersonPlaying: playNum,
-  //   });
-  // }
-
-  // Callback for socket event, see "setupSockets"
-  // Once the player 'enters' the game, it assigns them a player number from the backend
-  // joinedGame(playerNum: PlayerNumber) {
-  //   this.setState({
-  //     ...this.state,
-  //     inGamePlayerNum: playerNum,
-  //   });
-  // }
-
-  // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
   processTurnUpdate(nextPlayer: PlayerNumber, incomingTurnNumber: number) {
     const inGamePlayerNum = store.getState().inGamePlayerNumber;
 
     store.dispatch(changePlayer(nextPlayer));
+    store.dispatch(nextTurn(incomingTurnNumber));
     this.setState({
       ...this.state,
       // Is true if it's still in the snake draft and it's the player's turn
       isCurrentlyPlacingSettlement:
         inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
-      currentTurnNumber: incomingTurnNumber,
     });
   }
 
@@ -434,28 +418,21 @@ export class App extends React.Component<{}, AppState> {
   }
 
   // Callback function for the 'Dice' component
-  hasRolled(diceSum: number) {
+  hasRolledCB(diceSum: number) {
     this.distributeResources(diceSum);
+    store.dispatch(hasRolled(true));
     // evaluateTurnElg is callback after setState
-    this.setState(
-      {
-        ...this.state,
-        hasRolled: true,
-      },
-      this.evaluateEndTurnEligibility
-    );
+    this.evaluateEndTurnEligibility();
   }
 
   // Determines if the player can end their turn or not
   evaluateEndTurnEligibility() {
-    const {
-      hasRolled,
-      isCurrentlyPlacingSettlement,
-      currentTurnNumber,
-      isCurrentlyPlacingRoad,
-    } = this.state;
+    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+
+    const { turnNumber } = store.getState();
+
     if (
-      (hasRolled || currentTurnNumber <= 2) &&
+      (store.getState().hasRolled || turnNumber <= 2) &&
       !isCurrentlyPlacingSettlement &&
       !isCurrentlyPlacingRoad
     ) {
@@ -470,10 +447,10 @@ export class App extends React.Component<{}, AppState> {
   // Should only be used as callback for the end turn button
   endTurn() {
     socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+    store.dispatch(hasRolled(false));
     this.setState({
       ...this.state,
       canEndTurn: false,
-      hasRolled: false,
     });
   }
 
@@ -508,7 +485,7 @@ export class App extends React.Component<{}, AppState> {
     this.setState(
       {
         isCurrentlyPlacingSettlement: false,
-        isCurrentlyPlacingRoad: this.state.currentTurnNumber <= 2,
+        isCurrentlyPlacingRoad: store.getState().turnNumber <= 2,
       },
       this.evaluateEndTurnEligibility
     );
@@ -594,18 +571,11 @@ export class App extends React.Component<{}, AppState> {
   }
 
   renderDice() {
-    const { currentTurnNumber } = this.state;
-    const storeState = store.getState();
-
     // Only render the dice if we're done with initial placements
-    if (currentTurnNumber > 2) {
+    if (store.getState().turnNumber > 2) {
       return (
         <Dice
-          hasRolled={this.state.hasRolled}
-          isPlayersTurn={
-            storeState.inGamePlayerNumber === storeState.currentPersonPlaying
-          }
-          hasRolledCallBack={this.hasRolled}
+          hasRolledCallBack={this.hasRolledCB}
           diceOneX={(widthOfSVG * 4) / 5}
           diceOneY={heightOfSVG / 2 - diceLength / 2}
         />

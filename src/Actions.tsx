@@ -1,14 +1,9 @@
 // Action types
-export const ROLLED_DICE = "ROLLED_DICE";
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
 export const PLACE_SETTLEMENT = "PLACE_SETTLEMENT";
 export const DECLARE_PLAYER_NUM = "DECLARE_PLAYER_NUM";
-
-export interface RolledDiceAction {
-  type: typeof ROLLED_DICE;
-  diceOne: number;
-  diceTwo: number;
-}
+export const HAS_ROLLED = "HAS_ROLLED";
+export const NEXT_TURN = "NEXT_TURN";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -33,9 +28,19 @@ export interface DeclarePlayerNumAction {
   declaredPlayerNum: PlayerNumber;
 }
 
+export interface HasRolledAction {
+  type: typeof HAS_ROLLED;
+  hasRolled: boolean;
+}
+
+export interface NextTurnAction {
+  type: typeof NEXT_TURN;
+  turnNumber: number;
+}
+
 /** Action creators */
-export function rolledDice(diceOne: number, diceTwo: number) {
-  return { type: ROLLED_DICE, diceOne, diceTwo };
+export function hasRolled(hasRolled: boolean): HasRolledAction {
+  return { type: HAS_ROLLED, hasRolled };
 }
 
 export function changePlayer(playerNum: PlayerNumber): ChangePlayerAction {
@@ -55,6 +60,10 @@ export function declarePlayerNumber(
   inGameNum: PlayerNumber
 ): DeclarePlayerNumAction {
   return { type: DECLARE_PLAYER_NUM, declaredPlayerNum: inGameNum };
+}
+
+export function nextTurn(turnNumber: number): NextTurnAction {
+  return { type: NEXT_TURN, turnNumber };
 }
 
 // export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;

@@ -6,6 +6,10 @@ import {
   PlayerNumber,
   DeclarePlayerNumAction,
   DECLARE_PLAYER_NUM,
+  HasRolledAction,
+  HAS_ROLLED,
+  NextTurnAction,
+  NEXT_TURN,
 } from "./Actions";
 import { combineReducers } from "redux";
 import { Player } from "./entities/Player";
@@ -17,6 +21,8 @@ export type FoAppState = {
   playersByID: Map<PlayerNumber, Player>;
   // Number 1-4 representing which player the client is
   inGamePlayerNumber: PlayerNumber;
+  hasRolled: boolean;
+  turnNumber: number;
 };
 
 function currentPersonPlaying(
@@ -77,10 +83,31 @@ function inGamePlayerNumber(
   }
 }
 
+function dice(state: boolean = true, action: HasRolledAction): boolean {
+  switch (action.type) {
+    case HAS_ROLLED:
+      return action.hasRolled;
+    default:
+      return state;
+  }
+}
+
+function turnNumber(state: number = 1, action: NextTurnAction): number {
+  switch (action.type) {
+    case NEXT_TURN:
+      return action.turnNumber;
+    default:
+      return state;
+  }
+}
+
 // TODO: Should be typed to state
 const FoApp = combineReducers({
   currentPersonPlaying,
   playersByID: players,
   inGamePlayerNumber,
+  hasRolled: dice,
+  turnNumber,
 });
+
 export default FoApp;
