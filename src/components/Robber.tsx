@@ -1,5 +1,5 @@
 import React from "react";
-import { widthOfSVG, heightOfSVG, hexRadius } from "./Board";
+import { hexRadius } from "./Board";
 import robber from "../icons/robber.svg";
 import { TileModel } from "../entities/TIleModel";
 import { centerTileX, centerTileY } from "./Settlement";
@@ -37,27 +37,6 @@ export class Robber extends React.Component<RobberProps, RobberState> {
       }
     }
   }
-
-  // actualX() {
-  //   const { boardXPos, boardYPos } = this.state;
-
-  //   // The first 'row' above the middle is shifted
-  //   let adjustXPos = boardXPos;
-  //   //If it is in the row above the middle and to the left of the center
-  //   if (boardXPos < 0 && (boardYPos === -1 || boardYPos === 1)) {
-  //     adjustXPos += 0.5;
-  //   } else if ((boardYPos === -1 || boardYPos === 1) && boardXPos > 0) {
-  //     //If it is in the row above the middle and to the right of the center
-  //     adjustXPos -= 0.5;
-  //   }
-
-  //   return adjustXPos * Math.sqrt(3) * hexRadius + widthOfSVG / 2;
-  // }
-
-  // actualY() {
-  //   const { boardYPos } = this.state;
-  //   return heightOfSVG / 2 - boardYPos * 1.5 * hexRadius;
-  // }
 
   render() {
     const { boardXPos, boardYPos } = this.state;

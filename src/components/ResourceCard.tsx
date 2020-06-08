@@ -4,7 +4,7 @@ import brick from "../icons/brick.svg";
 import wheat from "../icons/wheat.svg";
 import rock from "../icons/rock.svg";
 import cloud from "../icons/cloud.svg";
-import { widthOfSVG, heightOfSVG } from "./Board";
+import { widthOfSVG } from "./Board";
 
 type RCardProps = {
   resource: string;

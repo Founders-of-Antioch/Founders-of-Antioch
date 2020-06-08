@@ -29,7 +29,7 @@ let keyForTag = 0;
 
 export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generatePlayerStats() {
-    const { playerModel, bkgX, bkgY } = this.props;
+    const { bkgX, bkgY } = this.props;
 
     const imageMargin = playerCardHeight / 24;
 
@@ -66,7 +66,7 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
   }
 
   generatePlayerHandInformation() {
-    const { playerModel, bkgX, bkgY } = this.props;
+    const { bkgX, bkgY } = this.props;
 
     const imageMargin = playerCardHeight / 24;
 

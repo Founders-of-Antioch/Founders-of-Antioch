@@ -15,7 +15,6 @@ import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
-import { PLAYER_COLORS } from "./colors";
 import { Player, LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
@@ -34,7 +33,8 @@ export const store = createStore(FoApp);
 
 console.log(store.getState());
 
-const unsubscribe = store.subscribe(() => console.log(store.getState()));
+// const unsubscribe =
+store.subscribe(() => console.log(store.getState()));
 
 // store.dispatch(changePlayer(4));
 
@@ -384,7 +384,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   distributeResources(diceSum: number) {
-    const { listOfPlayers, boardToBePlayed } = this.state;
+    const { listOfPlayers } = this.state;
     console.log(this.state);
 
     // We have to copy over because state should be 'immutable' see issue #30 on GH for more details

@@ -2,9 +2,7 @@ import React, { Component } from "react";
 import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
-import { socket } from "../App";
-import { createStore } from "redux";
-import FoApp from "../reducers";
+import { socket, store } from "../App";
 import { placeSettlement, PlayerNumber } from "../Actions";
 
 // Highlights a point where a player can build a settlement
@@ -18,11 +16,6 @@ type Props = {
   // Should be 'road' or 'settlement'
   typeOfHighlight: string;
 };
-
-const store = createStore(FoApp);
-const unsubscribe = store.subscribe(() => {
-  console.log(store.getState());
-});
 
 export default class HighlightPoint extends Component<Props, {}> {
   constructor(props: Props) {

@@ -1,8 +1,6 @@
 import React from "react";
 import { socket, store } from "../App";
 import { widthOfSVG } from "./Board";
-import { createStore } from "redux";
-import FoApp from "../reducers";
 
 type DiceState = {
   diceOneValue: number;
