@@ -1,14 +1,23 @@
 import React from "react";
 // import './App.css';
-import { Board } from "./components/Board";
+import { Board, widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
-import { Dice } from "./components/Dice";
-import { PlayerCard } from "./components/PlayerCard";
+import { Dice, diceLength } from "./components/Dice";
+import {
+  PlayerCard,
+  playerCardWidth,
+  playerCardHeight,
+} from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import HighlightPoint from "./components/HighlightPoint";
 import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
+import Road from "./components/Road";
+import { RoadModel } from "./entities/RoadModel";
+import { PLAYER_COLORS } from "./colors";
+import { Player } from "./entities/Player";
+import { ResourceCard } from "./components/ResourceCard";
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -21,7 +30,6 @@ type AppState = {
     counters: Array<string>;
     gameID: number;
   };
-  numberOfPlayers: number;
   // Number 1-4 representing which 'player' is currently taking their turn
   currentPersonPlaying: number;
   canEndTurn: boolean;
@@ -29,13 +37,20 @@ type AppState = {
   inGamePlayerNum: number;
   hasRolled: boolean;
   isCurrentlyPlacingSettlement: boolean;
-  settlements: Array<Building>;
+  isCurrentlyPlacingRoad: boolean;
   currentTurnNumber: number;
+  listOfPlayers: Array<Player>;
 };
 
 export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
+
+    let players = [];
+    for (let i = 0; i < 4; i++) {
+      players.push(new Player(i + 1));
+    }
+
     this.state = {
       isLoading: true,
       boardToBePlayed: {
@@ -43,14 +58,14 @@ export class App extends React.Component<{}, AppState> {
         counters: [],
         gameID: -1,
       },
-      numberOfPlayers: -1,
       currentPersonPlaying: -1,
       canEndTurn: false,
       inGamePlayerNum: -1,
       hasRolled: false,
       isCurrentlyPlacingSettlement: true,
-      settlements: [],
+      isCurrentlyPlacingRoad: false,
       currentTurnNumber: 1,
+      listOfPlayers: players,
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -61,11 +76,14 @@ export class App extends React.Component<{}, AppState> {
     this.joinedGame = this.joinedGame.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
-    this.selectionCallBack = this.selectionCallBack.bind(this);
+    this.selectSettlementSpotCB = this.selectSettlementSpotCB.bind(this);
+    this.selectRoadSpotCB = this.selectRoadSpotCB.bind(this);
     this.evaluateEndTurnEligibility = this.evaluateEndTurnEligibility.bind(
       this
     );
     this.processGetGame = this.processGetGame.bind(this);
+    this.processRoadUpdate = this.processRoadUpdate.bind(this);
+    this.renderRoads = this.renderRoads.bind(this);
 
     this.setupSockets();
     this.getBoardOne();
@@ -74,7 +92,6 @@ export class App extends React.Component<{}, AppState> {
   // Callback for socket event, see "setupSockets"
   // Changes the current person playing when the backend sends an update
   changeCurrentPlayer(playNum: number) {
-    console.log("should happen once");
     this.setState({
       ...this.state,
       currentPersonPlaying: playNum,
@@ -95,23 +112,18 @@ export class App extends React.Component<{}, AppState> {
   // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
   processTurnUpdate(nextPlayer: number, incomingTurnNumber: number) {
-    const { inGamePlayerNum, currentTurnNumber } = this.state;
-    console.log(`Current turn: ${currentTurnNumber}`);
-    console.log(`Incoming turn num: ${incomingTurnNumber}`);
+    const { inGamePlayerNum } = this.state;
+
     this.setState({
       ...this.state,
       currentPersonPlaying: nextPlayer,
+      // Is true if it's still in the snake draft and it's the player's turn
       isCurrentlyPlacingSettlement:
         inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
       currentTurnNumber: incomingTurnNumber,
     });
-
-    console.log(`IGP ${inGamePlayerNum}`);
-    console.log(`next ${nextPlayer}`);
-    console.log(`currt ${currentTurnNumber}`);
   }
 
-  // WIP
   processBuildingUpdate(building: {
     boardXPos: number;
     boardYPos: number;
@@ -124,9 +136,22 @@ export class App extends React.Component<{}, AppState> {
       building.corner,
       building.playerNum
     );
+    const { listOfPlayers } = this.state;
+
+    // Buckle up for this grossness
+    // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
+    const updatedPlayer = new Player(build.playerNum);
+    updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
+    updatedPlayer.buildings.push(build);
+
+    // Push copy to state
     this.setState({
       ...this.state,
-      settlements: this.state.settlements.concat(build),
+      listOfPlayers: [
+        ...listOfPlayers.slice(0, build.playerNum - 1),
+        updatedPlayer,
+        ...listOfPlayers.slice(build.playerNum),
+      ],
     });
   }
 
@@ -134,18 +159,18 @@ export class App extends React.Component<{}, AppState> {
     let buildingArr = [];
     let key = 0;
 
-    const colors = ["blue", "red", "orange", "white"];
-
-    for (const i of this.state.settlements) {
-      buildingArr.push(
-        <Settlement
-          key={key++}
-          boardXPos={i.boardXPos}
-          boardYPos={i.boardYPos}
-          color={colors[i.playerNum - 1]}
-          corner={i.corner}
-        />
-      );
+    for (const p of this.state.listOfPlayers) {
+      for (const i of p.buildings) {
+        buildingArr.push(
+          <Settlement
+            key={key++}
+            boardXPos={i.boardXPos}
+            boardYPos={i.boardYPos}
+            color={PLAYER_COLORS[i.playerNum - 1]}
+            corner={i.corner}
+          />
+        );
+      }
     }
 
     return buildingArr;
@@ -169,8 +194,30 @@ export class App extends React.Component<{}, AppState> {
     socket.on("turnUpdate", this.processTurnUpdate);
     // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
+    // Backend sends an event when someone places a new road
+    socket.on("roadUpdate", this.processRoadUpdate);
 
     socket.on("giveGame", this.processGetGame);
+  }
+
+  processRoadUpdate(r: RoadModel) {
+    const { listOfPlayers } = this.state;
+    listOfPlayers[r.playerNum - 1].roads.push(r);
+
+    // Basically same as processBuildingUpdate
+    const updatedPlayer = new Player(r.playerNum);
+    updatedPlayer.copyFromPlayer(listOfPlayers[r.playerNum - 1]);
+    updatedPlayer.roads.push(r);
+
+    // Push copy to state
+    this.setState({
+      ...this.state,
+      listOfPlayers: [
+        ...listOfPlayers.slice(0, r.playerNum - 1),
+        updatedPlayer,
+        ...listOfPlayers.slice(r.playerNum),
+      ],
+    });
   }
 
   processGetGame(game: {
@@ -191,30 +238,6 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
-  // componentDidMount() {
-  //   // this.makeNewGame();
-  //   this.getBoardOne();
-  //   // this.getGameInfo();
-  //   // this.createNewPlayer();
-  //   // window.addEventListener("beforeunload", this.removePlayer);
-  // }
-
-  // componentWillUnmount() {
-  //   window.removeEventListener("beforeunload", this.removePlayer);
-  // }
-
-  // async removePlayer() {
-  //   const { playerID } = this.state;
-  //   const { gameID } = this.state.boardToBePlayed;
-  //   if (playerID !== -1) {
-  //     return await fetch(
-  //       `http://localhost:3001/removePlayerFromGame/${gameID}&${playerID}`
-  //     )
-  //       .then((res) => res.json)
-  //       .then((resp) => console.log(resp));
-  //   }
-  // }
-
   // Callback function for the 'Dice' component
   hasRolled() {
     // evaluateTurnElg is callback after setState
@@ -233,10 +256,12 @@ export class App extends React.Component<{}, AppState> {
       hasRolled,
       isCurrentlyPlacingSettlement,
       currentTurnNumber,
+      isCurrentlyPlacingRoad,
     } = this.state;
     if (
       (hasRolled || currentTurnNumber <= 2) &&
-      !isCurrentlyPlacingSettlement
+      !isCurrentlyPlacingSettlement &&
+      !isCurrentlyPlacingRoad
     ) {
       this.setState({
         ...this.state,
@@ -256,26 +281,8 @@ export class App extends React.Component<{}, AppState> {
     });
   }
 
-  // TODO: Migrate this DB stuff to sockets
-  // Gets the board with id '1' from the DB
-  // getBoardOne() {
-  //   return fetch("http://localhost:3001/boards/1")
-  //     .then((resp) => resp.json())
-  //     .then((res) => {
-  //       if (this.state.isLoading) {
-  //         this.setState({
-  //           ...this.state,
-  //           isLoading: false,
-  //           boardToBePlayed: { ...res },
-  //         });
-  //       }
-  //       // this.changePlayerTurn();
-  //       return res;
-  //     });
-  // }
-
   getBoardOne() {
-    //TODO: Fix ID
+    // TODO: Fix ID
     // socket.emit("needCounters", "1");
     // socket.emit("needResources", "1");
     socket.emit("needGame", "1");
@@ -299,29 +306,47 @@ export class App extends React.Component<{}, AppState> {
   }
 
   // Callback for when a player is done selecting where their settlement should go
-  // TODO: Rename
-  selectionCallBack() {
+  selectSettlementSpotCB() {
     this.setState(
       {
         isCurrentlyPlacingSettlement: false,
+        isCurrentlyPlacingRoad: this.state.currentTurnNumber <= 2,
+      },
+      this.evaluateEndTurnEligibility
+    );
+  }
+
+  // Callback for when a player is done selecting where the road should go
+  selectRoadSpotCB() {
+    this.setState(
+      {
+        isCurrentlyPlacingRoad: false,
       },
       this.evaluateEndTurnEligibility
     );
   }
 
   // Highlights the available places to put settlements
-  // TODO: Rename
-  highlightAvailableSpace() {
+  highlightSettlingSpaces(typeofHighlight: string) {
     const {
       currentPersonPlaying,
       inGamePlayerNum,
       isCurrentlyPlacingSettlement,
-      settlements,
+      isCurrentlyPlacingRoad,
+      listOfPlayers,
     } = this.state;
-    const isTurn = currentPersonPlaying === inGamePlayerNum;
-    // console.log(object)
 
-    if (isTurn && isCurrentlyPlacingSettlement) {
+    const isTurn = currentPersonPlaying === inGamePlayerNum;
+    const placing =
+      typeofHighlight === "road"
+        ? isCurrentlyPlacingRoad
+        : isCurrentlyPlacingSettlement;
+    const callback =
+      typeofHighlight === "road"
+        ? this.selectRoadSpotCB
+        : this.selectSettlementSpotCB;
+
+    if (isTurn && placing) {
       const spots = [];
       let keyForHighlights = 0;
 
@@ -335,13 +360,15 @@ export class App extends React.Component<{}, AppState> {
             }
 
             // If there is already a building in the spot, don't highlight it
-            for (const setl of settlements) {
-              if (
-                adjX === setl.boardXPos &&
-                y === setl.boardYPos &&
-                corner === setl.corner
-              ) {
-                continue cornerLoop;
+            for (const pl of listOfPlayers) {
+              for (const setl of pl.buildings) {
+                if (
+                  adjX === setl.boardXPos &&
+                  y === setl.boardYPos &&
+                  corner === setl.corner
+                ) {
+                  continue cornerLoop;
+                }
               }
             }
 
@@ -351,8 +378,9 @@ export class App extends React.Component<{}, AppState> {
                 boardXPos={adjX}
                 boardYPos={y}
                 corner={corner}
-                finishedSelectingCallback={this.selectionCallBack}
+                finishedSelectingCallback={callback}
                 playerWhoSelected={inGamePlayerNum}
+                typeOfHighlight={typeofHighlight}
               />
             );
 
@@ -364,8 +392,9 @@ export class App extends React.Component<{}, AppState> {
                   boardXPos={adjX}
                   boardYPos={-y}
                   corner={corner}
-                  finishedSelectingCallback={this.selectionCallBack}
+                  finishedSelectingCallback={callback}
                   playerWhoSelected={inGamePlayerNum}
+                  typeOfHighlight={typeofHighlight}
                 />
               );
             }
@@ -391,15 +420,104 @@ export class App extends React.Component<{}, AppState> {
           hasRolled={this.state.hasRolled}
           isPlayersTurn={inGamePlayerNum === currentPersonPlaying}
           hasRolledCallBack={this.hasRolled}
-          diceOneX={100}
-          diceOneY={200}
+          diceOneX={(widthOfSVG * 4) / 5}
+          diceOneY={heightOfSVG / 2 - diceLength / 2}
         />
       );
     }
   }
 
+  highlightNeededSpaces() {
+    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    if (isCurrentlyPlacingRoad) {
+      return this.highlightSettlingSpaces("road");
+    } else if (isCurrentlyPlacingSettlement) {
+      return this.highlightSettlingSpaces("settlement");
+    }
+  }
+
+  renderRoads() {
+    const { listOfPlayers } = this.state;
+    let roadArr = [];
+    let key = 0;
+
+    for (const p of listOfPlayers) {
+      for (const r of p.roads) {
+        roadArr.push(
+          <Road
+            key={key++}
+            boardXPos={r.boardXPos}
+            boardYPos={r.boardYPos}
+            hexEdge={r.hexEdgeNumber}
+            playerNum={r.playerNum}
+          />
+        );
+      }
+    }
+
+    return roadArr;
+  }
+
+  generateAllPlayerCards() {
+    const { listOfPlayers, currentPersonPlaying, inGamePlayerNum } = this.state;
+
+    let playerCards = [];
+    let key = 0;
+    let topX = 0;
+
+    for (let x = 0; x < 4; x++) {
+      if (x === inGamePlayerNum - 1) {
+        playerCards.push(
+          <PlayerCard
+            key={key++}
+            bkgX={widthOfSVG / 2 - playerCardWidth / 2}
+            bkgY={heightOfSVG - playerCardHeight}
+            playerModel={listOfPlayers[key - 1]}
+            currentPersonPlaying={currentPersonPlaying}
+          />
+        );
+      } else {
+        // Junk but equally distributes three cards across top
+        let currX = (widthOfSVG - playerCardWidth) * (topX++ / 2);
+        let currY = 0;
+
+        playerCards.push(
+          <PlayerCard
+            key={key++}
+            bkgX={currX}
+            bkgY={currY}
+            playerModel={listOfPlayers[key - 1]}
+            currentPersonPlaying={currentPersonPlaying}
+          />
+        );
+      }
+    }
+
+    return playerCards;
+  }
+
+  generateResourceCards() {
+    const resourcesList = ["wood", "brick", "sheep", "rock", "wheat"];
+    let key = 0;
+
+    const cardWidth = widthOfSVG / 15;
+    const cardHeight = (cardWidth * 4) / 3;
+    let cardX = widthOfSVG * 0.01;
+    const cardY = heightOfSVG - cardHeight;
+
+    let resCardArr = [];
+    for (const res of resourcesList) {
+      resCardArr.push(
+        <ResourceCard x={cardX} y={cardY} key={key++} resource={res} />
+      );
+      cardX += widthOfSVG * 0.05;
+    }
+
+    return resCardArr;
+  }
+
   render() {
-    const { isLoading, inGamePlayerNum } = this.state;
+    const { isLoading } = this.state;
 
     // If this isn't null, React breaks the CSS ¯\_(ツ)_/¯
     // Should find a way to fix this/have a decent loading icon or screen
@@ -423,12 +541,12 @@ export class App extends React.Component<{}, AppState> {
             counters={boardToBePlayed.counters}
           />
           {this.renderDice()}
-          <PlayerCard inGamePlayerNum={inGamePlayerNum} />
+          {this.generateAllPlayerCards()}
           {this.endTurnButton()}
-          {this.highlightAvailableSpace()}
+          {this.highlightNeededSpaces()}
+          {this.renderRoads()}
           {this.renderBuildings()}
-          {/* <ResourceCard /> */}
-          {/* <Settlement color="orange" corner={0} boardXPos={0} boardYPos={0} /> */}
+          {this.generateResourceCards()}
         </svg>
       );
     }

@@ -2,6 +2,7 @@ import React from "react";
 import { WHEAT, WHITE } from "../colors";
 import "../Button.css";
 import { widthOfSVG, heightOfSVG } from "./Board";
+import { diceLength } from "./Dice";
 
 // TODO: class should be renamed
 
@@ -21,10 +22,12 @@ export class FoAButton extends React.Component<btnProps, {}> {
 
     const textHeight = height * 0.6;
 
-    const bkgX = widthOfSVG / 2 - width / 2;
-    const bkgY = heightOfSVG - height;
+    const bkgX = (widthOfSVG * 4) / 5;
+    const bkgY = heightOfSVG / 2 + diceLength;
 
     const op = canEndTurn ? 1.0 : 0.7;
+
+    const innerButtonWidth = width - 2 * buttonMarginX;
 
     return (
       <g>
@@ -35,7 +38,6 @@ export class FoAButton extends React.Component<btnProps, {}> {
           width={width}
           rx={15}
           height={height}
-          onClick={() => console.log(1)}
           opacity={op}
         />
 
@@ -48,14 +50,15 @@ export class FoAButton extends React.Component<btnProps, {}> {
             x={bkgX + buttonMarginX}
             y={bkgY}
             opacity={op}
+            // TODO: Make dynamic
             rx={15}
-            width={width - 2 * buttonMarginX}
+            width={innerButtonWidth}
             height={height - 2 * buttonMarginY}
           />
 
           <text
             className={"insideText"}
-            x={"50%"}
+            x={bkgX + buttonMarginX + innerButtonWidth / 2}
             y={bkgY + textHeight}
             textAnchor={"middle"}
             fill={WHITE}

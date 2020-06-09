@@ -67,10 +67,14 @@ export class Settlement extends React.Component<SettlementProps, {}> {
   render() {
     const { boardXPos, boardYPos, corner } = this.props;
 
-    const settlementWidth = 30;
+    // TODO: Change to be dynamic
+    const settlementWidth = 22.5;
     const startX =
       xValofCorner(boardXPos, boardYPos, corner) - settlementWidth / 2;
     const startY = yValofCorner(boardYPos, corner) - settlementWidth / 2;
+
+    // TODO: Dynamic
+    const stroke = 2;
 
     return (
       <g>
@@ -81,7 +85,7 @@ export class Settlement extends React.Component<SettlementProps, {}> {
           height={settlementWidth}
           fill={this.props.color}
           stroke="black"
-          strokeWidth="3"
+          strokeWidth={stroke}
         />
         <polygon
           points={`${startX},${startY} ${startX + settlementWidth / 2},${
@@ -89,7 +93,7 @@ export class Settlement extends React.Component<SettlementProps, {}> {
           } ${startX + settlementWidth},${startY}`}
           fill={this.props.color}
           stroke="black"
-          strokeWidth="3"
+          strokeWidth={stroke}
         />
       </g>
     );
