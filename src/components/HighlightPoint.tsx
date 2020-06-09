@@ -3,7 +3,7 @@ import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
-import { placeSettlement, PlayerNumber } from "../Actions";
+import { placeSettlement, PlayerNumber } from "../redux/Actions";
 import store from "../redux/store";
 
 // Highlights a point where a player can build a settlement

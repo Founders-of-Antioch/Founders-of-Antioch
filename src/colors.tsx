@@ -1,4 +1,4 @@
-import { PlayerNumber } from "./Actions";
+import { PlayerNumber } from "./redux/Actions";
 
 // Tile colors
 export const WHEAT = "#fec40d";

@@ -1,6 +1,6 @@
 import React from "react";
 import { heightOfSVG, hexRadius, widthOfSVG } from "./Board";
-import { PlayerNumber } from "../Actions";
+import { PlayerNumber } from "../redux/Actions";
 import { PLAYER_COLORS } from "../colors";
 
 export interface SettlementProps {

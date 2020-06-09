@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { hexRadius } from "./Board";
 import { centerTileX, centerTileY } from "./Settlement";
 import { PLAYER_COLORS } from "../colors";
-import { PlayerNumber } from "../Actions";
+import { PlayerNumber } from "../redux/Actions";
 
 type RoadProps = {
   boardXPos: number;

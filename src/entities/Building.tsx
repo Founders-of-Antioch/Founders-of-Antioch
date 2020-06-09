@@ -1,4 +1,4 @@
-import { PlayerNumber } from "../Actions";
+import { PlayerNumber } from "../redux/Actions";
 
 // Stolen from the API repo
 export class Building {

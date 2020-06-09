@@ -1,4 +1,4 @@
-import { PlayerNumber } from "../Actions";
+import { PlayerNumber } from "../redux/Actions";
 
 export class RoadModel {
   boardXPos: number;

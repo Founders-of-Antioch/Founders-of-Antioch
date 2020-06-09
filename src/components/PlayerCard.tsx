@@ -6,7 +6,7 @@ import medal from "../icons/medal.svg";
 import { widthOfSVG } from "./Board";
 import { Player } from "../entities/Player";
 import { PLAYER_COLORS } from "../colors";
-import { PlayerNumber } from "../Actions";
+import { PlayerNumber } from "../redux/Actions";
 
 // Mini cards displaying player info
 // TODO: Design, make more minimal

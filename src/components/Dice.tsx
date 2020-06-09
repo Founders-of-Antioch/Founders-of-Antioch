@@ -1,7 +1,7 @@
 import React from "react";
 import { socket } from "../App";
 import { widthOfSVG } from "./Board";
-import { PlayerNumber, HasRolledAction, hasRolled } from "../Actions";
+import { PlayerNumber, HasRolledAction, hasRolled } from "../redux/Actions";
 import { connect, ConnectedProps } from "react-redux";
 import { FoAppState } from "../redux/reducers/reducers";
 import { Dispatch } from "redux";
@@ -79,11 +79,11 @@ class Dice extends React.Component<DiceProps, UIState> {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
 
-      const possibleOutcomes: Array<DiceNumber> = [1, 2, 3, 4, 5, 6];
-
+      // The as is dangerous, but see here
+      // https://stackoverflow.com/questions/62272938/interfacing-random-numbers-in-typescrip
       this.setState({
-        diceOneValue: possibleOutcomes[diceOne - 1],
-        diceTwoValue: possibleOutcomes[diceTwo - 1],
+        diceOneValue: diceOne as DiceNumber,
+        diceTwoValue: diceTwo as DiceNumber,
       });
 
       // TODO: Fix to have actual gameID
@@ -97,7 +97,7 @@ class Dice extends React.Component<DiceProps, UIState> {
   }
 
   // This whole method is a pile of garbage. Because the dots on a dice order in a weird way depending on the number
-  makeNumberCircles(op: number) {
+  makeNumberCircles(dotOpacity: number) {
     const { diceOneValue, diceTwoValue } = this.state;
     const { diceOneX, diceOneY } = this.props;
 
@@ -119,7 +119,7 @@ class Dice extends React.Component<DiceProps, UIState> {
         dotArr.push(
           <circle
             key={key++}
-            opacity={op}
+            opacity={dotOpacity}
             onClick={this.roll}
             r={diceLength / 10}
             fill={die === 0 ? "#bf0704" : "#efd601"}
@@ -130,6 +130,7 @@ class Dice extends React.Component<DiceProps, UIState> {
       }
     }
 
+    // Assume a 3x3 grid of dots, these are the ones to preserve for each index
     const dotsToPreserve = [
       [],
       [4],
@@ -171,8 +172,7 @@ class Dice extends React.Component<DiceProps, UIState> {
     const isPlayersTurn = currentPersonPlaying === inGamePlayerNumber;
 
     const shouldBeDisabled = hasRolled || !isPlayersTurn;
-    // const shouldBeDisabled = hasRolled;
-    const op = shouldBeDisabled ? 0.7 : 1.0;
+    const diceOpacity = shouldBeDisabled ? 0.7 : 1.0;
     console.log(hasRolled);
     console.log(isPlayersTurn);
 
@@ -188,7 +188,7 @@ class Dice extends React.Component<DiceProps, UIState> {
           y={diceOneY}
           rx={diceLength / 5}
           fill="#efd601"
-          opacity={op}
+          opacity={diceOpacity}
         />
         <rect
           width={diceLength}
@@ -197,7 +197,7 @@ class Dice extends React.Component<DiceProps, UIState> {
           y={diceOneY}
           rx={diceLength / 5}
           fill="#bf0704"
-          opacity={op}
+          opacity={diceOpacity}
         />
         {/* <circle
           cx={diceLength / 2}
@@ -205,7 +205,7 @@ class Dice extends React.Component<DiceProps, UIState> {
           r={diceLength / 10}
           fill="#bf0704"
         /> */}
-        {this.makeNumberCircles(op)}
+        {this.makeNumberCircles(diceOpacity)}
       </g>
     );
   }

@@ -1,6 +1,6 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
-import { PlayerNumber } from "../Actions";
+import { PlayerNumber } from "../redux/Actions";
 
 // Should be moved into helper
 export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];

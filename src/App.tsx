@@ -24,7 +24,7 @@ import {
   declarePlayerNumber,
   hasRolled,
   nextTurn,
-} from "./Actions";
+} from "./redux/Actions";
 import store from "./redux/store";
 
 // Change to not export once fully migrated
@@ -465,8 +465,6 @@ export class App extends React.Component<{}, AppState> {
     // TODO: Make better redux code
     const storeState = store.getState();
     if (storeState.currentPersonPlaying === storeState.inGamePlayerNumber) {
-      console.log(this.state.canEndTurn);
-      console.log(this.state);
       return (
         <FoAButton
           onClick={this.endTurn}
