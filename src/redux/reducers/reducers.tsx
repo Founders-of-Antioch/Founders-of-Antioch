@@ -10,13 +10,13 @@ import {
   HAS_ROLLED,
   NextTurnAction,
   NEXT_TURN,
-} from "./Actions";
+} from "../../Actions";
 import { combineReducers } from "redux";
-import { Player } from "./entities/Player";
-import { Building } from "./entities/Building";
+import { Player } from "../../entities/Player";
+import { Building } from "../../entities/Building";
 
 export type FoAppState = {
-  currentPersonPlaying: number;
+  currentPersonPlaying: PlayerNumber;
   // Number 1-4 representing which 'player' is currently taking their turn
   playersByID: Map<PlayerNumber, Player>;
   // Number 1-4 representing which player the client is
@@ -86,6 +86,7 @@ function inGamePlayerNumber(
 function dice(state: boolean = true, action: HasRolledAction): boolean {
   switch (action.type) {
     case HAS_ROLLED:
+      console.log(action.hasRolled);
       return action.hasRolled;
     default:
       return state;
@@ -102,12 +103,10 @@ function turnNumber(state: number = 1, action: NextTurnAction): number {
 }
 
 // TODO: Should be typed to state
-const FoApp = combineReducers({
+export const FoAPP = combineReducers({
   currentPersonPlaying,
   playersByID: players,
   inGamePlayerNumber,
   hasRolled: dice,
   turnNumber,
 });
-
-export default FoApp;

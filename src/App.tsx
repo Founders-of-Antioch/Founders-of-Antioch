@@ -2,7 +2,7 @@ import React from "react";
 // import './App.css';
 import { Board, widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
-import { Dice, diceLength } from "./components/Dice";
+import Dice, { diceLength } from "./components/Dice";
 import {
   PlayerCard,
   playerCardWidth,
@@ -18,8 +18,6 @@ import { RoadModel } from "./entities/RoadModel";
 import { Player, LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
-import { createStore } from "redux";
-import FoApp from "./reducers";
 import {
   changePlayer,
   PlayerNumber,
@@ -27,9 +25,10 @@ import {
   hasRolled,
   nextTurn,
 } from "./Actions";
+import store from "./redux/store";
 
 // Change to not export once fully migrated
-export const store = createStore(FoApp);
+// export const store = createStore(FoAPP);
 
 console.log(store.getState());
 
@@ -420,8 +419,6 @@ export class App extends React.Component<{}, AppState> {
   // Callback function for the 'Dice' component
   hasRolledCB(diceSum: number) {
     this.distributeResources(diceSum);
-    store.dispatch(hasRolled(true));
-    // evaluateTurnElg is callback after setState
     this.evaluateEndTurnEligibility();
   }
 
@@ -468,6 +465,8 @@ export class App extends React.Component<{}, AppState> {
     // TODO: Make better redux code
     const storeState = store.getState();
     if (storeState.currentPersonPlaying === storeState.inGamePlayerNumber) {
+      console.log(this.state.canEndTurn);
+      console.log(this.state);
       return (
         <FoAButton
           onClick={this.endTurn}

@@ -1,13 +1,44 @@
 import React from "react";
-import { socket, store } from "../App";
+import { socket } from "../App";
 import { widthOfSVG } from "./Board";
+import { PlayerNumber, HasRolledAction, hasRolled } from "../Actions";
+import { connect, ConnectedProps } from "react-redux";
+import { FoAppState } from "../redux/reducers/reducers";
+import { Dispatch } from "redux";
 
-type DiceState = {
-  diceOneValue: number;
-  diceTwoValue: number;
+export type DiceNumber = 1 | 2 | 3 | 4 | 5 | 6;
+
+type UIState = {
+  diceOneValue: DiceNumber;
+  diceTwoValue: DiceNumber;
 };
 
-type DiceProps = {
+type DiceState = {
+  hasRolled: boolean;
+  currentPersonPlaying: PlayerNumber;
+  inGamePlayerNumber: PlayerNumber;
+};
+
+function mapStateToProps(store: FoAppState): DiceState {
+  return {
+    hasRolled: store.hasRolled,
+    currentPersonPlaying: store.currentPersonPlaying,
+    inGamePlayerNumber: store.inGamePlayerNumber,
+  };
+}
+
+function mapDispatch(dispatch: Dispatch) {
+  return {
+    rolled: (didRoll: boolean): HasRolledAction => {
+      return dispatch(hasRolled(didRoll));
+    },
+  };
+}
+
+const connector = connect(mapStateToProps, mapDispatch);
+
+type PropsFromRedux = ConnectedProps<typeof connector>;
+type DiceProps = PropsFromRedux & {
   // Callback for when the dice have been rolled
   hasRolledCallBack: Function;
   // X and Y of the first die
@@ -17,7 +48,7 @@ type DiceProps = {
 
 export const diceLength = widthOfSVG / 20;
 
-export class Dice extends React.Component<DiceProps, DiceState> {
+class Dice extends React.Component<DiceProps, UIState> {
   constructor(props: DiceProps) {
     super(props);
     // TODO: should be fixed to whatever the current backend state is. GH issue open for this
@@ -26,12 +57,13 @@ export class Dice extends React.Component<DiceProps, DiceState> {
       diceTwoValue: 1,
     };
     this.roll = this.roll.bind(this);
+    this.setupSockets = this.setupSockets.bind(this);
     this.setupSockets();
   }
 
   setupSockets() {
     // Listens for when other players roll the dice
-    socket.on("diceUpdate", (d1: number, d2: number) => {
+    socket.on("diceUpdate", (d1: DiceNumber, d2: DiceNumber) => {
       this.setState({
         ...this.state,
         diceOneValue: d1,
@@ -41,22 +73,24 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   roll() {
-    const { hasRolled } = store.getState();
-    console.log(hasRolled);
+    const { hasRolled } = this.props;
     // Don't let the player roll more than once
     if (!hasRolled) {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
 
+      const possibleOutcomes: Array<DiceNumber> = [1, 2, 3, 4, 5, 6];
+
       this.setState({
-        diceOneValue: diceOne,
-        diceTwoValue: diceTwo,
+        diceOneValue: possibleOutcomes[diceOne - 1],
+        diceTwoValue: possibleOutcomes[diceTwo - 1],
       });
 
       // TODO: Fix to have actual gameID
       // Tells the backend what the player has rolled
       socket.emit("roll", diceOne, diceTwo, "1");
 
+      this.props.rolled(true);
       // Tells the app state that the dice have been rolled
       this.props.hasRolledCallBack(diceOne + diceTwo);
     }
@@ -127,17 +161,20 @@ export class Dice extends React.Component<DiceProps, DiceState> {
   }
 
   render() {
-    const { diceOneX, diceOneY } = this.props;
     const {
+      diceOneX,
+      diceOneY,
       hasRolled,
       currentPersonPlaying,
       inGamePlayerNumber,
-    } = store.getState();
-
+    } = this.props;
     const isPlayersTurn = currentPersonPlaying === inGamePlayerNumber;
 
     const shouldBeDisabled = hasRolled || !isPlayersTurn;
+    // const shouldBeDisabled = hasRolled;
     const op = shouldBeDisabled ? 0.7 : 1.0;
+    console.log(hasRolled);
+    console.log(isPlayersTurn);
 
     return (
       <g
@@ -173,3 +210,5 @@ export class Dice extends React.Component<DiceProps, DiceState> {
     );
   }
 }
+
+export default connector(Dice);

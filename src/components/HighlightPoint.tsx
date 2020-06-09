@@ -2,8 +2,9 @@ import React, { Component } from "react";
 import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
-import { socket, store } from "../App";
+import { socket } from "../App";
 import { placeSettlement, PlayerNumber } from "../Actions";
+import store from "../redux/store";
 
 // Highlights a point where a player can build a settlement
 
