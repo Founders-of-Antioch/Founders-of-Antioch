@@ -1,6 +1,9 @@
+import { RoadModel } from "../entities/RoadModel";
+
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
 export const PLACE_SETTLEMENT = "PLACE_SETTLEMENT";
+export const PLACE_ROAD = "PLACE_ROAD";
 export const DECLARE_PLAYER_NUM = "DECLARE_PLAYER_NUM";
 export const HAS_ROLLED = "HAS_ROLLED";
 export const NEXT_TURN = "NEXT_TURN";
@@ -13,6 +16,7 @@ export interface ChangePlayerAction {
 // -1 For when the have not joined yet and are waiting for the backend
 export type PlayerNumber = 1 | 2 | 3 | 4 | -1;
 
+// TODO: Migrate to just take in 'Building' instead of 4 params
 interface PlaceSettlementAction {
   type: typeof PLACE_SETTLEMENT;
   boardXPos: number;
@@ -21,7 +25,12 @@ interface PlaceSettlementAction {
   playerNum: PlayerNumber;
 }
 
-export type PlayerAction = PlaceSettlementAction;
+interface PlaceRoadAction {
+  type: typeof PLACE_ROAD;
+  road: RoadModel;
+}
+
+export type PlayerAction = PlaceSettlementAction | PlaceRoadAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -54,6 +63,10 @@ export function placeSettlement(
   playerNum: PlayerNumber
 ): PlaceSettlementAction {
   return { type: PLACE_SETTLEMENT, boardXPos, boardYPos, corner, playerNum };
+}
+
+export function placeRoad(road: RoadModel): PlaceRoadAction {
+  return { type: PLACE_ROAD, road };
 }
 
 export function declarePlayerNumber(

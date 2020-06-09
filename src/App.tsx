@@ -24,13 +24,13 @@ import {
   declarePlayerNumber,
   hasRolled,
   nextTurn,
+  placeSettlement,
+  placeRoad,
 } from "./redux/Actions";
 import store from "./redux/store";
-
-// Change to not export once fully migrated
-// export const store = createStore(FoAPP);
-
-console.log(store.getState());
+import { FoAppState } from "./redux/reducers/reducers";
+import { Dispatch } from "redux";
+import { connect, ConnectedProps } from "react-redux";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -39,9 +39,7 @@ store.subscribe(() => console.log(store.getState()));
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
-// TODO: Take some of the things that shouldn't be mutated out into props
-// e.g. inGamePlayerNum
-type AppState = {
+type UIState = {
   isLoading: boolean;
   boardToBePlayed: {
     listOfTiles: Array<TileModel>;
@@ -50,18 +48,47 @@ type AppState = {
   canEndTurn: boolean;
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
-  listOfPlayers: Array<Player>;
 };
-let hasSeeded = false;
-export class App extends React.Component<{}, AppState> {
-  constructor(props: {}) {
-    super(props);
 
-    let players = [];
-    const pnums: Array<PlayerNumber> = [1, 2, 3, 4];
-    for (const pnum of pnums) {
-      players.push(new Player(pnum));
-    }
+type AppState = {
+  listOfPlayers: Map<PlayerNumber, Player>;
+  inGamePlayerNumber: PlayerNumber;
+};
+
+let hasSeeded = false;
+
+function mapStateToProps(store: FoAppState): AppState {
+  return {
+    listOfPlayers: store.playersByID,
+    inGamePlayerNumber: store.inGamePlayerNumber,
+  };
+}
+
+function mapDispatchToProps(dispatch: Dispatch) {
+  return {
+    placeASettlement: (build: Building) => {
+      return dispatch(
+        placeSettlement(
+          build.boardXPos,
+          build.boardYPos,
+          build.corner,
+          build.playerNum
+        )
+      );
+    },
+    placeARoad: (road: RoadModel) => {
+      return dispatch(placeRoad(road));
+    },
+  };
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type AppProps = ConnectedProps<typeof connector>;
+
+class App extends React.Component<AppProps, UIState> {
+  constructor(props: AppProps) {
+    super(props);
 
     this.state = {
       isLoading: true,
@@ -72,7 +99,6 @@ export class App extends React.Component<{}, AppState> {
       canEndTurn: false,
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
-      listOfPlayers: players,
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -89,7 +115,7 @@ export class App extends React.Component<{}, AppState> {
     this.processGetGame = this.processGetGame.bind(this);
     this.processRoadUpdate = this.processRoadUpdate.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
-    this.distributeResources = this.distributeResources.bind(this);
+    // this.distributeResources = this.distributeResources.bind(this);
 
     this.setupSockets();
     this.getBoardOne();
@@ -144,7 +170,6 @@ export class App extends React.Component<{}, AppState> {
 
       // Fix with redux
       this.setState({
-        listOfPlayers: players,
         isCurrentlyPlacingSettlement: false,
       });
 
@@ -205,8 +230,6 @@ export class App extends React.Component<{}, AppState> {
         }
       }
     }
-    // console.log(knownBuilding);
-    // console.log(adjTiles);
 
     return adjTiles;
   }
@@ -223,56 +246,15 @@ export class App extends React.Component<{}, AppState> {
       building.corner,
       building.playerNum
     );
-    const { listOfPlayers, boardToBePlayed } = this.state;
 
-    // Buckle up for this grossness
-    // See https://stackoverflow.com/questions/37662708/react-updating-state-when-state-is-an-array-of-objects
-    const updatedPlayer = new Player(build.playerNum);
-    updatedPlayer.copyFromPlayer(listOfPlayers[build.playerNum - 1]);
-    updatedPlayer.buildings.push(build);
-
-    let newListOfTiles = [];
-    for (const oldTile of boardToBePlayed.listOfTiles) {
-      const addTile = new TileModel(
-        oldTile.resource,
-        oldTile.counter,
-        oldTile.boardXPos,
-        oldTile.boardYPos
-      );
-      // addTile.copyOverBuildings(oldTile);
-
-      // Needs fixing for surrouding tiles
-      // if (
-      //   oldTile.boardXPos === build.boardXPos &&
-      //   oldTile.boardYPos === build.boardYPos
-      // ) {
-      //   addTile.buildings.push(build);
-      // }
-
-      newListOfTiles.push(addTile);
-    }
-    // console.log(this.tilesBuildingIsOn(build));
-
-    // Push copy to state
-    this.setState({
-      ...this.state,
-      listOfPlayers: [
-        ...listOfPlayers.slice(0, build.playerNum - 1),
-        updatedPlayer,
-        ...listOfPlayers.slice(build.playerNum),
-      ],
-      boardToBePlayed: {
-        gameID: boardToBePlayed.gameID,
-        listOfTiles: newListOfTiles,
-      },
-    });
+    this.props.placeASettlement(build);
   }
 
   renderBuildings(): Array<any> {
     let buildingArr = [];
     let key = 0;
 
-    for (const p of this.state.listOfPlayers) {
+    for (const p of this.props.listOfPlayers.values()) {
       for (const i of p.buildings) {
         buildingArr.push(
           <Settlement
@@ -321,23 +303,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   processRoadUpdate(r: RoadModel) {
-    const { listOfPlayers } = this.state;
-    listOfPlayers[r.playerNum - 1].roads.push(r);
-
-    // Basically same as processBuildingUpdate
-    const updatedPlayer = new Player(r.playerNum);
-    updatedPlayer.copyFromPlayer(listOfPlayers[r.playerNum - 1]);
-    updatedPlayer.roads.push(r);
-
-    // Push copy to state
-    this.setState({
-      ...this.state,
-      listOfPlayers: [
-        ...listOfPlayers.slice(0, r.playerNum - 1),
-        updatedPlayer,
-        ...listOfPlayers.slice(r.playerNum),
-      ],
-    });
+    this.props.placeARoad(r);
   }
 
   processGetGame(game: {
@@ -382,43 +348,42 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
-  distributeResources(diceSum: number) {
-    const { listOfPlayers } = this.state;
-    console.log(this.state);
+  // distributeResources(diceSum: number) {
+  //   const { listOfPlayers } = this.props;
+  //   console.log(this.state);
 
-    // We have to copy over because state should be 'immutable' see issue #30 on GH for more details
-    let newPlayersList = [];
-    for (const oldPlayer of listOfPlayers) {
-      const addPlayer = new Player(oldPlayer.playerNum);
-      addPlayer.copyFromPlayer(oldPlayer);
-      newPlayersList.push(addPlayer);
-    }
+  //   // We have to copy over because state should be 'immutable' see issue #30 on GH for more details
+  //   let newPlayersList = [];
+  //   for (const oldPlayer of listOfPlayers) {
+  //     const addPlayer = new Player(oldPlayer.playerNum);
+  //     addPlayer.copyFromPlayer(oldPlayer);
+  //     newPlayersList.push(addPlayer);
+  //   }
 
-    for (const currPlayer of newPlayersList) {
-      for (const currBuilding of currPlayer.buildings) {
-        // Need to look out for doubling counting
-        const buildingTiles = this.tilesBuildingIsOn(currBuilding);
-        for (const currTile of buildingTiles) {
-          if (currTile.counter === diceSum) {
-            currPlayer.addResource(currTile.resource);
-          }
-        }
-      }
-    }
-    console.log(newPlayersList);
+  //   for (const currPlayer of newPlayersList) {
+  //     for (const currBuilding of currPlayer.buildings) {
+  //       // Need to look out for doubling counting
+  //       const buildingTiles = this.tilesBuildingIsOn(currBuilding);
+  //       for (const currTile of buildingTiles) {
+  //         if (currTile.counter === diceSum) {
+  //           currPlayer.addResource(currTile.resource);
+  //         }
+  //       }
+  //     }
+  //   }
 
-    this.setState(
-      {
-        ...this.state,
-        listOfPlayers: [...newPlayersList],
-      },
-      () => console.log(this.state.listOfPlayers)
-    );
-  }
+  //   this.setState(
+  //     {
+  //       ...this.state,
+  //       listOfPlayers: [...newPlayersList],
+  //     },
+  //     () => console.log(this.state.listOfPlayers)
+  //   );
+  // }
 
   // Callback function for the 'Dice' component
   hasRolledCB(diceSum: number) {
-    this.distributeResources(diceSum);
+    // this.distributeResources(diceSum);
     this.evaluateEndTurnEligibility();
   }
 
@@ -500,11 +465,8 @@ export class App extends React.Component<{}, AppState> {
 
   // Highlights the available places to put settlements
   highlightSettlingSpaces(typeofHighlight: string) {
-    const {
-      isCurrentlyPlacingSettlement,
-      isCurrentlyPlacingRoad,
-      listOfPlayers,
-    } = this.state;
+    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    const { listOfPlayers } = this.props;
 
     // TODO: Write better redux
     const storeState = store.getState();
@@ -535,7 +497,7 @@ export class App extends React.Component<{}, AppState> {
         for (; numRowsDone < numRows; y--) {
           cornerLoop: for (let corner = 0; corner <= 5; corner++) {
             // If there is already a building in the spot, don't highlight it
-            for (const pl of listOfPlayers) {
+            for (const pl of listOfPlayers.values()) {
               for (const setl of pl.buildings) {
                 if (
                   x === setl.boardXPos &&
@@ -590,11 +552,11 @@ export class App extends React.Component<{}, AppState> {
   }
 
   renderRoads() {
-    const { listOfPlayers } = this.state;
+    const { listOfPlayers } = this.props;
     let roadArr = [];
     let key = 0;
 
-    for (const p of listOfPlayers) {
+    for (const p of listOfPlayers.values()) {
       for (const r of p.roads) {
         roadArr.push(
           <Road
@@ -612,7 +574,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   generateAllPlayerCards() {
-    const { listOfPlayers } = this.state;
+    const { listOfPlayers } = this.props;
     const storeState = store.getState();
 
     let playerCards = [];
@@ -620,13 +582,20 @@ export class App extends React.Component<{}, AppState> {
     let topX = 0;
 
     for (let x = 0; x < 4; x++) {
+      const getPlayer = listOfPlayers.get((key + 1) as PlayerNumber);
+      if (!getPlayer) {
+        // Shouldn't be possible
+        console.log("Something went horribly wrong!");
+        return;
+      }
+
       if (x === storeState.inGamePlayerNumber - 1) {
         playerCards.push(
           <PlayerCard
             key={key++}
             bkgX={widthOfSVG / 2 - playerCardWidth / 2}
             bkgY={heightOfSVG - playerCardHeight}
-            playerModel={listOfPlayers[key - 1]}
+            playerModel={getPlayer}
             currentPersonPlaying={storeState.currentPersonPlaying}
           />
         );
@@ -640,7 +609,7 @@ export class App extends React.Component<{}, AppState> {
             key={key++}
             bkgX={currX}
             bkgY={currY}
-            playerModel={listOfPlayers[key - 1]}
+            playerModel={getPlayer}
             currentPersonPlaying={storeState.currentPersonPlaying}
           />
         );
@@ -651,6 +620,8 @@ export class App extends React.Component<{}, AppState> {
   }
 
   generateResourceCards() {
+    const { listOfPlayers, inGamePlayerNumber } = this.props;
+
     let key = 0;
 
     const cardWidth = widthOfSVG / 15;
@@ -660,9 +631,13 @@ export class App extends React.Component<{}, AppState> {
 
     let resCardArr = [];
     for (const res of LIST_OF_RESOURCES) {
-      const resAmount = this.state.listOfPlayers[
-        store.getState().inGamePlayerNumber - 1
-      ].getNumberOfResources(res);
+      let resAmount = listOfPlayers
+        .get(inGamePlayerNumber)
+        ?.getNumberOfResources(res);
+
+      if (!resAmount) {
+        resAmount = -1;
+      }
 
       resCardArr.push(
         <ResourceCard
@@ -712,3 +687,5 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 }
+
+export default connector(App);
