@@ -173,8 +173,6 @@ class Dice extends React.Component<DiceProps, UIState> {
 
     const shouldBeDisabled = hasRolled || !isPlayersTurn;
     const diceOpacity = shouldBeDisabled ? 0.7 : 1.0;
-    console.log(hasRolled);
-    console.log(isPlayersTurn);
 
     return (
       <g

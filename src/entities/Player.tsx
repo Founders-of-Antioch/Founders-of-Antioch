@@ -2,7 +2,7 @@ import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
 import { PlayerNumber } from "../redux/Actions";
 
-// Should be moved into helper
+// Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
 
 export class Player {

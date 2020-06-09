@@ -7,6 +7,7 @@ export const PLACE_ROAD = "PLACE_ROAD";
 export const DECLARE_PLAYER_NUM = "DECLARE_PLAYER_NUM";
 export const HAS_ROLLED = "HAS_ROLLED";
 export const NEXT_TURN = "NEXT_TURN";
+export const COLLECT_RESOURCES = "COLLECT_RESOURCES";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -15,6 +16,14 @@ export interface ChangePlayerAction {
 
 // -1 For when the have not joined yet and are waiting for the backend
 export type PlayerNumber = 1 | 2 | 3 | 4 | -1;
+
+export type ResourceString =
+  | "desert"
+  | "wood"
+  | "brick"
+  | "ore"
+  | "sheep"
+  | "wheat";
 
 // TODO: Migrate to just take in 'Building' instead of 4 params
 interface PlaceSettlementAction {
@@ -30,7 +39,16 @@ interface PlaceRoadAction {
   road: RoadModel;
 }
 
-export type PlayerAction = PlaceSettlementAction | PlaceRoadAction;
+interface CollectResourcesAction {
+  type: typeof COLLECT_RESOURCES;
+  collectResources: Array<ResourceString>;
+  playerNumber: PlayerNumber;
+}
+
+export type PlayerAction =
+  | PlaceSettlementAction
+  | PlaceRoadAction
+  | CollectResourcesAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -77,6 +95,13 @@ export function declarePlayerNumber(
 
 export function nextTurn(turnNumber: number): NextTurnAction {
   return { type: NEXT_TURN, turnNumber };
+}
+
+export function collectResources(
+  collectResources: Array<ResourceString>,
+  playerNumber: PlayerNumber
+): CollectResourcesAction {
+  return { type: COLLECT_RESOURCES, collectResources, playerNumber };
 }
 
 // export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;

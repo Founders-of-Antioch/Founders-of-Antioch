@@ -3,6 +3,7 @@ import {
   PlayerAction,
   PLACE_SETTLEMENT,
   PLACE_ROAD,
+  COLLECT_RESOURCES,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 import { Building } from "../../entities/Building";
@@ -35,6 +36,7 @@ export default function players(
 
         return new Map([...state, [action.playerNum, play]]);
       } else {
+        console.log(`Player ${action.playerNum} not found`);
         return state;
       }
     case PLACE_ROAD:
@@ -47,8 +49,29 @@ export default function players(
 
         return new Map([...state, [action.road.playerNum, newPl]]);
       } else {
+        console.log(`Player ${action.road.playerNum} not found`);
         return state;
       }
+    case COLLECT_RESOURCES:
+      const generPl = new Player(action.playerNumber);
+      const pFState = state.get(action.playerNumber);
+      console.log("Inside the reducer");
+
+      if (pFState) {
+        generPl.copyFromPlayer(pFState);
+        for (const currRes of action.collectResources) {
+          const currAmount = generPl.resourceHand.get(currRes);
+          if (currAmount !== undefined) {
+            generPl.resourceHand.set(currRes, currAmount + 1);
+          }
+        }
+        console.log("Returning from reducer");
+        return new Map([...state, [action.playerNumber, generPl]]);
+      } else {
+        console.log(`Player ${action.playerNumber} not found`);
+        return state;
+      }
+
     default:
       return state;
   }

@@ -1,14 +1,16 @@
 // import { Building } from "./Building";
 
+import { ResourceString } from "../redux/Actions";
+
 export class TileModel {
-  resource: string;
+  resource: ResourceString;
   counter: number;
   boardXPos: number;
   boardYPos: number;
   // buildings: Array<Building>;
 
   constructor(
-    resource: string,
+    resource: ResourceString,
     counter: number,
     boardXPos: number,
     boardYpos: number

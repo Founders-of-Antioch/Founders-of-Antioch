@@ -1,13 +1,14 @@
 import React from "react";
 import brick from "../icons/brick.svg";
 import { SAND, BRICK, WHEAT } from "../colors";
+import { ResourceString } from "../redux/Actions";
 // import cloud from "../icons/cloud.svg";
 
 // Tip is the top 'tip' of the resource hexagon tile
 // Counter is the proability counter that should be place on the resource tile. Use -1 for no counter
 // TODO: Refactor now that we have 'TileModel'
 export interface TileProps {
-  resource: string;
+  resource: ResourceString;
   hexRad: number;
   tipX: number;
   tipY: number;

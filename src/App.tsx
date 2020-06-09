@@ -26,6 +26,8 @@ import {
   nextTurn,
   placeSettlement,
   placeRoad,
+  ResourceString,
+  collectResources,
 } from "./redux/Actions";
 import store from "./redux/store";
 import { FoAppState } from "./redux/reducers/reducers";
@@ -79,6 +81,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
     placeARoad: (road: RoadModel) => {
       return dispatch(placeRoad(road));
     },
+    collectSomeResources: (
+      resList: Array<ResourceString>,
+      playerNum: PlayerNumber
+    ) => {
+      return dispatch(collectResources(resList, playerNum));
+    },
   };
 }
 
@@ -115,7 +123,7 @@ class App extends React.Component<AppProps, UIState> {
     this.processGetGame = this.processGetGame.bind(this);
     this.processRoadUpdate = this.processRoadUpdate.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
-    // this.distributeResources = this.distributeResources.bind(this);
+    this.distributeResources = this.distributeResources.bind(this);
 
     this.setupSockets();
     this.getBoardOne();
@@ -309,7 +317,7 @@ class App extends React.Component<AppProps, UIState> {
   processGetGame(game: {
     currentPersonPlaying: number;
     counters: Array<string>;
-    resources: Array<string>;
+    resources: Array<ResourceString>;
   }) {
     if (this.state.isLoading) {
       let tileList: Array<TileModel> = [];
@@ -348,42 +356,30 @@ class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  // distributeResources(diceSum: number) {
-  //   const { listOfPlayers } = this.props;
-  //   console.log(this.state);
+  // TODO: Need a socket for backend cards
+  distributeResources(diceSum: number) {
+    const { listOfPlayers } = this.props;
+    console.log(this.state);
 
-  //   // We have to copy over because state should be 'immutable' see issue #30 on GH for more details
-  //   let newPlayersList = [];
-  //   for (const oldPlayer of listOfPlayers) {
-  //     const addPlayer = new Player(oldPlayer.playerNum);
-  //     addPlayer.copyFromPlayer(oldPlayer);
-  //     newPlayersList.push(addPlayer);
-  //   }
-
-  //   for (const currPlayer of newPlayersList) {
-  //     for (const currBuilding of currPlayer.buildings) {
-  //       // Need to look out for doubling counting
-  //       const buildingTiles = this.tilesBuildingIsOn(currBuilding);
-  //       for (const currTile of buildingTiles) {
-  //         if (currTile.counter === diceSum) {
-  //           currPlayer.addResource(currTile.resource);
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   this.setState(
-  //     {
-  //       ...this.state,
-  //       listOfPlayers: [...newPlayersList],
-  //     },
-  //     () => console.log(this.state.listOfPlayers)
-  //   );
-  // }
+    for (const currPlayer of listOfPlayers.values()) {
+      for (const currBuilding of currPlayer.buildings) {
+        // Need to look out for doubling counting
+        const buildingTiles = this.tilesBuildingIsOn(currBuilding);
+        for (const currTile of buildingTiles) {
+          if (currTile.counter === diceSum) {
+            this.props.collectSomeResources(
+              [currTile.resource],
+              currPlayer.playerNum
+            );
+          }
+        }
+      }
+    }
+  }
 
   // Callback function for the 'Dice' component
   hasRolledCB(diceSum: number) {
-    // this.distributeResources(diceSum);
+    this.distributeResources(diceSum);
     this.evaluateEndTurnEligibility();
   }
 
@@ -635,7 +631,7 @@ class App extends React.Component<AppProps, UIState> {
         .get(inGamePlayerNumber)
         ?.getNumberOfResources(res);
 
-      if (!resAmount) {
+      if (resAmount === undefined) {
         resAmount = -1;
       }
 
