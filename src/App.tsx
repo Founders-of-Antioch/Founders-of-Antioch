@@ -28,6 +28,7 @@ import {
   placeRoad,
   ResourceString,
   collectResources,
+  declareBoard,
 } from "./redux/Actions";
 import store from "./redux/store";
 import { FoAppState } from "./redux/reducers/reducers";
@@ -37,16 +38,10 @@ import { connect, ConnectedProps } from "react-redux";
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
 
-// store.dispatch(changePlayer(4));
-
 export const socket = socketIOClient.connect("http://localhost:3001");
 
 type UIState = {
   isLoading: boolean;
-  boardToBePlayed: {
-    listOfTiles: Array<TileModel>;
-    gameID: number;
-  };
   canEndTurn: boolean;
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
@@ -55,6 +50,7 @@ type UIState = {
 type AppState = {
   listOfPlayers: Map<PlayerNumber, Player>;
   inGamePlayerNumber: PlayerNumber;
+  boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
 };
 
 let hasSeeded = false;
@@ -63,6 +59,7 @@ function mapStateToProps(store: FoAppState): AppState {
   return {
     listOfPlayers: store.playersByID,
     inGamePlayerNumber: store.inGamePlayerNumber,
+    boardToBePlayed: store.boardToBePlayed,
   };
 }
 
@@ -87,6 +84,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
     ) => {
       return dispatch(collectResources(resList, playerNum));
     },
+    declareBoardState: (board: {
+      listOfTiles: Array<TileModel>;
+      gameID: string;
+    }) => {
+      return dispatch(declareBoard(board.listOfTiles, board.gameID));
+    },
   };
 }
 
@@ -100,10 +103,6 @@ class App extends React.Component<AppProps, UIState> {
 
     this.state = {
       isLoading: true,
-      boardToBePlayed: {
-        listOfTiles: [],
-        gameID: -1,
-      },
       canEndTurn: false,
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
@@ -173,7 +172,7 @@ class App extends React.Component<AppProps, UIState> {
       }
 
       for (let i = 0; i < 8; i++) {
-        socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+        // socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
       }
 
       // Fix with redux
@@ -202,7 +201,7 @@ class App extends React.Component<AppProps, UIState> {
 
   // Returns an array of TileModel representing the resources the building touches
   tilesBuildingIsOn(knownBuilding: Building) {
-    const { boardToBePlayed } = this.state;
+    const { boardToBePlayed } = this.props;
 
     let adjTiles: Array<TileModel> = [];
     // https://www.redblobgames.com/grids/hexagons/#neighbors
@@ -348,11 +347,8 @@ class App extends React.Component<AppProps, UIState> {
       this.setState({
         ...this.state,
         isLoading: false,
-        boardToBePlayed: {
-          listOfTiles: tileList,
-          gameID: 1,
-        },
       });
+      this.props.declareBoardState({ listOfTiles: tileList, gameID: "1" });
     }
   }
 
@@ -404,7 +400,7 @@ class App extends React.Component<AppProps, UIState> {
   // Ends the players turn
   // Should only be used as callback for the end turn button
   endTurn() {
-    socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+    socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
     store.dispatch(hasRolled(false));
     this.setState({
       ...this.state,
@@ -658,7 +654,7 @@ class App extends React.Component<AppProps, UIState> {
     if (isLoading) {
       return null;
     } else {
-      const { boardToBePlayed } = this.state;
+      const { boardToBePlayed } = this.props;
       return (
         <svg width="100%" height="100%">
           {/* <rect width="100%" height="100%" fill="#00a6e4"></rect> */}

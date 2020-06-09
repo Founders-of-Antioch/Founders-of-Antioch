@@ -1,4 +1,5 @@
 import { RoadModel } from "../entities/RoadModel";
+import { TileModel } from "../entities/TIleModel";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -8,6 +9,7 @@ export const DECLARE_PLAYER_NUM = "DECLARE_PLAYER_NUM";
 export const HAS_ROLLED = "HAS_ROLLED";
 export const NEXT_TURN = "NEXT_TURN";
 export const COLLECT_RESOURCES = "COLLECT_RESOURCES";
+export const DECLARE_BOARD = "DECLARE_BOARD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -65,6 +67,11 @@ export interface NextTurnAction {
   turnNumber: number;
 }
 
+export interface DeclareBoardAction {
+  type: typeof DECLARE_BOARD;
+  board: { listOfTiles: Array<TileModel>; gameID: string };
+}
+
 /** Action creators */
 export function hasRolled(hasRolled: boolean): HasRolledAction {
   return { type: HAS_ROLLED, hasRolled };
@@ -102,6 +109,13 @@ export function collectResources(
   playerNumber: PlayerNumber
 ): CollectResourcesAction {
   return { type: COLLECT_RESOURCES, collectResources, playerNumber };
+}
+
+export function declareBoard(
+  listOfTiles: Array<TileModel>,
+  gameID: string
+): DeclareBoardAction {
+  return { type: DECLARE_BOARD, board: { listOfTiles, gameID } };
 }
 
 // export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;
