@@ -5,13 +5,6 @@ import { TileModel } from "../entities/TIleModel";
 import { centerTileX, centerTileY } from "./Settlement";
 import { FoAppState } from "../redux/reducers/reducers";
 import { connect } from "react-redux";
-import store from "../redux/store";
-
-// Center tile is 0,0 - going right is pos and left neg, up pos and down neg, just like a standard XY coordinate system. E.g. top left tile is -1, 2
-// type RobberState = {
-//   boardXPos: number;
-//   boardYPos: number;
-// };
 
 type RobberProps = {
   listOfTiles: Array<TileModel>;
@@ -26,20 +19,12 @@ function mapStateToProps(store: FoAppState): RobberProps {
 class Robber extends React.Component<RobberProps, {}> {
   constructor(props: RobberProps) {
     super(props);
-    // this.state = {
-    //   boardXPos: 0,
-    //   boardYPos: 0,
-    // };
     this.findDesertTileCoordinates = this.findDesertTileCoordinates.bind(this);
   }
 
   findDesertTileCoordinates() {
     for (const t of this.props.listOfTiles) {
       if (t.resource === "desert") {
-        // this.setState({
-        //   boardXPos: t.boardXPos,
-        //   boardYPos: t.boardYPos,
-        // });
         return [t.boardXPos, t.boardYPos];
       }
     }
@@ -48,11 +33,10 @@ class Robber extends React.Component<RobberProps, {}> {
   }
 
   render() {
-    store.subscribe(this.findDesertTileCoordinates);
-    // const { boardXPos, boardYPos } = this.state;
     const dTiles = this.findDesertTileCoordinates();
+    console.log(dTiles);
     const boardXPos = dTiles[0];
-    const boardYPos = dTiles[0];
+    const boardYPos = dTiles[1];
 
     const actX = centerTileX(boardXPos, boardYPos);
     const actY = centerTileY(boardYPos);

@@ -123,7 +123,6 @@ class App extends React.Component<AppProps, UIState> {
       this
     );
     this.processGetGame = this.processGetGame.bind(this);
-    this.processRoadUpdate = this.processRoadUpdate.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
     this.distributeResources = this.distributeResources.bind(this);
 
@@ -140,11 +139,11 @@ class App extends React.Component<AppProps, UIState> {
     if (!hasSeeded) {
       socket.emit("setSeedMode");
 
-      let players = [];
-      const pnums: Array<PlayerNumber> = [1, 2, 3, 4];
-      for (const pnum of pnums) {
-        players.push(new Player(pnum));
-      }
+      // let players = [];
+      // const pnums: Array<PlayerNumber> = [1, 2, 3, 4];
+      // for (const pnum of pnums) {
+      //   players.push(new Player(pnum));
+      // }
 
       for (let i = 0; i < 4; i++) {
         socket.emit("joinGame", "1");
@@ -163,25 +162,25 @@ class App extends React.Component<AppProps, UIState> {
       ];
 
       for (const build of buildingSeed) {
-        // socket.emit(
-        //   "addBuilding",
-        //   "1",
-        //   build.boardXPos,
-        //   build.boardYPos,
-        //   build.corner,
-        //   build.playerNum
-        // );
-        players[build.playerNum - 1].buildings.push(build);
+        socket.emit(
+          "addBuilding",
+          "1",
+          build.boardXPos,
+          build.boardYPos,
+          build.corner,
+          build.playerNum
+        );
+        this.props.placeASettlement(build);
       }
 
-      for (let i = 0; i < 8; i++) {
-        // socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
-      }
+      // for (let i = 0; i < 8; i++) {
+      //   // socket.emit("endTurn", String(this.state.boardToBePlayed.gameID));
+      // }
 
-      // Fix with redux
-      this.setState({
-        isCurrentlyPlacingSettlement: false,
-      });
+      // // Fix with redux
+      // this.setState({
+      //   isCurrentlyPlacingSettlement: false,
+      // });
 
       hasSeeded = true;
     }
@@ -307,13 +306,11 @@ class App extends React.Component<AppProps, UIState> {
     // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
     // Backend sends an event when someone places a new road
-    socket.on("roadUpdate", this.processRoadUpdate);
+    socket.on("roadUpdate", (r: RoadModel) => {
+      this.props.placeARoad(r);
+    });
 
     socket.on("giveGame", this.processGetGame);
-  }
-
-  processRoadUpdate(r: RoadModel) {
-    this.props.placeARoad(r);
   }
 
   processGetGame(game: {
@@ -362,6 +359,8 @@ class App extends React.Component<AppProps, UIState> {
     for (const currPlayer of listOfPlayers.values()) {
       let resToAdd: Array<ResourceString> = [];
       for (const currBuilding of currPlayer.buildings) {
+        console.log(currPlayer.buildings.length);
+        console.log(currPlayer.buildings);
         // Need to look out for doubling counting
         const buildingTiles = this.tilesBuildingIsOn(currBuilding);
         for (const currTile of buildingTiles) {

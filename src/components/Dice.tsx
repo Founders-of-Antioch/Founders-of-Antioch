@@ -64,7 +64,6 @@ class Dice extends React.Component<DiceProps, UIState> {
   setupSockets() {
     // Listens for when other players roll the dice
     socket.on("diceUpdate", (d1: DiceNumber, d2: DiceNumber) => {
-      console.log(12);
       this.setState({
         ...this.state,
         diceOneValue: d1,

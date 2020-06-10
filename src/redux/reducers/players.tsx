@@ -55,17 +55,16 @@ export default function players(
     case COLLECT_RESOURCES:
       const generPl = new Player(action.playerNumber);
       const pFState = state.get(action.playerNumber);
-      console.log("Inside the reducer");
 
       if (pFState) {
         generPl.copyFromPlayer(pFState);
+
         for (const currRes of action.collectResources) {
           const currAmount = generPl.resourceHand.get(currRes);
           if (currAmount !== undefined) {
             generPl.resourceHand.set(currRes, currAmount + 1);
           }
         }
-        console.log("Returning from reducer");
         return new Map([...state, [action.playerNumber, generPl]]);
       } else {
         console.log(`Player ${action.playerNumber} not found`);

@@ -34,7 +34,7 @@ export class Player {
     this.buildings = [...p.buildings];
     this.roads = [...p.roads];
     this.knights = p.knights;
-    this.resourceHand = new Map(this.resourceHand);
+    this.resourceHand = new Map([...this.resourceHand]);
   }
 
   addResource(res: string) {

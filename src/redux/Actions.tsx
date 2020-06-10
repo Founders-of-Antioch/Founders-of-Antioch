@@ -81,6 +81,10 @@ export function changePlayer(playerNum: PlayerNumber): ChangePlayerAction {
   return { type: CHANGE_PLAYER, playerNum };
 }
 
+// NOTE: ONLY TO BE USED in Socket EMITTERS
+// This is because once the backend knows there is a new
+// building, it'll send a mass update to all players,
+// including itself. So don't create double counts!
 export function placeSettlement(
   boardXPos: number,
   boardYPos: number,
@@ -90,6 +94,10 @@ export function placeSettlement(
   return { type: PLACE_SETTLEMENT, boardXPos, boardYPos, corner, playerNum };
 }
 
+// NOTE: ONLY TO BE USED in Socket EMITTERS
+// This is because once the backend knows there is a new
+// building, it'll send a mass update to all players,
+// including itself. So don't create double counts!
 export function placeRoad(road: RoadModel): PlaceRoadAction {
   return { type: PLACE_ROAD, road };
 }

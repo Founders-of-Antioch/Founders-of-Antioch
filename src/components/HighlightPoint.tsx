@@ -3,8 +3,7 @@ import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
-import { placeSettlement, PlayerNumber } from "../redux/Actions";
-import store from "../redux/store";
+import { PlayerNumber } from "../redux/Actions";
 
 // Highlights a point where a player can build a settlement
 
@@ -37,9 +36,9 @@ export default class HighlightPoint extends Component<Props, {}> {
       corner,
       playerWhoSelected
     );
-    store.dispatch(
-      placeSettlement(boardXPos, boardYPos, corner, playerWhoSelected)
-    );
+    // store.dispatch(
+    //   placeSettlement(boardXPos, boardYPos, corner, playerWhoSelected)
+    // );
     this.props.finishedSelectingCallback();
   }
 

@@ -9,7 +9,6 @@ export default function boardToPlay(
 ): board {
   switch (action.type) {
     case DECLARE_BOARD:
-      console.log(1234);
       return {
         listOfTiles: action.board.listOfTiles,
         gameID: action.board.gameID,
