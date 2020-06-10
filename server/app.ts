@@ -3,7 +3,6 @@ import * as http from "http";
 import { Request, Response } from "express";
 import * as bodyParser from "body-parser";
 import { createConnection } from "typeorm";
-import { User } from "./src/entity/User";
 import { Game } from "./src/entity/Game";
 import { Board } from "./src/entity/Board";
 import * as socketIo from "socket.io";
@@ -11,9 +10,13 @@ import * as cors from "cors";
 import { ClientManager } from "./src/clientManager";
 import { GameManager } from "./src/gameManager";
 import { Socket } from "socket.io";
-import { Player } from "./src/Player";
+import { ServerPlayer } from "./src/Player";
+import { Player } from "../front-end/src/entities/Player";
 import { Building } from "./src/Building";
 import { Road } from "./src/entity/Road";
+import { FoAppState } from "../front-end/src/redux/reducers/reducers";
+import { TileModel } from "../front-end/src/entities/TIleModel";
+import { PlayerNumber } from "../front-end/src/redux/Actions";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 function shuffle(a: Array<string>): Array<string> {
@@ -91,7 +94,7 @@ createConnection().then((connection) => {
     );
 
     client.on("joinGame", (gameID: string) => {
-      if (gameManager.addPlayerToGame(gameID, new Player(client))) {
+      if (gameManager.addPlayerToGame(gameID, new ServerPlayer(client))) {
         console.log(`Client ${client.id} joined game ${gameID}`);
         io.emit("joinedGame", gameManager.numPlayersInGame(gameID));
       }
@@ -153,73 +156,48 @@ createConnection().then((connection) => {
     );
 
     client.on(
-      "addResources",
-      (res: Array<string>, pNum: number, gameID: string) => {}
+      "getSeedState",
+      (listOfTiles: Array<TileModel>): FoAppState => {
+        const listOfBuildings = [
+          new Building(0, 0, 0, 1),
+          new Building(0, 0, 2, 1),
+          new Building(1, 1, 2, 2),
+          new Building(2, 0, 5, 2),
+          new Building(-2, -2, 0, 3),
+          new Building(-1, -1, 2, 3),
+          new Building(0, 2, 2, 4),
+          new Building(0, 0, 4, 4),
+        ];
+
+        // If someone knows a way around the 'as', please feel free to fix it!
+        let playersMap = new Map<PlayerNumber, Player>();
+        for (let i = 1; i <= 4; i++) {
+          const playerToAdd = new Player(i as PlayerNumber);
+
+          if (listOfBuildings[0] !== undefined) {
+            // playerToAdd.buildings.push(listOfBuildings.pop() as Building);
+          }
+
+          playersMap.set(i as PlayerNumber, playerToAdd);
+        }
+
+        return {
+          currentPersonPlaying: 1,
+          inGamePlayerNumber: 1,
+          hasRolled: false,
+          turnNumber: 3,
+          boardToBePlayed: {
+            listOfTiles,
+            gameID: "1",
+          },
+          playersByID: playersMap,
+        };
+      }
     );
   });
 
   app.use(bodyParser.json());
   app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
-
-  /* BEGIN ENDPOINTS */
-  // app.post("/createNewPlayer/:gameID", async function (
-  //   req: Request,
-  //   res: Response
-  // ) {
-  //   let blankPlayer = new Player();
-  //   blankPlayer.gameID = Number(req.params.gameID);
-
-  //   const gameToBeIn = await gameRepository.findOne(req.params.gameID);
-
-  //   if (gameToBeIn.numberOfPlayers === gameToBeIn.listOfPlayerIDs.length) {
-  //     //Send 400
-  //     res.status(400);
-  //     return res.send("Max number of players already in game.");
-  //   }
-
-  //   const results = await playerRepository.save(blankPlayer);
-
-  //   await gameRepository.merge(gameToBeIn, {
-  //     listOfPlayerIDs: gameToBeIn.listOfPlayerIDs.concat(
-  //       String(blankPlayer.id)
-  //     ),
-  //   });
-  //   await gameRepository.save(gameToBeIn);
-
-  //   return res.send(results);
-  // });
-
-  // app.put("/removePlayerFromGame/:gameID&:playerID", async function (
-  //   req: Request,
-  //   res: Response
-  // ) {
-  //   const playersGame = await gameRepository.findOne(req.params.gameID);
-  //   const listOfPIDs = playersGame.listOfPlayerIDs;
-  //   let otherPlayers = [];
-
-  //   for (const i of listOfPIDs) {
-  //     if (String(req.params.playerID) !== i) {
-  //       otherPlayers.push(i);
-  //     }
-  //   }
-
-  //   if (listOfPIDs.length === otherPlayers.length) {
-  //     res.status(400);
-  //     return res.send("Player not in the request game");
-  //   } else {
-  //     await gameRepository.merge(playersGame, {
-  //       listOfPlayerIDs: otherPlayers,
-  //     });
-
-  //     const results = await gameRepository.save(playersGame);
-  //     return res.send(results);
-  //   }
-  // });
-
-  // app.get("/players", async function (req: Request, res: Response) {
-  //   const players = await playerRepository.find();
-  //   return res.json(players);
-  // });
 
   //Make a new game - returns the board
   app.post("/games", async function (req: Request, res: Response) {

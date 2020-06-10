@@ -1,4 +1,4 @@
-import { Player } from "./Player";
+import { ServerPlayer } from "./Player";
 import { Building } from "./Building";
 import { Road } from "./entity/Road";
 
@@ -42,7 +42,7 @@ function randCounters() {
 }
 
 export class Game {
-  listOfPlayers: Array<Player>;
+  listOfPlayers: Array<ServerPlayer>;
   currentPersonPlaying: number;
   counters: Array<string>;
   resources: Array<string>;
@@ -57,7 +57,7 @@ export class Game {
     this.currentTurnNumber = 1;
   }
 
-  addPlayer(p: Player): boolean {
+  addPlayer(p: ServerPlayer): boolean {
     if (this.listOfPlayers.length === 4) {
       return false;
     } else {
@@ -159,7 +159,7 @@ export class GameManager {
     }
   }
 
-  addPlayerToGame(gameID: string, p: Player): boolean {
+  addPlayerToGame(gameID: string, p: ServerPlayer): boolean {
     const getGame = this.mapOfGames.get(gameID);
     if (getGame) {
       return getGame.addPlayer(p);

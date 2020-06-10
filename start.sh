@@ -1,3 +1,2 @@
-cd ../FoAPI && ts-node app.ts &
-
-yarn start
+cd server && ts-node app.ts & 
+cd front-end && yarn start

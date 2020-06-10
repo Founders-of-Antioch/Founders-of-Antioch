@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { Building } from "./Building";
 import { Road } from "./entity/Road";
 
-export class Player {
+export class ServerPlayer {
   playerSocket: Socket;
   victoryPoints: number;
   settlements: Array<Building>;
