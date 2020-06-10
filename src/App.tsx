@@ -27,7 +27,6 @@ import {
   placeSettlement,
   placeRoad,
   ResourceString,
-  collectResources,
   declareBoard,
 } from "./redux/Actions";
 import store from "./redux/store";
@@ -71,9 +70,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     placeARoad: (road: RoadModel) => {
       return dispatch(placeRoad(road));
     },
-    collectResourcesFromRoll: (diceSum: number) => {
-      return dispatch(collectResources(diceSum));
-    },
     declareBoardState: (board: {
       listOfTiles: Array<TileModel>;
       gameID: string;
@@ -116,7 +112,9 @@ class App extends React.Component<AppProps, UIState> {
     this.renderRoads = this.renderRoads.bind(this);
 
     this.setupSockets();
-    this.getBoardOne();
+
+    // TODO: Fix GameID
+    socket.emit("needGame", "1");
   }
 
   componentDidMount() {
@@ -349,33 +347,9 @@ class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  // TODO: Need a socket for backend cards
-  // distributeResources(diceSum: number) {
-  //   const { listOfPlayers } = this.props;
-
-  //   for (const currPlayer of listOfPlayers.values()) {
-  //     let resToAdd: Array<ResourceString> = [];
-  //     for (const currBuilding of currPlayer.buildings) {
-  //       console.log(currPlayer.buildings.length);
-  //       console.log(currPlayer.buildings);
-  //       // Need to look out for doubling counting
-  //       const buildingTiles = this.tilesBuildingIsOn(currBuilding);
-  //       for (const currTile of buildingTiles) {
-  //         if (currTile.counter === diceSum) {
-  //           resToAdd.push(currTile.resource);
-  //         }
-  //       }
-  //     }
-  //     this.props.collectSomeResources([...resToAdd], currPlayer.playerNum);
-  //   }
-  // }
-
   // Callback function for the 'Dice' component
   // TODO: Move into Dice component once Redux migration is mature enough
-  hasRolledCB(diceSum: number) {
-    // Distr res should be on socket recieve of dice update
-    // this.distributeResources(diceSum);
-    this.props.collectResourcesFromRoll(diceSum);
+  hasRolledCB() {
     this.evaluateEndTurnEligibility();
   }
 
@@ -406,13 +380,6 @@ class App extends React.Component<AppProps, UIState> {
       ...this.state,
       canEndTurn: false,
     });
-  }
-
-  getBoardOne() {
-    // TODO: Fix ID
-    // socket.emit("needCounters", "1");
-    // socket.emit("needResources", "1");
-    socket.emit("needGame", "1");
   }
 
   // Returns the end turn button component
@@ -566,7 +533,7 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   generateAllPlayerCards() {
-    const { listOfPlayers } = this.props;
+    const { listOfPlayers, inGamePlayerNumber } = this.props;
     const storeState = store.getState();
 
     let playerCards = [];
@@ -581,7 +548,7 @@ class App extends React.Component<AppProps, UIState> {
         return;
       }
 
-      if (x === storeState.inGamePlayerNumber - 1) {
+      if (x === inGamePlayerNumber - 1) {
         playerCards.push(
           <PlayerCard
             key={key++}

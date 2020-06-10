@@ -1,7 +1,12 @@
 import React from "react";
 import { socket } from "../App";
 import { widthOfSVG } from "./Board";
-import { PlayerNumber, HasRolledAction, hasRolled } from "../redux/Actions";
+import {
+  PlayerNumber,
+  HasRolledAction,
+  hasRolled,
+  collectResources,
+} from "../redux/Actions";
 import { connect, ConnectedProps } from "react-redux";
 import { FoAppState } from "../redux/reducers/reducers";
 import { Dispatch } from "redux";
@@ -31,6 +36,9 @@ function mapDispatch(dispatch: Dispatch) {
   return {
     rolled: (didRoll: boolean): HasRolledAction => {
       return dispatch(hasRolled(didRoll));
+    },
+    collectResourcesFromRoll: (diceSum: number) => {
+      return dispatch(collectResources(diceSum));
     },
   };
 }
@@ -62,8 +70,11 @@ class Dice extends React.Component<DiceProps, UIState> {
   }
 
   setupSockets() {
-    // Listens for when other players roll the dice
+    // Listens for when players roll the dice
     socket.on("diceUpdate", (d1: DiceNumber, d2: DiceNumber) => {
+      // Once the backend tells all the players what someone rolled, then
+      // give the appropriate resources
+      this.props.collectResourcesFromRoll(d1 + d2);
       this.setState({
         ...this.state,
         diceOneValue: d1,
@@ -79,7 +90,7 @@ class Dice extends React.Component<DiceProps, UIState> {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
 
-      // The as is dangerous, but see here
+      // The 'as' is dangerous, but see here
       // https://stackoverflow.com/questions/62272938/interfacing-random-numbers-in-typescrip
       this.setState({
         diceOneValue: diceOne as DiceNumber,

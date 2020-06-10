@@ -78,7 +78,7 @@ export function changePlayer(playerNum: PlayerNumber): ChangePlayerAction {
   return { type: CHANGE_PLAYER, playerNum };
 }
 
-// NOTE: ONLY TO BE USED in Socket EMITTERS
+// NOTE: ONLY TO BE USED in Socket LISTNERS
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
@@ -86,7 +86,7 @@ export function placeSettlement(buildToAdd: Building): PlaceSettlementAction {
   return { type: PLACE_SETTLEMENT, buildToAdd };
 }
 
-// NOTE: ONLY TO BE USED in Socket EMITTERS
+// NOTE: ONLY TO BE USED in Socket LISTNERS
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
@@ -104,6 +104,10 @@ export function nextTurn(turnNumber: number): NextTurnAction {
   return { type: NEXT_TURN, turnNumber };
 }
 
+// NOTE: ONLY TO BE USED in Socket LISTNERS
+// This is because once the backend knows what someone rolled,
+// it'll send a mass update to all players,
+// including itself. So don't create double counts!
 export function collectResources(diceSum: number): CollectResourcesAction {
   return { type: COLLECT_RESOURCES, diceSum };
 }
