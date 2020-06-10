@@ -3,8 +3,7 @@ import React from "react";
 import Board, { widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
 import Dice, { diceLength } from "./components/Dice";
-import {
-  PlayerCard,
+import PlayerCard, {
   playerCardWidth,
   playerCardHeight,
 } from "./components/PlayerCard";
@@ -50,6 +49,7 @@ type AppState = {
   listOfPlayers: Map<PlayerNumber, Player>;
   inGamePlayerNumber: PlayerNumber;
   boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
+  currentPersonPlaying: PlayerNumber;
 };
 
 let hasSeeded = false;
@@ -59,6 +59,7 @@ function mapStateToProps(store: FoAppState): AppState {
     listOfPlayers: store.playersByID,
     inGamePlayerNumber: store.inGamePlayerNumber,
     boardToBePlayed: store.boardToBePlayed,
+    currentPersonPlaying: store.currentPersonPlaying,
   };
 }
 
@@ -383,12 +384,12 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   // Returns the end turn button component
+  // TODO: Make this MaterialUI or SemanticUI component with foreignObj or something
   endTurnButton() {
+    const { currentPersonPlaying, inGamePlayerNumber } = this.props;
     // Only render the button if it is the player's turn
     // You can only end your turn if it IS your turn
-    // TODO: Make better redux code
-    const storeState = store.getState();
-    if (storeState.currentPersonPlaying === storeState.inGamePlayerNumber) {
+    if (currentPersonPlaying === inGamePlayerNumber) {
       return (
         <FoAButton
           onClick={this.endTurn}
@@ -423,15 +424,16 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   // Highlights the available places to put settlements
+  // TODD: Move most of this into it's own component
   highlightSettlingSpaces(typeofHighlight: string) {
     const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
-    const { listOfPlayers } = this.props;
+    const {
+      listOfPlayers,
+      currentPersonPlaying,
+      inGamePlayerNumber,
+    } = this.props;
 
-    // TODO: Write better redux
-    const storeState = store.getState();
-
-    const isTurn =
-      storeState.currentPersonPlaying === storeState.inGamePlayerNumber;
+    const isTurn = currentPersonPlaying === inGamePlayerNumber;
     const placing =
       typeofHighlight === "road"
         ? isCurrentlyPlacingRoad
@@ -475,7 +477,7 @@ class App extends React.Component<AppProps, UIState> {
                 boardYPos={y}
                 corner={corner}
                 finishedSelectingCallback={callback}
-                playerWhoSelected={storeState.inGamePlayerNumber}
+                playerWhoSelected={inGamePlayerNumber}
                 typeOfHighlight={typeofHighlight}
               />
             );
@@ -517,15 +519,7 @@ class App extends React.Component<AppProps, UIState> {
 
     for (const p of listOfPlayers.values()) {
       for (const r of p.roads) {
-        roadArr.push(
-          <Road
-            key={key++}
-            boardXPos={r.boardXPos}
-            boardYPos={r.boardYPos}
-            hexEdge={r.hexEdgeNumber}
-            playerNum={r.playerNum}
-          />
-        );
+        roadArr.push(<Road key={key++} model={r} />);
       }
     }
 
@@ -534,7 +528,6 @@ class App extends React.Component<AppProps, UIState> {
 
   generateAllPlayerCards() {
     const { listOfPlayers, inGamePlayerNumber } = this.props;
-    const storeState = store.getState();
 
     let playerCards = [];
     let key = 0;
@@ -555,7 +548,6 @@ class App extends React.Component<AppProps, UIState> {
             bkgX={widthOfSVG / 2 - playerCardWidth / 2}
             bkgY={heightOfSVG - playerCardHeight}
             playerModel={getPlayer}
-            currentPersonPlaying={storeState.currentPersonPlaying}
           />
         );
       } else {
@@ -569,7 +561,6 @@ class App extends React.Component<AppProps, UIState> {
             bkgX={currX}
             bkgY={currY}
             playerModel={getPlayer}
-            currentPersonPlaying={storeState.currentPersonPlaying}
           />
         );
       }

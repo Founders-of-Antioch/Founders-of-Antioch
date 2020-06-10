@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Props } from "react";
 import road from "../icons/road.svg";
 import shield from "../icons/shield.svg";
 import medal from "../icons/medal.svg";
@@ -7,27 +7,42 @@ import { widthOfSVG } from "./Board";
 import { Player } from "../entities/Player";
 import { PLAYER_COLORS } from "../colors";
 import { PlayerNumber } from "../redux/Actions";
+import { FoAppState } from "../redux/reducers/reducers";
+import { connect, ConnectedProps } from "react-redux";
 
 // Mini cards displaying player info
 // TODO: Design, make more minimal
-// TODO: Logic, class shouldn't have all four cards
+// TODO: Upgrade to semantic or material UI for this (?)
 
 export const playerCardWidth = widthOfSVG / 7.5;
 export const playerCardHeight = playerCardWidth / 2;
 const profileImageWidth = playerCardWidth / 4;
 const widthOfMiniIcons = playerCardWidth / 10;
 
-type PlayerCardProps = {
+type PlayerCardState = {
+  currentPersonPlaying: PlayerNumber;
+};
+
+function mapStateToProps(store: FoAppState): PlayerCardState {
+  return {
+    currentPersonPlaying: store.currentPersonPlaying,
+  };
+}
+
+const connector = connect(mapStateToProps);
+
+type PropsFromRedux = ConnectedProps<typeof connector>;
+
+type PlayerCardProps = PropsFromRedux & {
   playerModel: Player;
   bkgX: number;
   bkgY: number;
-  currentPersonPlaying: PlayerNumber;
 };
 
 // TODO: Try and not make this global, but I just wanted to get rid of the React error
 let keyForTag = 0;
 
-export class PlayerCard extends React.Component<PlayerCardProps, {}> {
+class PlayerCard extends React.Component<PlayerCardProps, {}> {
   generatePlayerStats() {
     const { bkgX, bkgY } = this.props;
 
@@ -179,3 +194,5 @@ export class PlayerCard extends React.Component<PlayerCardProps, {}> {
     );
   }
 }
+
+export default connector(PlayerCard);

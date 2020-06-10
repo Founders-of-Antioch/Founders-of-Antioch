@@ -2,23 +2,20 @@ import React, { Component } from "react";
 import { hexRadius } from "./Board";
 import { centerTileX, centerTileY } from "./Settlement";
 import { PLAYER_COLORS } from "../colors";
-import { PlayerNumber } from "../redux/Actions";
+import { RoadModel } from "../entities/RoadModel";
 
 type RoadProps = {
-  boardXPos: number;
-  boardYPos: number;
-  hexEdge: number;
-  playerNum: PlayerNumber;
+  model: RoadModel;
 };
 
 export default class Road extends Component<RoadProps, {}> {
   render() {
-    const { boardXPos, boardYPos, hexEdge, playerNum } = this.props;
+    const { boardXPos, boardYPos, hexEdgeNumber, playerNum } = this.props.model;
 
     let adjX = centerTileX(boardXPos, boardYPos);
     let adjY = centerTileY(boardYPos) - hexRadius / 2;
 
-    if (hexEdge < 3) {
+    if (hexEdgeNumber < 3) {
       adjX += (hexRadius * Math.sqrt(3)) / 2;
     } else {
       adjX -= (hexRadius * Math.sqrt(3)) / 2;
@@ -28,17 +25,18 @@ export default class Road extends Component<RoadProps, {}> {
     let rotateY = adjY;
 
     let rotation = 0;
-    if (hexEdge === 0 || hexEdge === 3) {
+    if (hexEdgeNumber === 0 || hexEdgeNumber === 3) {
       rotation = 120;
-    } else if (hexEdge === 5 || hexEdge === 2) {
+    } else if (hexEdgeNumber === 5 || hexEdgeNumber === 2) {
       rotation = -120;
     }
 
-    if (hexEdge === 2 || hexEdge === 3) {
+    if (hexEdgeNumber === 2 || hexEdgeNumber === 3) {
       rotateY += hexRadius;
     }
 
     // TODO: Should be same width as stroke in 'Tile' component
+    // TODO: Should be dynamic
     // Or a little wider (?)
     const width = 10;
 
