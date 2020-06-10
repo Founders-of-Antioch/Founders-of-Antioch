@@ -66,23 +66,13 @@ function mapStateToProps(store: FoAppState): AppState {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     placeASettlement: (build: Building) => {
-      return dispatch(
-        placeSettlement(
-          build.boardXPos,
-          build.boardYPos,
-          build.corner,
-          build.playerNum
-        )
-      );
+      return dispatch(placeSettlement(build));
     },
     placeARoad: (road: RoadModel) => {
       return dispatch(placeRoad(road));
     },
-    collectSomeResources: (
-      resList: Array<ResourceString>,
-      playerNum: PlayerNumber
-    ) => {
-      return dispatch(collectResources(resList, playerNum));
+    collectResourcesFromRoll: (diceSum: number) => {
+      return dispatch(collectResources(diceSum));
     },
     declareBoardState: (board: {
       listOfTiles: Array<TileModel>;
@@ -124,7 +114,6 @@ class App extends React.Component<AppProps, UIState> {
     );
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
-    this.distributeResources = this.distributeResources.bind(this);
 
     this.setupSockets();
     this.getBoardOne();
@@ -150,16 +139,15 @@ class App extends React.Component<AppProps, UIState> {
       }
 
       // x,y,corner,playnum
-      const buildingSeed = [
-        new Building(0, 0, 0, 1),
-        new Building(0, 0, 2, 1),
-        new Building(1, 1, 2, 2),
-        new Building(2, 0, 5, 2),
-        new Building(-2, -2, 0, 3),
-        new Building(-1, -1, 2, 3),
-        new Building(0, 2, 2, 4),
-        new Building(0, 0, 4, 4),
-      ];
+      const buildingSeed: Array<any> = [];
+      //   new Building(0, 0, 0, 1),
+      //   new Building(0, 0, 2, 1),
+      //   new Building(1, 1, 2, 2),
+      //   new Building(2, 0, 5, 2),
+      //   new Building(-2, -2, 0, 3),
+      //   new Building(-1, -1, 2, 3),
+      //   new Building(0, 2, 2, 4),
+      //   new Building(0, 0, 4, 4),
 
       for (const build of buildingSeed) {
         socket.emit(
@@ -170,7 +158,6 @@ class App extends React.Component<AppProps, UIState> {
           build.corner,
           build.playerNum
         );
-        this.props.placeASettlement(build);
       }
 
       // for (let i = 0; i < 8; i++) {
@@ -202,7 +189,11 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   // Returns an array of TileModel representing the resources the building touches
-  tilesBuildingIsOn(knownBuilding: Building) {
+  tilesBuildingIsOn(knownBuilding: {
+    boardXPos: number;
+    boardYPos: number;
+    corner: number;
+  }) {
     const { boardToBePlayed } = this.props;
 
     let adjTiles: Array<TileModel> = [];
@@ -249,11 +240,17 @@ class App extends React.Component<AppProps, UIState> {
     corner: number;
     playerNum: PlayerNumber;
   }) {
+    const touchingTiles = this.tilesBuildingIsOn({
+      boardXPos: building.boardXPos,
+      boardYPos: building.boardYPos,
+      corner: building.corner,
+    });
     const build = new Building(
       building.boardXPos,
       building.boardYPos,
       building.corner,
-      building.playerNum
+      building.playerNum,
+      touchingTiles
     );
 
     this.props.placeASettlement(build);
@@ -353,29 +350,32 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   // TODO: Need a socket for backend cards
-  distributeResources(diceSum: number) {
-    const { listOfPlayers } = this.props;
+  // distributeResources(diceSum: number) {
+  //   const { listOfPlayers } = this.props;
 
-    for (const currPlayer of listOfPlayers.values()) {
-      let resToAdd: Array<ResourceString> = [];
-      for (const currBuilding of currPlayer.buildings) {
-        console.log(currPlayer.buildings.length);
-        console.log(currPlayer.buildings);
-        // Need to look out for doubling counting
-        const buildingTiles = this.tilesBuildingIsOn(currBuilding);
-        for (const currTile of buildingTiles) {
-          if (currTile.counter === diceSum) {
-            resToAdd.push(currTile.resource);
-          }
-        }
-      }
-      this.props.collectSomeResources([...resToAdd], currPlayer.playerNum);
-    }
-  }
+  //   for (const currPlayer of listOfPlayers.values()) {
+  //     let resToAdd: Array<ResourceString> = [];
+  //     for (const currBuilding of currPlayer.buildings) {
+  //       console.log(currPlayer.buildings.length);
+  //       console.log(currPlayer.buildings);
+  //       // Need to look out for doubling counting
+  //       const buildingTiles = this.tilesBuildingIsOn(currBuilding);
+  //       for (const currTile of buildingTiles) {
+  //         if (currTile.counter === diceSum) {
+  //           resToAdd.push(currTile.resource);
+  //         }
+  //       }
+  //     }
+  //     this.props.collectSomeResources([...resToAdd], currPlayer.playerNum);
+  //   }
+  // }
 
   // Callback function for the 'Dice' component
+  // TODO: Move into Dice component once Redux migration is mature enough
   hasRolledCB(diceSum: number) {
-    this.distributeResources(diceSum);
+    // Distr res should be on socket recieve of dice update
+    // this.distributeResources(diceSum);
+    this.props.collectResourcesFromRoll(diceSum);
     this.evaluateEndTurnEligibility();
   }
 

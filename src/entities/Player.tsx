@@ -1,6 +1,6 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
-import { PlayerNumber } from "../redux/Actions";
+import { PlayerNumber, ResourceString } from "../redux/Actions";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
@@ -34,12 +34,11 @@ export class Player {
     this.buildings = [...p.buildings];
     this.roads = [...p.roads];
     this.knights = p.knights;
-    this.resourceHand = new Map([...this.resourceHand]);
+    this.resourceHand = new Map([...p.resourceHand]);
   }
 
-  addResource(res: string) {
+  addResource(res: ResourceString) {
     const stored = this.resourceHand.get(res);
-    console.log(res);
     if (typeof stored === "number") {
       this.resourceHand.set(res, stored + 1);
     }

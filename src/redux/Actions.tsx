@@ -1,5 +1,6 @@
 import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TIleModel";
+import { Building } from "../entities/Building";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -30,10 +31,7 @@ export type ResourceString =
 // TODO: Migrate to just take in 'Building' instead of 4 params
 interface PlaceSettlementAction {
   type: typeof PLACE_SETTLEMENT;
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
-  playerNum: PlayerNumber;
+  buildToAdd: Building;
 }
 
 interface PlaceRoadAction {
@@ -43,8 +41,7 @@ interface PlaceRoadAction {
 
 interface CollectResourcesAction {
   type: typeof COLLECT_RESOURCES;
-  collectResources: Array<ResourceString>;
-  playerNumber: PlayerNumber;
+  diceSum: number;
 }
 
 export type PlayerAction =
@@ -85,13 +82,8 @@ export function changePlayer(playerNum: PlayerNumber): ChangePlayerAction {
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
-export function placeSettlement(
-  boardXPos: number,
-  boardYPos: number,
-  corner: number,
-  playerNum: PlayerNumber
-): PlaceSettlementAction {
-  return { type: PLACE_SETTLEMENT, boardXPos, boardYPos, corner, playerNum };
+export function placeSettlement(buildToAdd: Building): PlaceSettlementAction {
+  return { type: PLACE_SETTLEMENT, buildToAdd };
 }
 
 // NOTE: ONLY TO BE USED in Socket EMITTERS
@@ -112,11 +104,8 @@ export function nextTurn(turnNumber: number): NextTurnAction {
   return { type: NEXT_TURN, turnNumber };
 }
 
-export function collectResources(
-  collectResources: Array<ResourceString>,
-  playerNumber: PlayerNumber
-): CollectResourcesAction {
-  return { type: COLLECT_RESOURCES, collectResources, playerNumber };
+export function collectResources(diceSum: number): CollectResourcesAction {
+  return { type: COLLECT_RESOURCES, diceSum };
 }
 
 export function declareBoard(

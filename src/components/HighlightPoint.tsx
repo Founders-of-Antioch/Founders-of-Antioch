@@ -36,9 +36,6 @@ export default class HighlightPoint extends Component<Props, {}> {
       corner,
       playerWhoSelected
     );
-    // store.dispatch(
-    //   placeSettlement(boardXPos, boardYPos, corner, playerWhoSelected)
-    // );
     this.props.finishedSelectingCallback();
   }
 

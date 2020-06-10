@@ -6,7 +6,6 @@ import {
   COLLECT_RESOURCES,
 } from "../Actions";
 import { Player } from "../../entities/Player";
-import { Building } from "../../entities/Building";
 
 export default function players(
   state: Map<PlayerNumber, Player> = new Map([
@@ -19,24 +18,18 @@ export default function players(
 ): Map<PlayerNumber, Player> {
   switch (action.type) {
     case PLACE_SETTLEMENT:
-      const build = new Building(
-        action.boardXPos,
-        action.boardYPos,
-        action.corner,
-        action.playerNum
-      );
       // TODO: Separate this copying player logic into another method
-      const play = new Player(action.playerNum);
-      const playerFromState = state.get(action.playerNum);
+      const play = new Player(action.buildToAdd.playerNum);
+      const playerFromState = state.get(action.buildToAdd.playerNum);
 
       if (playerFromState) {
         play.copyFromPlayer(playerFromState);
-        play.buildings.push(build);
+        play.buildings.push(action.buildToAdd);
         play.victoryPoints++;
 
-        return new Map([...state, [action.playerNum, play]]);
+        return new Map([...state, [action.buildToAdd.playerNum, play]]);
       } else {
-        console.log(`Player ${action.playerNum} not found`);
+        console.log(`Player ${action.buildToAdd.playerNum} not found`);
         return state;
       }
     case PLACE_ROAD:
@@ -53,24 +46,23 @@ export default function players(
         return state;
       }
     case COLLECT_RESOURCES:
-      const generPl = new Player(action.playerNumber);
-      const pFState = state.get(action.playerNumber);
+      let newPlayersMap = new Map<PlayerNumber, Player>();
+      for (const currPlayer of state.values()) {
+        const targetPlayer = new Player(currPlayer.playerNum);
+        targetPlayer.copyFromPlayer(currPlayer);
 
-      if (pFState) {
-        generPl.copyFromPlayer(pFState);
-
-        for (const currRes of action.collectResources) {
-          const currAmount = generPl.resourceHand.get(currRes);
-          if (currAmount !== undefined) {
-            generPl.resourceHand.set(currRes, currAmount + 1);
+        for (const currBuilding of targetPlayer.buildings) {
+          for (const currTile of currBuilding.touchingTiles) {
+            if (action.diceSum === currTile.counter) {
+              targetPlayer.addResource(currTile.resource);
+            }
           }
         }
-        return new Map([...state, [action.playerNumber, generPl]]);
-      } else {
-        console.log(`Player ${action.playerNumber} not found`);
-        return state;
+
+        newPlayersMap.set(targetPlayer.playerNum, targetPlayer);
       }
 
+      return newPlayersMap;
     default:
       return state;
   }
