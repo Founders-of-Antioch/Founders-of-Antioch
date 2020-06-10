@@ -1,6 +1,6 @@
 import React from "react";
 // import './App.css';
-import { Board, widthOfSVG, heightOfSVG } from "./components/Board";
+import Board, { widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
 import Dice, { diceLength } from "./components/Dice";
 import {
@@ -89,6 +89,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
       gameID: string;
     }) => {
       return dispatch(declareBoard(board.listOfTiles, board.gameID));
+    },
+    declarePlayerN: (pNum: PlayerNumber) => {
+      return dispatch(declarePlayerNumber(pNum));
     },
   };
 }
@@ -295,8 +298,8 @@ class App extends React.Component<AppProps, UIState> {
 
     // Backend sends an event once the player has joined
     socket.on("joinedGame", (inGamePNum: PlayerNumber) => {
-      if (store.getState().inGamePlayerNumber === -1) {
-        store.dispatch(declarePlayerNumber(inGamePNum));
+      if (this.props.inGamePlayerNumber === -1) {
+        this.props.declarePlayerN(inGamePNum);
       }
     });
     // Backend sends an event when the turn changes
@@ -355,21 +358,19 @@ class App extends React.Component<AppProps, UIState> {
   // TODO: Need a socket for backend cards
   distributeResources(diceSum: number) {
     const { listOfPlayers } = this.props;
-    console.log(this.state);
 
     for (const currPlayer of listOfPlayers.values()) {
+      let resToAdd: Array<ResourceString> = [];
       for (const currBuilding of currPlayer.buildings) {
         // Need to look out for doubling counting
         const buildingTiles = this.tilesBuildingIsOn(currBuilding);
         for (const currTile of buildingTiles) {
           if (currTile.counter === diceSum) {
-            this.props.collectSomeResources(
-              [currTile.resource],
-              currPlayer.playerNum
-            );
+            resToAdd.push(currTile.resource);
           }
         }
       }
+      this.props.collectSomeResources([...resToAdd], currPlayer.playerNum);
     }
   }
 
@@ -654,7 +655,6 @@ class App extends React.Component<AppProps, UIState> {
     if (isLoading) {
       return null;
     } else {
-      const { boardToBePlayed } = this.props;
       return (
         <svg width="100%" height="100%">
           {/* <rect width="100%" height="100%" fill="#00a6e4"></rect> */}
@@ -666,7 +666,7 @@ class App extends React.Component<AppProps, UIState> {
             width="100%"
             height="100%"
           />
-          <Board listOfTiles={boardToBePlayed.listOfTiles} />
+          <Board />
           {this.renderDice()}
           {this.generateAllPlayerCards()}
           {this.endTurnButton()}

@@ -2,9 +2,11 @@ import React from "react";
 import { Tile } from "./Tile";
 import { Frame } from "./Frame";
 import { Port } from "./Port";
-import { Robber } from "./Robber";
+import Robber from "./Robber";
 import { TileModel } from "../entities/TIleModel";
 import { centerTileX, centerTileY } from "./Settlement";
+import { FoAppState } from "../redux/reducers/reducers";
+import { connect } from "react-redux";
 
 // TODO: Change these to be function instea of constants so the screen will update on a re-render
 export let widthOfSVG = Number(document.getElementById("root")?.offsetWidth);
@@ -19,7 +21,11 @@ export interface BoardProps {
   listOfTiles: Array<TileModel>;
 }
 
-export class Board extends React.Component<BoardProps, {}> {
+function mapStateToProps(store: FoAppState): BoardProps {
+  return { listOfTiles: store.boardToBePlayed.listOfTiles };
+}
+
+class Board extends React.Component<BoardProps, {}> {
   createTiles() {
     const { listOfTiles } = this.props;
     let tileCompoonentList = [];
@@ -71,7 +77,7 @@ export class Board extends React.Component<BoardProps, {}> {
           centerY={heightOfSVG / 2}
         />
         {this.createTiles()}
-        <Robber listOfTiles={this.props.listOfTiles} />
+        <Robber />
 
         {/* Vertical and horizontal center lines to check for styling. Uncomment if you want to check if something is centered */}
         {/* <polyline
@@ -88,3 +94,5 @@ export class Board extends React.Component<BoardProps, {}> {
     );
   }
 }
+
+export default connect(mapStateToProps)(Board);
