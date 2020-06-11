@@ -32,6 +32,8 @@ import store from "./redux/store";
 import { FoAppState } from "./redux/reducers/reducers";
 import { Dispatch } from "redux";
 import { connect, ConnectedProps } from "react-redux";
+import "semantic-ui-css/semantic.min.css";
+import ActionButtonSet from "./components/ActionButtonSet";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -613,25 +615,38 @@ class App extends React.Component<AppProps, UIState> {
       return null;
     } else {
       return (
-        <svg width="100%" height="100%">
-          {/* <rect width="100%" height="100%" fill="#00a6e4"></rect> */}
-          <image
-            href={test}
-            x="0"
-            y="0"
-            preserveAspectRatio="none"
-            width="100%"
-            height="100%"
-          />
-          <Board />
-          {this.renderDice()}
-          {this.generateAllPlayerCards()}
-          {this.endTurnButton()}
-          {this.highlightNeededSpaces()}
-          {this.renderRoads()}
-          {this.renderBuildings()}
-          {this.generateResourceCards()}
-        </svg>
+        <div style={{ width: "100%", height: "100%", position: "relative" }}>
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              zIndex: -1,
+            }}
+          >
+            <svg style={{ width: "100%", height: "100%" }}>
+              {/* <rect width="100%" height="100%" fill="#00a6e4"></rect> */}
+              <image
+                href={test}
+                x="0"
+                y="0"
+                preserveAspectRatio="none"
+                width="100%"
+                height="100%"
+              />
+              <Board />
+              {this.renderDice()}
+              {this.generateAllPlayerCards()}
+              {this.endTurnButton()}
+              {this.highlightNeededSpaces()}
+              {this.renderRoads()}
+              {this.renderBuildings()}
+              {this.generateResourceCards()}
+            </svg>
+          </div>
+
+          <ActionButtonSet />
+        </div>
       );
     }
   }
