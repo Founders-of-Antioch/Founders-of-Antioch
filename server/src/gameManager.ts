@@ -1,5 +1,5 @@
 import { ServerPlayer } from "./Player";
-import { Building } from "./Building";
+import { ServerBuilding } from "./ServerBuilding";
 import { Road } from "./entity/Road";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -114,7 +114,7 @@ export class Game {
   }
 
   // Tells all of the players someone built something
-  broadcastBuildingUpdate(b: Building): void {
+  broadcastBuildingUpdate(b: ServerBuilding): void {
     for (const i of this.listOfPlayers) {
       i.playerSocket.emit("buildingUpdate", b);
     }
@@ -202,7 +202,7 @@ export class GameManager {
     }
   }
 
-  addBuilding(build: Building, gameID: string): boolean {
+  addBuilding(build: ServerBuilding, gameID: string): boolean {
     const getGame = this.mapOfGames.get(gameID);
     if (getGame) {
       // Player numbers are 1 to 4, -1 is for indexing

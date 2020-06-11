@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { ServerBuilding } from "./Building";
+import { ServerBuilding } from "./ServerBuilding";
 import { Road } from "./entity/Road";
 
 export class ServerPlayer {

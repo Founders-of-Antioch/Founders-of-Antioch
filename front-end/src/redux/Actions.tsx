@@ -13,6 +13,8 @@ export const NEXT_TURN = "NEXT_TURN";
 export const COLLECT_RESOURCES = "COLLECT_RESOURCES";
 export const DECLARE_BOARD = "DECLARE_BOARD";
 export const SET_SEED = "SET_SEED";
+export const SELECTING_ROAD = "PLACING_ROAD";
+export const SELECTING_SETTLEMENT = "SELECTING_SETTLEMENT";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -76,6 +78,16 @@ export interface SetSeedAction {
   stateSeed: SeedState;
 }
 
+export interface SelectingRoadAction {
+  type: typeof SELECTING_ROAD;
+  isSelecting: boolean;
+}
+
+export interface SelectingSettlementAction {
+  type: typeof SELECTING_SETTLEMENT;
+  isSelecting: boolean;
+}
+
 /** Action creators */
 export function hasRolled(hasRolled: boolean): HasRolledAction {
   return { type: HAS_ROLLED, hasRolled };
@@ -129,6 +141,24 @@ export function declareBoard(
 export function setSeed(stateSeed: SeedState): SetSeedAction {
   console.log(1234);
   return { type: SET_SEED, stateSeed };
+}
+
+export function activateRoadSelection(
+  isSelecting: boolean
+): SelectingRoadAction {
+  return {
+    type: SELECTING_ROAD,
+    isSelecting,
+  };
+}
+
+export function activateSettlementSelection(
+  isSelecting: boolean
+): SelectingSettlementAction {
+  return {
+    type: SELECTING_SETTLEMENT,
+    isSelecting,
+  };
 }
 
 // export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;

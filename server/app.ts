@@ -12,7 +12,7 @@ import { GameManager } from "./src/gameManager";
 import { Socket } from "socket.io";
 import { ServerPlayer } from "./src/Player";
 import { Player } from "../front-end/src/entities/Player";
-import { ServerBuilding } from "./src/Building";
+import { ServerBuilding } from "./src/ServerBuilding";
 import { Road } from "./src/entity/Road";
 import { SeedState } from "../front-end/src/redux/reducers/reducers";
 import { TileModel } from "../front-end/src/entities/TIleModel";

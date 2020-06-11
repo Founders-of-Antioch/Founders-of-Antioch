@@ -27,6 +27,8 @@ import {
   placeRoad,
   ResourceString,
   declareBoard,
+  activateRoadSelection,
+  activateSettlementSelection,
 } from "./redux/Actions";
 import store from "./redux/store";
 import { FoAppState, SeedState } from "./redux/reducers/reducers";
@@ -43,8 +45,6 @@ export const socket = socketIOClient.connect("http://localhost:3001");
 type UIState = {
   isLoading: boolean;
   canEndTurn: boolean;
-  isCurrentlyPlacingSettlement: boolean;
-  isCurrentlyPlacingRoad: boolean;
 };
 
 type AppState = {
@@ -52,6 +52,9 @@ type AppState = {
   inGamePlayerNumber: PlayerNumber;
   boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
   currentPersonPlaying: PlayerNumber;
+  isSelectingRoad: boolean;
+  isSelectingSettlement: boolean;
+  turnNumber: number;
 };
 
 let hasSeeded = false;
@@ -62,6 +65,9 @@ function mapStateToProps(store: FoAppState): AppState {
     inGamePlayerNumber: store.inGamePlayerNumber,
     boardToBePlayed: store.boardToBePlayed,
     currentPersonPlaying: store.currentPersonPlaying,
+    isSelectingRoad: store.isSelectingRoad,
+    isSelectingSettlement: store.isSelectingSettlement,
+    turnNumber: store.turnNumber,
   };
 }
 
@@ -82,6 +88,15 @@ function mapDispatchToProps(dispatch: Dispatch) {
     declarePlayerN: (pNum: PlayerNumber) => {
       return dispatch(declarePlayerNumber(pNum));
     },
+    // plantTheSeed: (s: SeedState) => {
+    //   return dispatch(setSeed(s));
+    // },
+    activateRoadSelects: (s: boolean) => {
+      return dispatch(activateRoadSelection(s));
+    },
+    activateSettlementSelects: (s: boolean) => {
+      return dispatch(activateSettlementSelection(s));
+    },
   };
 }
 
@@ -96,9 +111,10 @@ class App extends React.Component<AppProps, UIState> {
     this.state = {
       isLoading: true,
       canEndTurn: false,
-      isCurrentlyPlacingSettlement: true,
-      isCurrentlyPlacingRoad: false,
     };
+
+    this.props.activateSettlementSelects(true);
+    this.props.activateRoadSelects(false);
 
     // Probably change to arrow functions to we don't have to do this
     this.endTurn = this.endTurn.bind(this);
@@ -177,16 +193,16 @@ class App extends React.Component<AppProps, UIState> {
   // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
   processTurnUpdate(nextPlayer: PlayerNumber, incomingTurnNumber: number) {
-    const inGamePlayerNum = store.getState().inGamePlayerNumber;
+    const { inGamePlayerNumber } = this.props;
 
+    //FIX
     store.dispatch(changePlayer(nextPlayer));
     store.dispatch(nextTurn(incomingTurnNumber));
-    this.setState({
-      ...this.state,
-      // Is true if it's still in the snake draft and it's the player's turn
-      isCurrentlyPlacingSettlement:
-        inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
-    });
+
+    // Is true if it's still in the snake draft and it's the player's turn
+    this.props.activateSettlementSelects(
+      inGamePlayerNumber === nextPlayer && incomingTurnNumber <= 2
+    );
   }
 
   processBuildingUpdate(building: {
@@ -259,7 +275,7 @@ class App extends React.Component<AppProps, UIState> {
 
     socket.on("giveGame", this.processGetGame);
 
-    socket.emit("getSeedState", this.props.boardToBePlayed.listOfTiles);
+    // socket.emit("getSeedState", this.props.boardToBePlayed.listOfTiles);
     socket.on("sendSeed", (seedState: SeedState) => {
       // this.props.plantTheSeed(seedState);
     });
@@ -312,14 +328,14 @@ class App extends React.Component<AppProps, UIState> {
 
   // Determines if the player can end their turn or not
   evaluateEndTurnEligibility() {
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    const { isSelectingSettlement, isSelectingRoad } = this.props;
 
     const { turnNumber } = store.getState();
 
     if (
       (store.getState().hasRolled || turnNumber <= 2) &&
-      !isCurrentlyPlacingSettlement &&
-      !isCurrentlyPlacingRoad
+      !isSelectingSettlement &&
+      !isSelectingRoad
     ) {
       this.setState({
         ...this.state,
@@ -360,29 +376,21 @@ class App extends React.Component<AppProps, UIState> {
 
   // Callback for when a player is done selecting where their settlement should go
   selectSettlementSpotCB() {
-    this.setState(
-      {
-        isCurrentlyPlacingSettlement: false,
-        isCurrentlyPlacingRoad: store.getState().turnNumber <= 2,
-      },
-      this.evaluateEndTurnEligibility
-    );
+    this.props.activateSettlementSelects(false);
+    this.props.activateRoadSelects(this.props.turnNumber <= 2);
+    this.evaluateEndTurnEligibility();
   }
 
   // Callback for when a player is done selecting where the road should go
   selectRoadSpotCB() {
-    this.setState(
-      {
-        isCurrentlyPlacingRoad: false,
-      },
-      this.evaluateEndTurnEligibility
-    );
+    this.props.activateRoadSelects(false);
+    this.evaluateEndTurnEligibility();
   }
 
   // Highlights the available places to put settlements
   // TODD: Move most of this into it's own component
   highlightSettlingSpaces(typeofHighlight: string) {
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    const { isSelectingRoad, isSelectingSettlement } = this.props;
     const {
       listOfPlayers,
       currentPersonPlaying,
@@ -391,9 +399,7 @@ class App extends React.Component<AppProps, UIState> {
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
     const placing =
-      typeofHighlight === "road"
-        ? isCurrentlyPlacingRoad
-        : isCurrentlyPlacingSettlement;
+      typeofHighlight === "road" ? isSelectingRoad : isSelectingSettlement;
     const callback =
       typeofHighlight === "road"
         ? this.selectRoadSpotCB
@@ -460,10 +466,10 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   highlightNeededSpaces() {
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
-    if (isCurrentlyPlacingRoad) {
+    const { isSelectingSettlement, isSelectingRoad } = this.props;
+    if (isSelectingRoad) {
       return this.highlightSettlingSpaces("road");
-    } else if (isCurrentlyPlacingSettlement) {
+    } else if (isSelectingSettlement) {
       return this.highlightSettlingSpaces("settlement");
     }
   }
