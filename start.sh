@@ -1,2 +1,2 @@
-cd server && ts-node app.ts & 
+cd server && npm start & 
 cd front-end && yarn start

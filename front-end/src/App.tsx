@@ -29,7 +29,7 @@ import {
   declareBoard,
 } from "./redux/Actions";
 import store from "./redux/store";
-import { FoAppState } from "./redux/reducers/reducers";
+import { FoAppState, SeedState } from "./redux/reducers/reducers";
 import { Dispatch } from "redux";
 import { connect, ConnectedProps } from "react-redux";
 import "semantic-ui-css/semantic.min.css";
@@ -189,69 +189,18 @@ class App extends React.Component<AppProps, UIState> {
     });
   }
 
-  // Returns an array of TileModel representing the resources the building touches
-  tilesBuildingIsOn(knownBuilding: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-  }) {
-    const { boardToBePlayed } = this.props;
-
-    let adjTiles: Array<TileModel> = [];
-    // https://www.redblobgames.com/grids/hexagons/#neighbors
-    let directions = [
-      [1, 1],
-      [1, 0],
-      [0, -1],
-      [-1, -1],
-      [-1, 0],
-      [0, 1],
-    ];
-
-    // This filters out checking for any tiles that are not touching the building
-    directions = directions.filter((el, idx) => {
-      const checkOne = knownBuilding.corner;
-      let checkTwo = checkOne - 1;
-      if (checkTwo === -1) {
-        checkTwo = 5;
-      }
-
-      return idx === checkOne || idx === checkTwo;
-    });
-    // Count the tile it is on as well
-    directions.push([0, 0]);
-
-    for (const currDirection of directions) {
-      const expecX = currDirection[0] + knownBuilding.boardXPos;
-      const expecY = currDirection[1] + knownBuilding.boardYPos;
-
-      for (const currTile of boardToBePlayed.listOfTiles) {
-        if (currTile.boardXPos === expecX && currTile.boardYPos === expecY) {
-          adjTiles.push(currTile);
-        }
-      }
-    }
-
-    return adjTiles;
-  }
-
   processBuildingUpdate(building: {
     boardXPos: number;
     boardYPos: number;
     corner: number;
     playerNum: PlayerNumber;
   }) {
-    const touchingTiles = this.tilesBuildingIsOn({
-      boardXPos: building.boardXPos,
-      boardYPos: building.boardYPos,
-      corner: building.corner,
-    });
     const build = new Building(
       building.boardXPos,
       building.boardYPos,
       building.corner,
       building.playerNum,
-      touchingTiles
+      this.props.boardToBePlayed.listOfTiles
     );
 
     this.props.placeASettlement(build);
@@ -309,6 +258,11 @@ class App extends React.Component<AppProps, UIState> {
     });
 
     socket.on("giveGame", this.processGetGame);
+
+    socket.emit("getSeedState", this.props.boardToBePlayed.listOfTiles);
+    socket.on("sendSeed", (seedState: SeedState) => {
+      // this.props.plantTheSeed(seedState);
+    });
   }
 
   processGetGame(game: {

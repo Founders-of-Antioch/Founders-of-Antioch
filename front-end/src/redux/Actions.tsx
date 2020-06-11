@@ -1,6 +1,7 @@
 import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TIleModel";
 import { Building } from "../entities/Building";
+import { SeedState } from "./reducers/reducers";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -11,6 +12,7 @@ export const HAS_ROLLED = "HAS_ROLLED";
 export const NEXT_TURN = "NEXT_TURN";
 export const COLLECT_RESOURCES = "COLLECT_RESOURCES";
 export const DECLARE_BOARD = "DECLARE_BOARD";
+export const SET_SEED = "SET_SEED";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -69,6 +71,11 @@ export interface DeclareBoardAction {
   board: { listOfTiles: Array<TileModel>; gameID: string };
 }
 
+export interface SetSeedAction {
+  type: typeof SET_SEED;
+  stateSeed: SeedState;
+}
+
 /** Action creators */
 export function hasRolled(hasRolled: boolean): HasRolledAction {
   return { type: HAS_ROLLED, hasRolled };
@@ -117,6 +124,11 @@ export function declareBoard(
   gameID: string
 ): DeclareBoardAction {
   return { type: DECLARE_BOARD, board: { listOfTiles, gameID } };
+}
+
+export function setSeed(stateSeed: SeedState): SetSeedAction {
+  console.log(1234);
+  return { type: SET_SEED, stateSeed };
 }
 
 // export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;

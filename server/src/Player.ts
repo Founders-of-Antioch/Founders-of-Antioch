@@ -1,11 +1,11 @@
 import { Socket } from "socket.io";
-import { Building } from "./Building";
+import { ServerBuilding } from "./Building";
 import { Road } from "./entity/Road";
 
 export class ServerPlayer {
   playerSocket: Socket;
   victoryPoints: number;
-  settlements: Array<Building>;
+  settlements: Array<ServerBuilding>;
   roads: Array<Road>;
   resourceHand: Map<string, number>;
 
@@ -23,7 +23,7 @@ export class ServerPlayer {
     this.resourceHand = hands;
   }
 
-  addSettlement(build: Building): void {
+  addSettlement(build: ServerBuilding): void {
     this.settlements = this.settlements.concat(build);
     this.victoryPoints++;
   }

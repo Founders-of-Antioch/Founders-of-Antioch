@@ -28,7 +28,6 @@ class ActionButtonSet extends Component<ActionButtonSetProps, {}> {
 
     if (currPlayer) {
       const currVal = currPlayer.resourceHand.get(res);
-      console.log(currVal, res);
       if (currVal !== undefined) {
         return currVal;
       } else {

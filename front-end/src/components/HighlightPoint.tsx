@@ -4,6 +4,9 @@ import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
 import { PlayerNumber } from "../redux/Actions";
+import { FoAppState } from "../redux/reducers/reducers";
+import { TileModel } from "../entities/TIleModel";
+import { connect, ConnectedProps } from "react-redux";
 
 // Highlights a point where a player can build a settlement
 
@@ -17,8 +20,24 @@ type Props = {
   typeOfHighlight: string;
 };
 
-export default class HighlightPoint extends Component<Props, {}> {
-  constructor(props: Props) {
+type HPProps = {
+  tiles: Array<TileModel>;
+};
+
+function mapStateToProps(store: FoAppState): HPProps {
+  return {
+    tiles: store.boardToBePlayed.listOfTiles,
+  };
+}
+
+const connector = connect(mapStateToProps);
+
+type ReduxProps = ConnectedProps<typeof connector>;
+
+type HighlightProps = ReduxProps & Props;
+
+class HighlightPoint extends Component<HighlightProps, {}> {
+  constructor(props: HighlightProps) {
     super(props);
     this.selectedASettlementSpot = this.selectedASettlementSpot.bind(this);
     this.selectedARoadSpot = this.selectedARoadSpot.bind(this);
@@ -34,7 +53,8 @@ export default class HighlightPoint extends Component<Props, {}> {
       boardXPos,
       boardYPos,
       corner,
-      playerWhoSelected
+      playerWhoSelected,
+      this.props.tiles
     );
     this.props.finishedSelectingCallback();
   }
@@ -93,3 +113,5 @@ export default class HighlightPoint extends Component<Props, {}> {
     );
   }
 }
+
+export default connector(HighlightPoint);
