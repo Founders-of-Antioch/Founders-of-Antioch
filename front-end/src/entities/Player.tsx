@@ -11,6 +11,7 @@ export class Player {
   buildings: Array<Building>;
   roads: Array<RoadModel>;
   knights: number;
+  // TODO: Change key type to ResourceString
   resourceHand: Map<string, number>;
   // cards
   // dev cards

@@ -621,7 +621,7 @@ class App extends React.Component<AppProps, UIState> {
               width: "100%",
               height: "100%",
               position: "absolute",
-              zIndex: -1,
+              zIndex: 1,
             }}
           >
             <svg style={{ width: "100%", height: "100%" }}>
