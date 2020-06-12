@@ -99,6 +99,15 @@ function mapDispatchToProps(dispatch: Dispatch) {
     activateSettlementSelects: (s: boolean) => {
       return dispatch(activateSettlementSelection(s));
     },
+    changeThePlayer: (p: PlayerNumber) => {
+      return dispatch(changePlayer(p));
+    },
+    goToNextTurn: (t: number) => {
+      return dispatch(nextTurn(t));
+    },
+    hasRolledOrNot: (b: boolean) => {
+      return dispatch(hasRolled(b));
+    },
   };
 }
 
@@ -197,9 +206,8 @@ class App extends React.Component<AppProps, UIState> {
   processTurnUpdate(nextPlayer: PlayerNumber, incomingTurnNumber: number) {
     const { inGamePlayerNumber } = this.props;
 
-    //FIX
-    store.dispatch(changePlayer(nextPlayer));
-    store.dispatch(nextTurn(incomingTurnNumber));
+    this.props.changeThePlayer(nextPlayer);
+    this.props.goToNextTurn(incomingTurnNumber);
 
     // Is true if it's still in the snake draft and it's the player's turn
     this.props.activateSettlementSelects(
@@ -251,7 +259,7 @@ class App extends React.Component<AppProps, UIState> {
     // Listens for whose turn in the game it is. Every time it changes, it will go to changeCurrentPlayer
     // Listens for the response to 'whose turn is it' (below)
     socket.on("getWhoseTurnItIs", (pNum: PlayerNumber) =>
-      store.dispatch(changePlayer(pNum))
+      this.props.changeThePlayer(pNum)
     );
 
     // Start off by joining the game, ID
@@ -357,7 +365,7 @@ class App extends React.Component<AppProps, UIState> {
   // Should only be used as callback for the end turn button
   endTurn() {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
-    store.dispatch(hasRolled(false));
+    this.props.hasRolledOrNot(false);
     this.setState({
       ...this.state,
       canEndTurn: false,
