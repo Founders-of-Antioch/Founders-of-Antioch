@@ -21,6 +21,13 @@ function mapStateToProps(store: FoAppState): ActionButtonSetProps {
   };
 }
 
+// function mapDispatch(dispatch: Dispatch) {
+//   return {
+//     activateRoadHighlights: (a: boolean) =>
+//       dispatch(activateSettlementSelection(a)),
+//   };
+// }
+
 class ActionButtonSet extends Component<ActionButtonSetProps, {}> {
   getResAmount(res: string): number {
     const { playersByID, inGamePlayerNumber } = this.props;

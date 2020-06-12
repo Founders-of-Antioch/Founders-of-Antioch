@@ -55,6 +55,7 @@ type AppState = {
   isSelectingRoad: boolean;
   isSelectingSettlement: boolean;
   turnNumber: number;
+  hasRolled: boolean;
 };
 
 let hasSeeded = false;
@@ -68,6 +69,7 @@ function mapStateToProps(store: FoAppState): AppState {
     isSelectingRoad: store.isSelectingRoad,
     isSelectingSettlement: store.isSelectingSettlement,
     turnNumber: store.turnNumber,
+    hasRolled: store.hasRolled,
   };
 }
 
@@ -328,12 +330,19 @@ class App extends React.Component<AppProps, UIState> {
 
   // Determines if the player can end their turn or not
   evaluateEndTurnEligibility() {
-    const { isSelectingSettlement, isSelectingRoad } = this.props;
+    const {
+      isSelectingSettlement,
+      isSelectingRoad,
+      hasRolled,
+      turnNumber,
+    } = this.props;
 
-    const { turnNumber } = store.getState();
-
+    console.log(hasRolled);
+    console.log(turnNumber);
+    console.log(isSelectingSettlement);
+    console.log(isSelectingRoad);
     if (
-      (store.getState().hasRolled || turnNumber <= 2) &&
+      (hasRolled || turnNumber <= 2) &&
       !isSelectingSettlement &&
       !isSelectingRoad
     ) {
@@ -383,8 +392,17 @@ class App extends React.Component<AppProps, UIState> {
 
   // Callback for when a player is done selecting where the road should go
   selectRoadSpotCB() {
+    console.log("HERE");
     this.props.activateRoadSelects(false);
-    this.evaluateEndTurnEligibility();
+    console.log("HERE1");
+
+    // WHY
+    // For SOME reason, redux store doesn't update fast enough and if this doesn't wait, it doesn't work
+    var millisecondsToWait = 1000;
+    setTimeout(() => {
+      // Whatever you want to do after the wait
+      this.evaluateEndTurnEligibility();
+    }, millisecondsToWait);
   }
 
   // Highlights the available places to put settlements
@@ -454,7 +472,7 @@ class App extends React.Component<AppProps, UIState> {
 
   renderDice() {
     // Only render the dice if we're done with initial placements
-    if (store.getState().turnNumber > 2) {
+    if (this.props.turnNumber > 2) {
       return (
         <Dice
           hasRolledCallBack={this.hasRolledCB}
