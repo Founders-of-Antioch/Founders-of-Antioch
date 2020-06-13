@@ -113,7 +113,7 @@ class App extends React.Component<AppProps, UIState> {
     );
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
-
+    this.buyRoadCB = this.buyRoadCB.bind(this);
     this.setupSockets();
 
     // TODO: Fix GameID
@@ -560,6 +560,14 @@ class App extends React.Component<AppProps, UIState> {
     return resCardArr;
   }
 
+  // TODO: Move into ActionButtonSet component when redux is completely migrated
+  buyRoadCB() {
+    this.setState({
+      ...this.state,
+      isCurrentlyPlacingRoad: true,
+    });
+  }
+
   render() {
     const { isLoading } = this.state;
 
@@ -599,7 +607,7 @@ class App extends React.Component<AppProps, UIState> {
             </svg>
           </div>
 
-          <ActionButtonSet />
+          <ActionButtonSet buyRoadCB={this.buyRoadCB} />
         </div>
       );
     }

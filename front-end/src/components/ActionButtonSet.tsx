@@ -3,7 +3,7 @@ import { Button } from "semantic-ui-react";
 import { PlayerNumber } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { FoAppState } from "../redux/reducers/reducers";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 
 type ActionButtonSetProps = {
   playersByID: Map<PlayerNumber, Player>;
@@ -21,7 +21,13 @@ function mapStateToProps(store: FoAppState): ActionButtonSetProps {
   };
 }
 
-class ActionButtonSet extends Component<ActionButtonSetProps, {}> {
+const connector = connect(mapStateToProps);
+
+type ABSProps = ConnectedProps<typeof connector> & {
+  buyRoadCB: Function;
+};
+
+class ActionButtonSet extends Component<ABSProps, {}> {
   getResAmount(res: string): number {
     const { playersByID, inGamePlayerNumber } = this.props;
     const currPlayer = playersByID.get(inGamePlayerNumber);
@@ -99,7 +105,14 @@ class ActionButtonSet extends Component<ActionButtonSetProps, {}> {
             icon="building"
             disabled={!this.canBuyCity()}
           />
-          <Button color="red" icon="road" disabled={!this.canBuyRoad()} />
+          <Button
+            color="red"
+            icon="road"
+            onClick={() => {
+              this.props.buyRoadCB();
+            }}
+            disabled={!this.canBuyRoad()}
+          />
           <Button color="yellow" icon="copy" disabled={!this.canBuyDevCard()} />
           <Button color="red" icon="handshake" disabled={!this.isTurn()} />
           <Button color="yellow" icon="info circle" />
