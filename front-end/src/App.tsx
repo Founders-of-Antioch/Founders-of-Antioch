@@ -27,6 +27,7 @@ import {
   placeRoad,
   ResourceString,
   declareBoard,
+  possibleToEndTurn,
 } from "./redux/Actions";
 import store from "./redux/store";
 import { FoAppState, SeedState } from "./redux/reducers/reducers";
@@ -42,7 +43,6 @@ export const socket = socketIOClient.connect("http://localhost:3001");
 
 type UIState = {
   isLoading: boolean;
-  canEndTurn: boolean;
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
 };
@@ -52,6 +52,7 @@ type AppState = {
   inGamePlayerNumber: PlayerNumber;
   boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
   currentPersonPlaying: PlayerNumber;
+  canEndTurn: boolean;
 };
 
 let hasSeeded = false;
@@ -62,6 +63,7 @@ function mapStateToProps(store: FoAppState): AppState {
     inGamePlayerNumber: store.inGamePlayerNumber,
     boardToBePlayed: store.boardToBePlayed,
     currentPersonPlaying: store.currentPersonPlaying,
+    canEndTurn: store.canEndTurn,
   };
 }
 
@@ -82,6 +84,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     declarePlayerN: (pNum: PlayerNumber) => {
       return dispatch(declarePlayerNumber(pNum));
     },
+    canEndCurrentTurn: (c: boolean) => {
+      return dispatch(possibleToEndTurn(c));
+    },
   };
 }
 
@@ -95,7 +100,6 @@ class App extends React.Component<AppProps, UIState> {
 
     this.state = {
       isLoading: true,
-      canEndTurn: false,
       isCurrentlyPlacingSettlement: true,
       isCurrentlyPlacingRoad: false,
     };
@@ -321,10 +325,11 @@ class App extends React.Component<AppProps, UIState> {
       !isCurrentlyPlacingSettlement &&
       !isCurrentlyPlacingRoad
     ) {
-      this.setState({
-        ...this.state,
-        canEndTurn: true,
-      });
+      // this.setState({
+      //   ...this.state,
+      //   canEndTurn: true,
+      // });
+      this.props.canEndCurrentTurn(true);
     }
   }
 
@@ -333,10 +338,11 @@ class App extends React.Component<AppProps, UIState> {
   endTurn() {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
     store.dispatch(hasRolled(false));
-    this.setState({
-      ...this.state,
-      canEndTurn: false,
-    });
+    // this.setState({
+    //   ...this.state,
+    //   canEndTurn: false,
+    // });
+    this.props.canEndCurrentTurn(false);
   }
 
   // Returns the end turn button component
@@ -349,7 +355,7 @@ class App extends React.Component<AppProps, UIState> {
       return (
         <FoAButton
           onClick={this.endTurn}
-          canEndTurn={this.state.canEndTurn}
+          canEndTurn={this.props.canEndTurn}
           // TODO: Change for dynamic size
           width={175}
           height={50}

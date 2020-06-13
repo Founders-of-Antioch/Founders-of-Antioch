@@ -8,6 +8,7 @@ import dice from "./dice";
 import turnNumber from "./turnNumber";
 import { TileModel } from "../../entities/TIleModel";
 import boardToPlay from "./boardToPlay";
+import canEndTurn from "./canEndTurn";
 
 export interface FoAppState {
   currentPersonPlaying: PlayerNumber;
@@ -21,6 +22,7 @@ export interface FoAppState {
     listOfTiles: Array<TileModel>;
     gameID: string;
   };
+  canEndTurn: boolean;
 }
 
 // Unfortunately `Map`'s are not serializable for JSON's, so seed state has to be slightly different
@@ -47,4 +49,5 @@ export const FoAPP = combineReducers({
   hasRolled: dice,
   turnNumber,
   boardToBePlayed: boardToPlay,
+  canEndTurn,
 });

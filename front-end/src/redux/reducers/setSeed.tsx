@@ -22,6 +22,7 @@ export default function setSeed(
         hasRolled: action.stateSeed.hasRolled,
         turnNumber: action.stateSeed.turnNumber,
         boardToBePlayed: action.stateSeed.boardToBePlayed,
+        canEndTurn: false,
       };
     default:
       return state;
