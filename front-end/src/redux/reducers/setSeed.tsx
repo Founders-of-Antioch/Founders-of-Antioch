@@ -23,6 +23,7 @@ export default function setSeed(
         turnNumber: action.stateSeed.turnNumber,
         boardToBePlayed: action.stateSeed.boardToBePlayed,
         canEndTurn: false,
+        isCurrentlyPlacingSettlement: false,
       };
     default:
       return state;
