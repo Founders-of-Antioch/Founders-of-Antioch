@@ -14,28 +14,15 @@ import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
-import { Player, LIST_OF_RESOURCES } from "./entities/Player";
+import { LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
-import {
-  changePlayer,
-  PlayerNumber,
-  declarePlayerNumber,
-  hasRolled,
-  nextTurn,
-  placeSettlement,
-  placeRoad,
-  ResourceString,
-  declareBoard,
-  possibleToEndTurn,
-  isPlacingASettlement,
-} from "./redux/Actions";
+import { PlayerNumber, ResourceString } from "./redux/Actions";
 import store from "./redux/store";
-import { FoAppState, SeedState } from "./redux/reducers/reducers";
-import { Dispatch } from "redux";
-import { connect, ConnectedProps } from "react-redux";
+import { SeedState } from "./redux/reducers/reducers";
 import "semantic-ui-css/semantic.min.css";
 import ActionButtonSet from "./components/ActionButtonSet";
+import { AppProps } from "./containter-components/VisibleApp";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -44,70 +31,16 @@ export const socket = socketIOClient.connect("http://localhost:3001");
 
 type UIState = {
   isLoading: boolean;
-  isCurrentlyPlacingRoad: boolean;
-};
-
-type AppState = {
-  listOfPlayers: Map<PlayerNumber, Player>;
-  inGamePlayerNumber: PlayerNumber;
-  boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
-  currentPersonPlaying: PlayerNumber;
-  canEndTurn: boolean;
-  isCurrentlyPlacingSettlement: boolean;
-  turnNumber: number;
 };
 
 let hasSeeded = false;
 
-function mapStateToProps(store: FoAppState): AppState {
-  return {
-    listOfPlayers: store.playersByID,
-    inGamePlayerNumber: store.inGamePlayerNumber,
-    boardToBePlayed: store.boardToBePlayed,
-    currentPersonPlaying: store.currentPersonPlaying,
-    canEndTurn: store.canEndTurn,
-    isCurrentlyPlacingSettlement: store.isCurrentlyPlacingSettlement,
-    turnNumber: store.turnNumber,
-  };
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    placeASettlement: (build: Building) => {
-      return dispatch(placeSettlement(build));
-    },
-    placeARoad: (road: RoadModel) => {
-      return dispatch(placeRoad(road));
-    },
-    declareBoardState: (board: {
-      listOfTiles: Array<TileModel>;
-      gameID: string;
-    }) => {
-      return dispatch(declareBoard(board.listOfTiles, board.gameID));
-    },
-    declarePlayerN: (pNum: PlayerNumber) => {
-      return dispatch(declarePlayerNumber(pNum));
-    },
-    canEndCurrentTurn: (c: boolean) => {
-      return dispatch(possibleToEndTurn(c));
-    },
-    playerIsPlacingSettlement: (y: boolean) => {
-      return dispatch(isPlacingASettlement(y));
-    },
-  };
-}
-
-const connector = connect(mapStateToProps, mapDispatchToProps);
-
-type AppProps = ConnectedProps<typeof connector>;
-
-class App extends React.Component<AppProps, UIState> {
+export default class App extends React.Component<AppProps, UIState> {
   constructor(props: AppProps) {
     super(props);
 
     this.state = {
       isLoading: true,
-      isCurrentlyPlacingRoad: false,
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -132,6 +65,11 @@ class App extends React.Component<AppProps, UIState> {
 
   componentDidMount() {
     // this.seed();
+  }
+
+  componentDidUpdate() {
+    console.log("Updating...");
+    this.evaluateEndTurnEligibility();
   }
 
   // TODO: Move to backend
@@ -189,18 +127,14 @@ class App extends React.Component<AppProps, UIState> {
   processTurnUpdate(nextPlayer: PlayerNumber, incomingTurnNumber: number) {
     const { inGamePlayerNumber } = this.props;
 
-    // FIX
-    store.dispatch(changePlayer(nextPlayer));
-    store.dispatch(nextTurn(incomingTurnNumber));
-    // this.setState({
-    //   ...this.state,
-    //   // Is true if it's still in the snake draft and it's the player's turn
-    //   isCurrentlyPlacingSettlement:
-    //     inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
-    // });
-    this.props.playerIsPlacingSettlement(
+    this.props.changePlayer(nextPlayer);
+    this.props.nextTurn(incomingTurnNumber);
+    this.props.isPlacingASettlement(
       inGamePlayerNumber === nextPlayer && incomingTurnNumber <= 2
     );
+
+    console.log("About to update");
+    this.forceUpdate();
   }
 
   processBuildingUpdate(building: {
@@ -217,7 +151,7 @@ class App extends React.Component<AppProps, UIState> {
       this.props.boardToBePlayed.listOfTiles
     );
 
-    this.props.placeASettlement(build);
+    this.props.placeSettlement(build);
   }
 
   renderBuildings(): Array<any> {
@@ -247,7 +181,7 @@ class App extends React.Component<AppProps, UIState> {
     // Listens for whose turn in the game it is. Every time it changes, it will go to changeCurrentPlayer
     // Listens for the response to 'whose turn is it' (below)
     socket.on("getWhoseTurnItIs", (pNum: PlayerNumber) =>
-      store.dispatch(changePlayer(pNum))
+      this.props.changePlayer(pNum)
     );
 
     // Start off by joining the game, ID
@@ -259,7 +193,7 @@ class App extends React.Component<AppProps, UIState> {
     // Backend sends an event once the player has joined
     socket.on("joinedGame", (inGamePNum: PlayerNumber) => {
       if (this.props.inGamePlayerNumber === -1) {
-        this.props.declarePlayerN(inGamePNum);
+        this.props.declarePlayerNumber(inGamePNum);
       }
     });
     // Backend sends an event when the turn changes
@@ -268,7 +202,7 @@ class App extends React.Component<AppProps, UIState> {
     socket.on("buildingUpdate", this.processBuildingUpdate);
     // Backend sends an event when someone places a new road
     socket.on("roadUpdate", (r: RoadModel) => {
-      this.props.placeARoad(r);
+      this.props.placeRoad(r);
     });
 
     socket.on("giveGame", this.processGetGame);
@@ -314,35 +248,47 @@ class App extends React.Component<AppProps, UIState> {
         ...this.state,
         isLoading: false,
       });
-      this.props.declareBoardState({ listOfTiles: tileList, gameID: "1" });
+      this.props.declareBoard(tileList, "1");
     }
   }
 
   // Callback function for the 'Dice' component
   // TODO: Move into Dice component once Redux migration is mature enough
   hasRolledCB() {
-    this.evaluateEndTurnEligibility();
+    // this.evaluateEndTurnEligibility();
+    this.forceUpdate();
   }
 
   // Determines if the player can end their turn or not
   evaluateEndTurnEligibility() {
-    const { isCurrentlyPlacingRoad } = this.state;
+    // const { isCurrentlyPlacingRoad } = this.state;
 
-    const { isCurrentlyPlacingSettlement, turnNumber } = this.props;
+    const {
+      isCurrentlyPlacingSettlement,
+      turnNumber,
+      isCurrentlyPlacingRoad,
+      hasRolled,
+      currentPersonPlaying,
+      inGamePlayerNumber,
+    } = this.props;
 
-    //FIX
-    // const { turnNumber } = store.getState();
+    const isTurn = currentPersonPlaying === inGamePlayerNumber;
 
     if (
-      (store.getState().hasRolled || turnNumber <= 2) &&
+      (hasRolled || turnNumber <= 2) &&
       !isCurrentlyPlacingSettlement &&
-      !isCurrentlyPlacingRoad
+      !isCurrentlyPlacingRoad &&
+      isTurn
     ) {
       // this.setState({
       //   ...this.state,
       //   canEndTurn: true,
       // });
-      this.props.canEndCurrentTurn(true);
+      console.log(hasRolled);
+      console.log(turnNumber);
+      this.props.possibleToEndTurn(true);
+    } else {
+      this.props.possibleToEndTurn(false);
     }
   }
 
@@ -350,12 +296,12 @@ class App extends React.Component<AppProps, UIState> {
   // Should only be used as callback for the end turn button
   endTurn() {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
-    store.dispatch(hasRolled(false));
+    this.props.hasRolledTheDice(false);
     // this.setState({
     //   ...this.state,
     //   canEndTurn: false,
     // });
-    this.props.canEndCurrentTurn(false);
+    this.props.possibleToEndTurn(false);
   }
 
   // Returns the end turn button component
@@ -381,34 +327,42 @@ class App extends React.Component<AppProps, UIState> {
   selectSettlementSpotCB() {
     const { turnNumber } = this.props;
 
-    this.props.playerIsPlacingSettlement(false);
-    this.setState(
-      {
-        isCurrentlyPlacingRoad: turnNumber <= 2,
-      },
-      this.evaluateEndTurnEligibility
-    );
+    this.props.isPlacingASettlement(false);
+    // this.setState(
+    //   {
+    //     isCurrentlyPlacingRoad: turnNumber <= 2,
+    //   },
+    //   this.evaluateEndTurnEligibility
+    // );
+    this.props.isPlacingRoad(turnNumber <= 2);
+    // this.evaluateEndTurnEligibility();
   }
 
   // Callback for when a player is done selecting where the road should go
   selectRoadSpotCB() {
-    this.setState(
-      {
-        isCurrentlyPlacingRoad: false,
-      },
-      this.evaluateEndTurnEligibility
-    );
+    // this.setState(
+    //   {
+    //     isCurrentlyPlacingRoad: false,
+    //   },
+    //   this.evaluateEndTurnEligibility
+    // );
+    this.props.isPlacingRoad(false);
+
+    // setTimeout(() => {
+    // this.evaluateEndTurnEligibility();
+    // }, 1000);
   }
 
   // Highlights the available places to put settlements
   // TODD: Move most of this into it's own component
   highlightSettlingSpaces(typeofHighlight: string) {
-    const { isCurrentlyPlacingRoad } = this.state;
+    // const { isCurrentlyPlacingRoad } = this.state;
     const {
       listOfPlayers,
       currentPersonPlaying,
       inGamePlayerNumber,
       isCurrentlyPlacingSettlement,
+      isCurrentlyPlacingRoad,
     } = this.props;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
@@ -482,8 +436,8 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   highlightNeededSpaces() {
-    const { isCurrentlyPlacingRoad } = this.state;
-    const { isCurrentlyPlacingSettlement } = this.props;
+    // const { isCurrentlyPlacingRoad } = this.state;
+    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.props;
     if (isCurrentlyPlacingRoad) {
       return this.highlightSettlingSpaces("road");
     } else if (isCurrentlyPlacingSettlement) {
@@ -585,10 +539,13 @@ class App extends React.Component<AppProps, UIState> {
 
   // TODO: Move into ActionButtonSet component when redux is completely migrated
   buyRoadCB() {
-    this.setState({
-      ...this.state,
-      isCurrentlyPlacingRoad: true,
-    });
+    // this.setState({
+    //   ...this.state,
+    //   isCurrentlyPlacingRoad: true,
+    // });
+    // setTimeout(() => {
+    this.props.isPlacingRoad(true);
+    // }, 1000);
   }
 
   render() {
@@ -636,5 +593,3 @@ class App extends React.Component<AppProps, UIState> {
     }
   }
 }
-
-export default connector(App);

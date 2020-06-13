@@ -24,6 +24,7 @@ export default function setSeed(
         boardToBePlayed: action.stateSeed.boardToBePlayed,
         canEndTurn: false,
         isCurrentlyPlacingSettlement: false,
+        isCurrentlyPlacingRoad: false,
       };
     default:
       return state;

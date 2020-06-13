@@ -4,7 +4,7 @@ import { widthOfSVG } from "./Board";
 import {
   PlayerNumber,
   HasRolledAction,
-  hasRolled,
+  hasRolledTheDice,
   collectResources,
 } from "../redux/Actions";
 import { connect, ConnectedProps } from "react-redux";
@@ -35,7 +35,7 @@ function mapStateToProps(store: FoAppState): DiceState {
 function mapDispatch(dispatch: Dispatch) {
   return {
     rolled: (didRoll: boolean): HasRolledAction => {
-      return dispatch(hasRolled(didRoll));
+      return dispatch(hasRolledTheDice(didRoll));
     },
     collectResourcesFromRoll: (diceSum: number) => {
       return dispatch(collectResources(diceSum));

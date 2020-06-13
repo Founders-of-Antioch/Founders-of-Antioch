@@ -15,6 +15,7 @@ export const DECLARE_BOARD = "DECLARE_BOARD";
 export const SET_SEED = "SET_SEED";
 export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
+export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -88,8 +89,13 @@ export interface IsPlacingSettlementAction {
   isOrIsnt: boolean;
 }
 
+export interface IsPlacingRoadAction {
+  type: typeof IS_PLACING_ROAD;
+  isOrIsnt: boolean;
+}
+
 /** Action creators */
-export function hasRolled(hasRolled: boolean): HasRolledAction {
+export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
   return { type: HAS_ROLLED, hasRolled };
 }
 
@@ -155,6 +161,13 @@ export function isPlacingASettlement(
 ): IsPlacingSettlementAction {
   return {
     type: IS_PLACING_SETTLEMENT,
+    isOrIsnt,
+  };
+}
+
+export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
+  return {
+    type: IS_PLACING_ROAD,
     isOrIsnt,
   };
 }
