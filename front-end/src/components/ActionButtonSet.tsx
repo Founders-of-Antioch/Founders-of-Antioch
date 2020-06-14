@@ -1,33 +1,8 @@
 import React, { Component } from "react";
 import { Button } from "semantic-ui-react";
-import { PlayerNumber } from "../redux/Actions";
-import { Player } from "../entities/Player";
-import { FoAppState } from "../redux/reducers/reducers";
-import { connect, ConnectedProps } from "react-redux";
+import { ABSProps } from "../containter-components/VisibleActionButtonSet";
 
-type ActionButtonSetProps = {
-  playersByID: Map<PlayerNumber, Player>;
-  inGamePlayerNumber: PlayerNumber;
-  currentPersonPlaying: PlayerNumber;
-  hasRolled: boolean;
-};
-
-function mapStateToProps(store: FoAppState): ActionButtonSetProps {
-  return {
-    playersByID: store.playersByID,
-    inGamePlayerNumber: store.inGamePlayerNumber,
-    currentPersonPlaying: store.currentPersonPlaying,
-    hasRolled: store.hasRolled,
-  };
-}
-
-const connector = connect(mapStateToProps);
-
-type ABSProps = ConnectedProps<typeof connector> & {
-  buyRoadCB: Function;
-};
-
-class ActionButtonSet extends Component<ABSProps, {}> {
+export default class ActionButtonSet extends Component<ABSProps, {}> {
   getResAmount(res: string): number {
     const { playersByID, inGamePlayerNumber } = this.props;
     const currPlayer = playersByID.get(inGamePlayerNumber);
@@ -109,7 +84,7 @@ class ActionButtonSet extends Component<ABSProps, {}> {
             color="red"
             icon="road"
             onClick={() => {
-              this.props.buyRoadCB();
+              this.props.isPlacingRoad(true);
             }}
             disabled={!this.canBuyRoad()}
           />
@@ -121,5 +96,3 @@ class ActionButtonSet extends Component<ABSProps, {}> {
     );
   }
 }
-
-export default connect(mapStateToProps)(ActionButtonSet);

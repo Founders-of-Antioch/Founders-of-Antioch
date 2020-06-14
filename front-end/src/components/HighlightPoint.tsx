@@ -3,10 +3,15 @@ import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
-import { PlayerNumber } from "../redux/Actions";
+import {
+  PlayerNumber,
+  isPlacingASettlement,
+  isPlacingRoad,
+} from "../redux/Actions";
 import { FoAppState } from "../redux/reducers/reducers";
 import { TileModel } from "../entities/TIleModel";
 import { connect, ConnectedProps } from "react-redux";
+import { Dispatch, bindActionCreators } from "redux";
 
 // Highlights a point where a player can build a settlement
 
@@ -14,7 +19,6 @@ type Props = {
   boardXPos: number;
   boardYPos: number;
   corner: number;
-  finishedSelectingCallback: Function;
   playerWhoSelected: PlayerNumber;
   // Should be 'road' or 'settlement'
   typeOfHighlight: string;
@@ -22,15 +26,27 @@ type Props = {
 
 type HPProps = {
   tiles: Array<TileModel>;
+  turnNumber: number;
 };
 
 function mapStateToProps(store: FoAppState): HPProps {
   return {
     tiles: store.boardToBePlayed.listOfTiles,
+    turnNumber: store.turnNumber,
   };
 }
 
-const connector = connect(mapStateToProps);
+function mapDispatchToProps(dispatch: Dispatch) {
+  return bindActionCreators(
+    {
+      isPlacingASettlement,
+      isPlacingRoad,
+    },
+    dispatch
+  );
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
 
 type ReduxProps = ConnectedProps<typeof connector>;
 
@@ -45,7 +61,13 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   // TODO: Replace with actual gameID
   selectedASettlementSpot(): void {
-    const { boardXPos, boardYPos, corner, playerWhoSelected } = this.props;
+    const {
+      boardXPos,
+      boardYPos,
+      corner,
+      playerWhoSelected,
+      turnNumber,
+    } = this.props;
     // Emit change for broadcast
     socket.emit(
       "addBuilding",
@@ -56,7 +78,9 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       playerWhoSelected,
       this.props.tiles
     );
-    this.props.finishedSelectingCallback();
+
+    this.props.isPlacingASettlement(false);
+    this.props.isPlacingRoad(turnNumber <= 2);
   }
 
   selectedARoadSpot(): void {
@@ -71,7 +95,8 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       corner,
       playerWhoSelected
     );
-    this.props.finishedSelectingCallback();
+
+    this.props.isPlacingRoad(false);
   }
 
   render() {

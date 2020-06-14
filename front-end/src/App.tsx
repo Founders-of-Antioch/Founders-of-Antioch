@@ -21,8 +21,8 @@ import { PlayerNumber, ResourceString } from "./redux/Actions";
 import store from "./redux/store";
 import { SeedState } from "./redux/reducers/reducers";
 import "semantic-ui-css/semantic.min.css";
-import ActionButtonSet from "./components/ActionButtonSet";
 import { AppProps } from "./containter-components/VisibleApp";
+import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -48,11 +48,8 @@ export default class App extends React.Component<AppProps, UIState> {
     this.endTurn = this.endTurn.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
-    this.selectSettlementSpotCB = this.selectSettlementSpotCB.bind(this);
-    this.selectRoadSpotCB = this.selectRoadSpotCB.bind(this);
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
-    this.buyRoadCB = this.buyRoadCB.bind(this);
     this.setupSockets();
 
     // TODO: Fix GameID
@@ -248,6 +245,7 @@ export default class App extends React.Component<AppProps, UIState> {
 
   // Ends the players turn
   // Should only be used as callback for the end turn button
+  // TODO: Move into endTurnButton
   endTurn() {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
     this.props.hasRolledTheDice(false);
@@ -273,19 +271,6 @@ export default class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  // Callback for when a player is done selecting where their settlement should go
-  selectSettlementSpotCB() {
-    const { turnNumber } = this.props;
-
-    this.props.isPlacingASettlement(false);
-    this.props.isPlacingRoad(turnNumber <= 2);
-  }
-
-  // Callback for when a player is done selecting where the road should go
-  selectRoadSpotCB() {
-    this.props.isPlacingRoad(false);
-  }
-
   // Highlights the available places to put settlements
   // TODD: Move most of this into it's own component
   highlightSettlingSpaces(typeofHighlight: string) {
@@ -303,10 +288,6 @@ export default class App extends React.Component<AppProps, UIState> {
       typeofHighlight === "road"
         ? isCurrentlyPlacingRoad
         : isCurrentlyPlacingSettlement;
-    const callback =
-      typeofHighlight === "road"
-        ? this.selectRoadSpotCB
-        : this.selectSettlementSpotCB;
 
     if (isTurn && placing) {
       const spots = [];
@@ -341,7 +322,6 @@ export default class App extends React.Component<AppProps, UIState> {
                 boardXPos={x}
                 boardYPos={y}
                 corner={corner}
-                finishedSelectingCallback={callback}
                 playerWhoSelected={inGamePlayerNumber}
                 typeOfHighlight={typeofHighlight}
               />
@@ -469,11 +449,6 @@ export default class App extends React.Component<AppProps, UIState> {
     return resCardArr;
   }
 
-  // TODO: Move into ActionButtonSet component when redux is completely migrated
-  buyRoadCB() {
-    this.props.isPlacingRoad(true);
-  }
-
   render() {
     const { isLoading } = this.state;
 
@@ -513,7 +488,7 @@ export default class App extends React.Component<AppProps, UIState> {
             </svg>
           </div>
 
-          <ActionButtonSet buyRoadCB={this.buyRoadCB} />
+          <VisibleActionButtonSet />
         </div>
       );
     }
