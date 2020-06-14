@@ -1,10 +1,25 @@
-import { EndTurnAction, CAN_END_TURN } from "../Actions";
+import { CAN_END_TURN, AllEndTurnActions, EVALUATE_TURN } from "../Actions";
 
-export default function (state: boolean = false, action: EndTurnAction) {
+export default function (
+  state: boolean = false,
+  action: AllEndTurnActions
+): boolean {
   switch (action.type) {
     case CAN_END_TURN:
-      console.log(1233);
       return action.canOrCant;
+    case EVALUATE_TURN:
+      const {
+        hasRolled,
+        turnNumber,
+        isCurrentlyPlacingRoad,
+        isCurrentlyPlacingSettlement,
+      } = action.slice;
+
+      return (
+        (hasRolled || turnNumber <= 2) &&
+        !isCurrentlyPlacingSettlement &&
+        !isCurrentlyPlacingRoad
+      );
     default:
       return state;
   }

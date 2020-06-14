@@ -45,15 +45,11 @@ export default class App extends React.Component<AppProps, UIState> {
 
     // Probably change to arrow functions to we don't have to do this
     this.endTurn = this.endTurn.bind(this);
-    this.hasRolledCB = this.hasRolledCB.bind(this);
     this.endTurn = this.endTurn.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
     this.selectSettlementSpotCB = this.selectSettlementSpotCB.bind(this);
     this.selectRoadSpotCB = this.selectRoadSpotCB.bind(this);
-    this.evaluateEndTurnEligibility = this.evaluateEndTurnEligibility.bind(
-      this
-    );
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
     this.buyRoadCB = this.buyRoadCB.bind(this);
@@ -68,8 +64,7 @@ export default class App extends React.Component<AppProps, UIState> {
   }
 
   componentDidUpdate() {
-    console.log("Updating...");
-    this.evaluateEndTurnEligibility();
+    this.props.evaluateTurn();
   }
 
   // TODO: Move to backend
@@ -133,7 +128,6 @@ export default class App extends React.Component<AppProps, UIState> {
       inGamePlayerNumber === nextPlayer && incomingTurnNumber <= 2
     );
 
-    console.log("About to update");
     this.forceUpdate();
   }
 
@@ -252,55 +246,11 @@ export default class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  // Callback function for the 'Dice' component
-  // TODO: Move into Dice component once Redux migration is mature enough
-  hasRolledCB() {
-    // this.evaluateEndTurnEligibility();
-    this.forceUpdate();
-  }
-
-  // Determines if the player can end their turn or not
-  evaluateEndTurnEligibility() {
-    // const { isCurrentlyPlacingRoad } = this.state;
-
-    const {
-      isCurrentlyPlacingSettlement,
-      turnNumber,
-      isCurrentlyPlacingRoad,
-      hasRolled,
-      currentPersonPlaying,
-      inGamePlayerNumber,
-    } = this.props;
-
-    const isTurn = currentPersonPlaying === inGamePlayerNumber;
-
-    if (
-      (hasRolled || turnNumber <= 2) &&
-      !isCurrentlyPlacingSettlement &&
-      !isCurrentlyPlacingRoad &&
-      isTurn
-    ) {
-      // this.setState({
-      //   ...this.state,
-      //   canEndTurn: true,
-      // });
-      console.log(hasRolled);
-      console.log(turnNumber);
-      this.props.possibleToEndTurn(true);
-    } else {
-      this.props.possibleToEndTurn(false);
-    }
-  }
-
   // Ends the players turn
   // Should only be used as callback for the end turn button
   endTurn() {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
     this.props.hasRolledTheDice(false);
-    // this.setState({
-    //   ...this.state,
-    //   canEndTurn: false,
-    // });
     this.props.possibleToEndTurn(false);
   }
 
@@ -328,29 +278,12 @@ export default class App extends React.Component<AppProps, UIState> {
     const { turnNumber } = this.props;
 
     this.props.isPlacingASettlement(false);
-    // this.setState(
-    //   {
-    //     isCurrentlyPlacingRoad: turnNumber <= 2,
-    //   },
-    //   this.evaluateEndTurnEligibility
-    // );
     this.props.isPlacingRoad(turnNumber <= 2);
-    // this.evaluateEndTurnEligibility();
   }
 
   // Callback for when a player is done selecting where the road should go
   selectRoadSpotCB() {
-    // this.setState(
-    //   {
-    //     isCurrentlyPlacingRoad: false,
-    //   },
-    //   this.evaluateEndTurnEligibility
-    // );
     this.props.isPlacingRoad(false);
-
-    // setTimeout(() => {
-    // this.evaluateEndTurnEligibility();
-    // }, 1000);
   }
 
   // Highlights the available places to put settlements
@@ -427,7 +360,6 @@ export default class App extends React.Component<AppProps, UIState> {
     if (this.props.turnNumber > 2) {
       return (
         <Dice
-          hasRolledCallBack={this.hasRolledCB}
           diceOneX={(widthOfSVG * 4) / 5}
           diceOneY={heightOfSVG / 2 - diceLength / 2}
         />
@@ -539,13 +471,7 @@ export default class App extends React.Component<AppProps, UIState> {
 
   // TODO: Move into ActionButtonSet component when redux is completely migrated
   buyRoadCB() {
-    // this.setState({
-    //   ...this.state,
-    //   isCurrentlyPlacingRoad: true,
-    // });
-    // setTimeout(() => {
     this.props.isPlacingRoad(true);
-    // }, 1000);
   }
 
   render() {

@@ -2,6 +2,7 @@ import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TIleModel";
 import { Building } from "../entities/Building";
 import { SeedState } from "./reducers/reducers";
+import store from "./store";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -16,6 +17,7 @@ export const SET_SEED = "SET_SEED";
 export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
+export const EVALUATE_TURN = "EVALUATE_TURN";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -83,6 +85,18 @@ export interface EndTurnAction {
   type: typeof CAN_END_TURN;
   canOrCant: boolean;
 }
+
+export interface EvaluateTurnAction {
+  type: typeof EVALUATE_TURN;
+  slice: {
+    hasRolled: boolean;
+    turnNumber: number;
+    isCurrentlyPlacingRoad: boolean;
+    isCurrentlyPlacingSettlement: boolean;
+  };
+}
+
+export type AllEndTurnActions = EndTurnAction | EvaluateTurnAction;
 
 export interface IsPlacingSettlementAction {
   type: typeof IS_PLACING_SETTLEMENT;
@@ -153,6 +167,20 @@ export function possibleToEndTurn(canOrCant: boolean): EndTurnAction {
   return {
     type: CAN_END_TURN,
     canOrCant,
+  };
+}
+
+export function evaluateTurn(): EvaluateTurnAction {
+  // If you have an idea to fix this, please do =)
+  const currState = store.getState();
+  return {
+    type: EVALUATE_TURN,
+    slice: {
+      hasRolled: currState.hasRolled,
+      turnNumber: currState.turnNumber,
+      isCurrentlyPlacingSettlement: currState.isCurrentlyPlacingSettlement,
+      isCurrentlyPlacingRoad: currState.isCurrentlyPlacingRoad,
+    },
   };
 }
 
