@@ -4,6 +4,7 @@ import {
   PLACE_SETTLEMENT,
   PLACE_ROAD,
   COLLECT_RESOURCES,
+  BUY_ROAD,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 
@@ -63,6 +64,29 @@ export default function players(
       }
 
       return newPlayersMap;
+    case BUY_ROAD:
+      const buyRoadPlayer = new Player(action.playerNumber);
+      const getPlayer = state.get(action.playerNumber);
+      if (getPlayer !== undefined) {
+        buyRoadPlayer.copyFromPlayer(getPlayer);
+
+        const currWood = buyRoadPlayer.resourceHand.get("wood");
+        const currBrick = buyRoadPlayer.resourceHand.get("brick");
+
+        if (currWood !== undefined && currBrick !== undefined) {
+          buyRoadPlayer.resourceHand.set("wood", currWood - 1);
+          buyRoadPlayer.resourceHand.set("brick", currBrick - 1);
+
+          return new Map([...state, [action.playerNumber, buyRoadPlayer]]);
+        } else {
+          console.log(
+            "Something is really wrong! For some reason, the player doesn't have wood or brick"
+          );
+          return state;
+        }
+      } else {
+        return state;
+      }
     default:
       return state;
   }

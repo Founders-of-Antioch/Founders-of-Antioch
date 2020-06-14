@@ -7,6 +7,7 @@ import {
   PlayerNumber,
   isPlacingASettlement,
   isPlacingRoad,
+  buyRoad,
 } from "../redux/Actions";
 import { FoAppState } from "../redux/reducers/reducers";
 import { TileModel } from "../entities/TIleModel";
@@ -27,12 +28,14 @@ type Props = {
 type HPProps = {
   tiles: Array<TileModel>;
   turnNumber: number;
+  inGamePlayerNumber: PlayerNumber;
 };
 
 function mapStateToProps(store: FoAppState): HPProps {
   return {
     tiles: store.boardToBePlayed.listOfTiles,
     turnNumber: store.turnNumber,
+    inGamePlayerNumber: store.inGamePlayerNumber,
   };
 }
 
@@ -41,6 +44,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     {
       isPlacingASettlement,
       isPlacingRoad,
+      buyRoad,
     },
     dispatch
   );
@@ -84,7 +88,14 @@ class HighlightPoint extends Component<HighlightProps, {}> {
   }
 
   selectedARoadSpot(): void {
-    const { boardXPos, boardYPos, playerWhoSelected, corner } = this.props;
+    const {
+      boardXPos,
+      boardYPos,
+      playerWhoSelected,
+      corner,
+      inGamePlayerNumber,
+      turnNumber,
+    } = this.props;
 
     // TODO: Replace with actual gameID
     socket.emit(
@@ -97,6 +108,10 @@ class HighlightPoint extends Component<HighlightProps, {}> {
     );
 
     this.props.isPlacingRoad(false);
+    // Don't have to purchase roads if it's the snake draft
+    if (turnNumber > 2) {
+      this.props.buyRoad(inGamePlayerNumber);
+    }
   }
 
   render() {

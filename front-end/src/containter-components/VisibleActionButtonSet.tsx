@@ -1,5 +1,5 @@
 import { FoAppState } from "../redux/reducers/reducers";
-import { PlayerNumber, isPlacingRoad } from "../redux/Actions";
+import { PlayerNumber, isPlacingRoad, buyRoad } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { connect, ConnectedProps } from "react-redux";
 import ActionButtonSet from "../components/ActionButtonSet";
@@ -25,6 +25,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return bindActionCreators(
     {
       isPlacingRoad,
+      buyRoad,
     },
     dispatch
   );

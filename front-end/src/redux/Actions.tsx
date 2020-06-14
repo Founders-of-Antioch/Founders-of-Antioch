@@ -18,6 +18,7 @@ export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
 export const EVALUATE_TURN = "EVALUATE_TURN";
+export const BUY_ROAD = "BUY_ROAD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -51,10 +52,16 @@ interface CollectResourcesAction {
   diceSum: number;
 }
 
+interface BuyRoadAction {
+  type: typeof BUY_ROAD;
+  playerNumber: PlayerNumber;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
-  | CollectResourcesAction;
+  | CollectResourcesAction
+  | BuyRoadAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -197,6 +204,13 @@ export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
   return {
     type: IS_PLACING_ROAD,
     isOrIsnt,
+  };
+}
+
+export function buyRoad(playerNumber: PlayerNumber): BuyRoadAction {
+  return {
+    type: BUY_ROAD,
+    playerNumber,
   };
 }
 

@@ -3,6 +3,11 @@ import { Button } from "semantic-ui-react";
 import { ABSProps } from "../containter-components/VisibleActionButtonSet";
 
 export default class ActionButtonSet extends Component<ABSProps, {}> {
+  constructor(props: ABSProps) {
+    super(props);
+    this.roadClick = this.roadClick.bind(this);
+  }
+
   getResAmount(res: string): number {
     const { playersByID, inGamePlayerNumber } = this.props;
     const currPlayer = playersByID.get(inGamePlayerNumber);
@@ -63,6 +68,10 @@ export default class ActionButtonSet extends Component<ABSProps, {}> {
     );
   }
 
+  roadClick() {
+    this.props.isPlacingRoad(true);
+  }
+
   render() {
     return (
       <div
@@ -83,9 +92,7 @@ export default class ActionButtonSet extends Component<ABSProps, {}> {
           <Button
             color="red"
             icon="road"
-            onClick={() => {
-              this.props.isPlacingRoad(true);
-            }}
+            onClick={this.roadClick}
             disabled={!this.canBuyRoad()}
           />
           <Button color="yellow" icon="copy" disabled={!this.canBuyDevCard()} />
