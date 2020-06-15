@@ -3,6 +3,18 @@ import { PlayerNumber } from "./redux/Actions";
 // Tile colors
 export const WHEAT = "#fec40d";
 export const BRICK = "firebrick";
+export const SHEEP = "gainsboro";
+export const ORE = "grey";
+export const WOOD = "green";
+// export const WOOD = "#8B4513";
+
+export const colorMap: { [index: string]: string } = {
+  wood: WOOD,
+  brick: BRICK,
+  wheat: WHEAT,
+  sheep: SHEEP,
+  ore: ORE,
+};
 
 // Alt tiles
 export const DARK_WHEAT = "#ffc400";

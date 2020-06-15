@@ -23,6 +23,7 @@ import { SeedState } from "./redux/reducers/reducers";
 import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
+import TradeProposed from "./components/Trading/TradeProposed";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -489,6 +490,12 @@ export default class App extends React.Component<AppProps, UIState> {
           </div>
 
           <VisibleActionButtonSet />
+          {/* <TradeProposed
+            getResources={["wheat", "brick", "ore", "sheep", "wood"]}
+            getAmounts={[1, 1, 1, 1, 1]}
+            giveResources={["wheat", "brick", "ore", "sheep", "wood"]}
+            giveAmounts={[1, 1, 1, 1, 1]}
+          /> */}
         </div>
       );
     }
