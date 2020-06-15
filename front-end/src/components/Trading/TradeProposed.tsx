@@ -36,11 +36,10 @@ export default class TradeProposed extends Component<TradeProps, {}> {
       const currRes = resources[i];
 
       resDisplayArr.push(
-        <div>
+        <div key={key++}>
           <span className="date">{currAmount + " " + currRes}</span>
           <FontAwesomeIcon
             icon={resMap[currRes]}
-            key={key++}
             size="2x"
             color={colorMap[currRes]}
           />
@@ -57,8 +56,6 @@ export default class TradeProposed extends Component<TradeProps, {}> {
         style={{
           zIndex: 2,
           position: "absolute",
-          left: "10%",
-          top: "25%",
         }}
       >
         <Card color="black">

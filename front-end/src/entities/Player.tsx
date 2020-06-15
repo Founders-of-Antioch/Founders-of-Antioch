@@ -3,7 +3,13 @@ import { RoadModel } from "./RoadModel";
 import { PlayerNumber, ResourceString } from "../redux/Actions";
 
 // Should be moved into helper and given Array<ResourceString> type
-export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
+export const LIST_OF_RESOURCES: Array<ResourceString> = [
+  "wood",
+  "brick",
+  "ore",
+  "sheep",
+  "wheat",
+];
 
 export class Player {
   playerNum: PlayerNumber;

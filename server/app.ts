@@ -18,6 +18,7 @@ import { SeedState } from "../front-end/src/redux/reducers/reducers";
 import { TileModel } from "../front-end/src/entities/TIleModel";
 import { PlayerNumber } from "../front-end/src/redux/Actions";
 import { Building } from "../front-end/src/entities/Building";
+import { ProposedTradeSocketPackage } from "../front-end/src/components/Trading/ProposeTrade";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 function shuffle(a: Array<string>): Array<string> {
@@ -211,6 +212,10 @@ createConnection().then((connection) => {
         return retState;
       }
     );
+
+    client.on("proposedTrade", (pkg: ProposedTradeSocketPackage) => {
+      gameManager.proposeTrade(pkg);
+    });
   });
 
   app.use(bodyParser.json());

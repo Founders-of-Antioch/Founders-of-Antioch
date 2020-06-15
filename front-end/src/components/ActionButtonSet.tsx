@@ -1,11 +1,26 @@
 import React, { Component } from "react";
 import { Button } from "semantic-ui-react";
 import { ABSProps } from "../containter-components/VisibleActionButtonSet";
+import ProposeTrade from "./Trading/ProposeTrade";
 
-export default class ActionButtonSet extends Component<ABSProps, {}> {
+type UIState = {
+  showProposeTrade: boolean;
+};
+
+export default class ActionButtonSet extends Component<ABSProps, UIState> {
   constructor(props: ABSProps) {
     super(props);
+
+    this.state = { showProposeTrade: false };
+
     this.roadClick = this.roadClick.bind(this);
+    this.toggleTradeMenu = this.toggleTradeMenu.bind(this);
+  }
+
+  toggleTradeMenu() {
+    this.setState({
+      showProposeTrade: !this.state.showProposeTrade,
+    });
   }
 
   getResAmount(res: string): number {
@@ -26,7 +41,8 @@ export default class ActionButtonSet extends Component<ABSProps, {}> {
 
   isTurn() {
     const { inGamePlayerNumber, currentPersonPlaying } = this.props;
-    return inGamePlayerNumber === currentPersonPlaying;
+    // return inGamePlayerNumber === currentPersonPlaying;
+    return true;
   }
 
   canBuySettlement() {
@@ -74,32 +90,49 @@ export default class ActionButtonSet extends Component<ABSProps, {}> {
 
   render() {
     return (
-      <div
-        //TODO: Move to css file
-        style={{
-          zIndex: 2,
-          position: "absolute",
-          right: "1%",
-          bottom: "0%",
-        }}
-      >
-        <Button.Group size="massive">
-          <Button color="red" icon="home" disabled={!this.canBuySettlement()} />
-          <Button
-            color="yellow"
-            icon="building"
-            disabled={!this.canBuyCity()}
-          />
-          <Button
-            color="red"
-            icon="road"
-            onClick={this.roadClick}
-            disabled={!this.canBuyRoad()}
-          />
-          <Button color="yellow" icon="copy" disabled={!this.canBuyDevCard()} />
-          <Button color="red" icon="handshake" disabled={!this.isTurn()} />
-          <Button color="yellow" icon="info circle" />
-        </Button.Group>
+      <div>
+        {this.state.showProposeTrade ? <ProposeTrade /> : null}
+
+        <div
+          //TODO: Move to css file
+          style={{
+            zIndex: 2,
+            position: "absolute",
+            right: "0%",
+            bottom: "0%",
+          }}
+        >
+          <Button.Group size="massive">
+            <Button
+              color="red"
+              icon="home"
+              disabled={!this.canBuySettlement()}
+            />
+            <Button
+              color="yellow"
+              icon="building"
+              disabled={!this.canBuyCity()}
+            />
+            <Button
+              color="red"
+              icon="road"
+              onClick={this.roadClick}
+              disabled={!this.canBuyRoad()}
+            />
+            <Button
+              color="yellow"
+              icon="copy"
+              disabled={!this.canBuyDevCard()}
+            />
+            <Button
+              color="red"
+              icon="handshake"
+              onClick={this.toggleTradeMenu}
+              disabled={!this.isTurn()}
+            />
+            <Button color="yellow" icon="info circle" />
+          </Button.Group>
+        </div>
       </div>
     );
   }
