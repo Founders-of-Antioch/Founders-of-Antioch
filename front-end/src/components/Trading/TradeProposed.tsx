@@ -9,18 +9,15 @@ import {
   faTree,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { ResourceString } from "../../redux/Actions";
 import { colorMap } from "../../colors";
 
 type TradeProps = {
-  getResources: Array<ResourceString>;
-  getAmounts: Array<number>;
-  giveResources: Array<ResourceString>;
-  giveAmounts: Array<number>;
+  getResources: { [index: string]: number };
+  giveResources: { [index: string]: number };
 };
 
 export default class TradeProposed extends Component<TradeProps, {}> {
-  listResources(resources: Array<ResourceString>, amounts: Array<number>) {
+  listResources(resAmountMap: { [index: string]: number }) {
     let key = 0;
     let resDisplayArr = [];
     let resMap: { [index: string]: IconDefinition } = {
@@ -31,9 +28,8 @@ export default class TradeProposed extends Component<TradeProps, {}> {
       wood: faTree,
     };
 
-    for (let i = 0; i < resources.length; i++) {
-      const currAmount = amounts[i];
-      const currRes = resources[i];
+    for (const currRes in resAmountMap) {
+      const currAmount = resAmountMap[currRes];
 
       resDisplayArr.push(
         <div key={key++}>
@@ -64,18 +60,10 @@ export default class TradeProposed extends Component<TradeProps, {}> {
               <Card.Header>Trade Proposal</Card.Header>
             </div>
             <Card.Header>You get:</Card.Header>
-            <Card.Meta>
-              {this.listResources(
-                this.props.getResources,
-                this.props.getAmounts
-              )}
-            </Card.Meta>
+            <Card.Meta>{this.listResources(this.props.getResources)}</Card.Meta>
             <Card.Header>They get:</Card.Header>
             <Card.Meta>
-              {this.listResources(
-                this.props.giveResources,
-                this.props.giveAmounts
-              )}
+              {this.listResources(this.props.giveResources)}
             </Card.Meta>
             <Card.Description>
               <div style={{ textAlign: "center" }}>

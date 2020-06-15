@@ -8,7 +8,6 @@
     "experimentalDecorators": true,
     "strict": true,
     "downlevelIteration": true,
-    "jsx": "react",
-    "exclude": ["../front-end"]
+    "jsx": "react"
   }
 }

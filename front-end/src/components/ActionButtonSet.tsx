@@ -42,7 +42,10 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   isTurn() {
     const { inGamePlayerNumber, currentPersonPlaying } = this.props;
     return inGamePlayerNumber === currentPersonPlaying;
-    // return true;
+  }
+
+  canTrade() {
+    return this.isTurn() && this.props.hasRolled && this.props.turnNumber > 2;
   }
 
   canBuySettlement() {
@@ -128,7 +131,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
               color="red"
               icon="handshake"
               onClick={this.toggleTradeMenu}
-              disabled={!this.isTurn()}
+              disabled={!this.canTrade()}
             />
             <Button color="yellow" icon="info circle" />
           </Button.Group>

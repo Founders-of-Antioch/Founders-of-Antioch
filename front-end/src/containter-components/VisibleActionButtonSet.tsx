@@ -10,6 +10,7 @@ type ActionButtonSetProps = {
   inGamePlayerNumber: PlayerNumber;
   currentPersonPlaying: PlayerNumber;
   hasRolled: boolean;
+  turnNumber: number;
 };
 
 function mapStateToProps(store: FoAppState): ActionButtonSetProps {
@@ -18,6 +19,7 @@ function mapStateToProps(store: FoAppState): ActionButtonSetProps {
     inGamePlayerNumber: store.inGamePlayerNumber,
     currentPersonPlaying: store.currentPersonPlaying,
     hasRolled: store.hasRolled,
+    turnNumber: store.turnNumber,
   };
 }
 

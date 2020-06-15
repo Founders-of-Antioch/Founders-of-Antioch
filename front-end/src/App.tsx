@@ -24,6 +24,7 @@ import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
 import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
+import TradeProposed from "./components/Trading/TradeProposed";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -32,6 +33,8 @@ export const socket = socketIOClient.connect("http://localhost:3001");
 
 type UIState = {
   isLoading: boolean;
+  showTrades: boolean;
+  trades: Array<ProposedTradeSocketPackage>;
 };
 
 let hasSeeded = false;
@@ -42,6 +45,8 @@ export default class App extends React.Component<AppProps, UIState> {
 
     this.state = {
       isLoading: true,
+      showTrades: false,
+      trades: [],
     };
 
     // Probably change to arrow functions to we don't have to do this
@@ -51,6 +56,8 @@ export default class App extends React.Component<AppProps, UIState> {
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
+    this.renderTrades = this.renderTrades.bind(this);
+
     this.setupSockets();
 
     // TODO: Fix GameID
@@ -63,6 +70,29 @@ export default class App extends React.Component<AppProps, UIState> {
 
   componentDidUpdate() {
     this.props.evaluateTurn();
+  }
+
+  renderTrades() {
+    if (this.state.showTrades) {
+      let trades = [];
+      let key = 0;
+      for (const currTrade of this.state.trades) {
+        // Give/get are swapped because the trade is giving resources from
+        // player x to y, but in the view of player y, it's getting
+        // from player x
+        trades.push(
+          <TradeProposed
+            key={key++}
+            getResources={currTrade.playerGiveResources}
+            giveResources={currTrade.playerGetResources}
+          />
+        );
+      }
+
+      return trades;
+    } else {
+      return null;
+    }
   }
 
   // TODO: Move to backend
@@ -206,6 +236,10 @@ export default class App extends React.Component<AppProps, UIState> {
 
     socket.on("tradeProposed", (pkg: ProposedTradeSocketPackage) => {
       console.log(pkg);
+      this.setState({
+        showTrades: true,
+        trades: [...this.state.trades, pkg],
+      });
     });
   }
 
@@ -500,6 +534,7 @@ export default class App extends React.Component<AppProps, UIState> {
             giveResources={["wheat", "brick", "ore", "sheep", "wood"]}
             giveAmounts={[1, 1, 1, 1, 1]}
           /> */}
+          {this.renderTrades()}
         </div>
       );
     }
