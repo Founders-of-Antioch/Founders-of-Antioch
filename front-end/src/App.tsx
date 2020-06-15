@@ -23,10 +23,7 @@ import { SeedState } from "./redux/reducers/reducers";
 import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
-import TradeProposed from "./components/Trading/TradeProposed";
-import ProposeTrade, {
-  ProposedTradeSocketPackage,
-} from "./components/Trading/ProposeTrade";
+import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));

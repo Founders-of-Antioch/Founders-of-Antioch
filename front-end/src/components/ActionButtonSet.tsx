@@ -41,8 +41,8 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   isTurn() {
     const { inGamePlayerNumber, currentPersonPlaying } = this.props;
-    // return inGamePlayerNumber === currentPersonPlaying;
-    return true;
+    return inGamePlayerNumber === currentPersonPlaying;
+    // return true;
   }
 
   canBuySettlement() {
