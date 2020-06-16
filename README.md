@@ -4,6 +4,8 @@ Founders of Antioch (FoA) is an open source alternative to the board game Settle
 
 ## Setup
 
+NOTE: Dockerfile does not work yet
+
 Simply run
 
 `./setup.sh`
@@ -14,10 +16,10 @@ to install all of the dependencies. If this fails for some reason, you can insta
 
 `cd server && npm i`
 
-Then you'll need to run 
+Then you'll need to run
 
-```tsc```
- 
+`tsc`
+
 to build the server
 
 You should only need to run this once.

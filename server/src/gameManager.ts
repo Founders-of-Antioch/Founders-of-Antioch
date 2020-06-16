@@ -2,6 +2,7 @@ import { ServerPlayer } from "./Player";
 import { ServerBuilding } from "./Building";
 import { Road } from "./entity/Road";
 import { ProposedTradeSocketPackage } from "../../front-end/src/components/Trading/ProposeTrade";
+import { ResourceChangePackage } from "../../front-end/src/components/Trading/TradeProposed";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 function shuffle(a: Array<string>): Array<string> {
@@ -134,6 +135,14 @@ export class Game {
       }
     });
   }
+
+  broadcastResourceUpdate(pkg: ResourceChangePackage) {
+    this.listOfPlayers.forEach((currPl, idx) => {
+      if (idx + 1 === pkg.playerNumber) {
+        currPl.playerSocket.emit("resourceUpdate", pkg);
+      }
+    });
+  }
 }
 
 export class GameManager {
@@ -248,6 +257,14 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastTradeUpdate(pkg);
+    }
+  }
+
+  changeResources(pkg: ResourceChangePackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastResourceUpdate(pkg);
     }
   }
 }

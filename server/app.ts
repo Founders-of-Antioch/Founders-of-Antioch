@@ -19,6 +19,7 @@ import { TileModel } from "../front-end/src/entities/TIleModel";
 import { PlayerNumber } from "../front-end/src/redux/Actions";
 import { Building } from "../front-end/src/entities/Building";
 import { ProposedTradeSocketPackage } from "../front-end/src/components/Trading/ProposeTrade";
+import { ResourceChangePackage } from "../front-end/src/components/Trading/TradeProposed";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 function shuffle(a: Array<string>): Array<string> {
@@ -61,6 +62,7 @@ function randCounters() {
 
 // make typeorm connection
 createConnection().then((connection) => {
+  console.log("wowowo");
   // const userRepository = connection.getRepository(User);
   const gameRepository = connection.getRepository(Game);
   const boardRepository = connection.getRepository(Board);
@@ -215,6 +217,10 @@ createConnection().then((connection) => {
 
     client.on("proposedTrade", (pkg: ProposedTradeSocketPackage) => {
       gameManager.proposeTrade(pkg);
+    });
+
+    client.on("resourceChange", (pkg: ResourceChangePackage) => {
+      gameManager.changeResources(pkg);
     });
   });
 

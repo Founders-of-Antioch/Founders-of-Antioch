@@ -52,6 +52,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   }
 
   canTrade() {
+    return true;
     return this.isTurn() && this.props.hasRolled && this.props.turnNumber > 2;
   }
 

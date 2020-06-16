@@ -13,6 +13,8 @@ import { colorMap } from "../../colors";
 import { ResourceString, PlayerNumber } from "../../redux/Actions";
 import { LIST_OF_RESOURCES } from "../../entities/Player";
 import { socket } from "../../App";
+import { FoAppState } from "../../redux/reducers/reducers";
+import { connect } from "react-redux";
 
 type PTState = {
   getRes: Map<ResourceString, number>;
@@ -30,8 +32,20 @@ type PTProps = {
   onClickCallback: () => void;
 };
 
-export default class ProposeTrade extends Component<PTProps, PTState> {
-  constructor(props: PTProps) {
+type redProps = {
+  playerNumber: PlayerNumber;
+};
+
+function mapStateToProps(store: FoAppState): redProps {
+  return {
+    playerNumber: store.inGamePlayerNumber,
+  };
+}
+
+type ProposeTradeProps = redProps & PTProps;
+
+class ProposeTrade extends Component<ProposeTradeProps, PTState> {
+  constructor(props: ProposeTradeProps) {
     super(props);
 
     let newGetRes = new Map<ResourceString, number>();
@@ -68,10 +82,10 @@ export default class ProposeTrade extends Component<PTProps, PTState> {
       }
     }
 
-    // TODO: Fix Game ID`
+    // TODO: Fix Game ID
     const pkg: ProposedTradeSocketPackage = {
       gameID: "1",
-      playerNumber: 1,
+      playerNumber: this.props.playerNumber,
       playerGetResources: getMap,
       playerGiveResources: giveMap,
     };
@@ -196,3 +210,5 @@ export default class ProposeTrade extends Component<PTProps, PTState> {
     );
   }
 }
+
+export default connect(mapStateToProps)(ProposeTrade);

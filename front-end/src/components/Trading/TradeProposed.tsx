@@ -11,14 +11,30 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { colorMap } from "../../colors";
 import { PlayerNumber } from "../../redux/Actions";
+import { socket } from "../../App";
 
 type TradeProps = {
   getResources: { [index: string]: number };
   giveResources: { [index: string]: number };
   playerTrading: PlayerNumber;
+  tradeIndex: number;
+  closeWindowCB: (idx: number) => void;
+};
+
+export type ResourceChangePackage = {
+  playerNumber: PlayerNumber;
+  resourceDeltaMap: { [index: string]: number };
+  gameID: string;
 };
 
 export default class TradeProposed extends Component<TradeProps, {}> {
+  constructor(props: TradeProps) {
+    super(props);
+
+    this.decline = this.decline.bind(this);
+    this.acceptDeal = this.acceptDeal.bind(this);
+  }
+
   listResources(resAmountMap: { [index: string]: number }) {
     let key = 0;
     let resDisplayArr = [];
@@ -48,6 +64,51 @@ export default class TradeProposed extends Component<TradeProps, {}> {
     return resDisplayArr;
   }
 
+  getNegativeDeltaMap(deltaMap: { [index: string]: number }) {
+    let newDTMap: { [index: string]: number } = {};
+    for (const key in deltaMap) {
+      newDTMap[key] = -deltaMap[key];
+    }
+    return newDTMap;
+  }
+
+  // TODO: Change GameID's
+  acceptDeal() {
+    const personalGetPkg: ResourceChangePackage = {
+      playerNumber: 1,
+      resourceDeltaMap: this.props.getResources,
+      gameID: "1",
+    };
+
+    const personalGivePkg: ResourceChangePackage = {
+      playerNumber: 1,
+      resourceDeltaMap: this.getNegativeDeltaMap(this.props.giveResources),
+      gameID: "1",
+    };
+
+    socket.emit("resourceChange", personalGetPkg);
+    socket.emit("resourceChange", personalGivePkg);
+
+    const otherGetPkg: ResourceChangePackage = {
+      playerNumber: 2,
+      resourceDeltaMap: this.props.giveResources,
+      gameID: "1",
+    };
+
+    const otherGivePkg: ResourceChangePackage = {
+      playerNumber: 2,
+      resourceDeltaMap: this.getNegativeDeltaMap(this.props.getResources),
+      gameID: "1",
+    };
+
+    socket.emit("resouceChange", otherGetPkg);
+    socket.emit("resouceChange", otherGivePkg);
+  }
+
+  decline() {
+    this.props.closeWindowCB(this.props.tradeIndex);
+  }
+
   render() {
     return (
       <div
@@ -72,9 +133,13 @@ export default class TradeProposed extends Component<TradeProps, {}> {
             <Card.Description>
               <div style={{ textAlign: "center" }}>
                 <Button.Group>
-                  <Button positive>Accept</Button>
+                  <Button positive onClick={this.acceptDeal}>
+                    Accept
+                  </Button>
                   <Button.Or>or</Button.Or>
-                  <Button negative>Decline</Button>
+                  <Button negative onClick={this.decline}>
+                    Decline
+                  </Button>
                 </Button.Group>
               </div>
             </Card.Description>

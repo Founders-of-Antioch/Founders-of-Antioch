@@ -57,6 +57,7 @@ export default class App extends React.Component<AppProps, UIState> {
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
     this.renderTrades = this.renderTrades.bind(this);
+    this.closeTradeWindow = this.closeTradeWindow.bind(this);
 
     this.setupSockets();
 
@@ -72,10 +73,20 @@ export default class App extends React.Component<AppProps, UIState> {
     this.props.evaluateTurn();
   }
 
+  closeTradeWindow(index: number) {
+    const { trades } = this.state;
+
+    this.setState({
+      ...this.state,
+      trades: [...trades.slice(0, index), ...trades.slice(index + 1)],
+    });
+  }
+
   renderTrades() {
     if (this.state.showTrades) {
       let trades = [];
       let key = 0;
+      // TODO: Fix for multiple trades
       for (const currTrade of this.state.trades) {
         // Give/get are swapped because the trade is giving resources from
         // player x to y, but in the view of player y, it's getting
@@ -86,6 +97,8 @@ export default class App extends React.Component<AppProps, UIState> {
             getResources={currTrade.playerGiveResources}
             giveResources={currTrade.playerGetResources}
             playerTrading={currTrade.playerNumber}
+            tradeIndex={key - 1}
+            closeWindowCB={this.closeTradeWindow}
           />
         );
       }
