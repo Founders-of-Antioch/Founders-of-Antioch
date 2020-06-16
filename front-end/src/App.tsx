@@ -85,6 +85,7 @@ export default class App extends React.Component<AppProps, UIState> {
             key={key++}
             getResources={currTrade.playerGiveResources}
             giveResources={currTrade.playerGetResources}
+            playerTrading={currTrade.playerNumber}
           />
         );
       }

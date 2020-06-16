@@ -15,6 +15,13 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
     this.roadClick = this.roadClick.bind(this);
     this.toggleTradeMenu = this.toggleTradeMenu.bind(this);
+    this.closeMenu = this.closeMenu.bind(this);
+  }
+
+  closeMenu() {
+    this.setState({
+      showProposeTrade: false,
+    });
   }
 
   toggleTradeMenu() {
@@ -94,7 +101,9 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   render() {
     return (
       <div>
-        {this.state.showProposeTrade ? <ProposeTrade /> : null}
+        {this.state.showProposeTrade ? (
+          <ProposeTrade onClickCallback={this.closeMenu} />
+        ) : null}
 
         <div
           //TODO: Move to css file

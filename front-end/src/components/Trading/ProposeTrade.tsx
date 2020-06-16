@@ -26,8 +26,12 @@ export type ProposedTradeSocketPackage = {
   playerGiveResources: { [index: string]: number };
 };
 
-export default class ProposeTrade extends Component<{}, PTState> {
-  constructor(props: {}) {
+type PTProps = {
+  onClickCallback: () => void;
+};
+
+export default class ProposeTrade extends Component<PTProps, PTState> {
+  constructor(props: PTProps) {
     super(props);
 
     let newGetRes = new Map<ResourceString, number>();
@@ -72,6 +76,7 @@ export default class ProposeTrade extends Component<{}, PTState> {
       playerGiveResources: giveMap,
     };
     socket.emit("proposedTrade", pkg);
+    this.props.onClickCallback();
   }
 
   handleResourceChange(e: ChangeEvent<HTMLInputElement>) {
@@ -179,7 +184,9 @@ export default class ProposeTrade extends Component<{}, PTState> {
                   <Button positive onClick={this.proposeTrade}>
                     Propose
                   </Button>
-                  <Button negative>Cancel</Button>
+                  <Button negative onClick={this.props.onClickCallback}>
+                    Cancel
+                  </Button>
                 </Button.Group>
               </div>
             </Card.Description>

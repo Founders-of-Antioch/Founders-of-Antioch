@@ -10,10 +10,12 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { colorMap } from "../../colors";
+import { PlayerNumber } from "../../redux/Actions";
 
 type TradeProps = {
   getResources: { [index: string]: number };
   giveResources: { [index: string]: number };
+  playerTrading: PlayerNumber;
 };
 
 export default class TradeProposed extends Component<TradeProps, {}> {
@@ -57,7 +59,9 @@ export default class TradeProposed extends Component<TradeProps, {}> {
         <Card color="black">
           <Card.Content>
             <div style={{ textAlign: "center" }}>
-              <Card.Header>Trade Proposal</Card.Header>
+              <Card.Header>
+                Trade Proposal from Player {this.props.playerTrading}
+              </Card.Header>
             </div>
             <Card.Header>You get:</Card.Header>
             <Card.Meta>{this.listResources(this.props.getResources)}</Card.Meta>
