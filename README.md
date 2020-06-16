@@ -14,6 +14,12 @@ to install all of the dependencies. If this fails for some reason, you can insta
 
 `cd server && npm i`
 
+Then you'll need to run 
+
+```tsc```
+ 
+to build the server
+
 You should only need to run this once.
 
 ## Running
