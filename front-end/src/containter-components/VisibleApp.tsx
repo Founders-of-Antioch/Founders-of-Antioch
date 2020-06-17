@@ -12,6 +12,7 @@ import {
   nextTurn,
   hasRolledTheDice,
   evaluateTurn,
+  changeResource,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TIleModel";
@@ -59,6 +60,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       changePlayer,
       hasRolledTheDice,
       evaluateTurn,
+      changeResource,
     },
     dispatch
   );

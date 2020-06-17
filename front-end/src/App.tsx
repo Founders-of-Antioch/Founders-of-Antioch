@@ -24,7 +24,9 @@ import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
 import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
-import TradeProposed from "./components/Trading/TradeProposed";
+import TradeProposed, {
+  ResourceChangePackage,
+} from "./components/Trading/TradeProposed";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -254,6 +256,17 @@ export default class App extends React.Component<AppProps, UIState> {
         showTrades: true,
         trades: [...this.state.trades, pkg],
       });
+    });
+
+    socket.on("resourceUpdate", (pkg: ResourceChangePackage) => {
+      for (const res in pkg.resourceDeltaMap) {
+        const amount = pkg.resourceDeltaMap[res];
+        this.props.changeResource(
+          pkg.playerNumber,
+          res as ResourceString,
+          amount
+        );
+      }
     });
   }
 

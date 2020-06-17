@@ -45,9 +45,13 @@ export class Player {
   }
 
   addResource(res: ResourceString) {
+    this.changeResourceVal(res, 1);
+  }
+
+  changeResourceVal(res: ResourceString, val: number) {
     const stored = this.resourceHand.get(res);
     if (typeof stored === "number") {
-      this.resourceHand.set(res, stored + 1);
+      this.resourceHand.set(res, stored + val);
     }
   }
 

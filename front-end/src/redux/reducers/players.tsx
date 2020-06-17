@@ -5,6 +5,7 @@ import {
   PLACE_ROAD,
   COLLECT_RESOURCES,
   BUY_ROAD,
+  CHANGE_RESOURCE,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 
@@ -84,6 +85,18 @@ export default function players(
           );
           return state;
         }
+      } else {
+        return state;
+      }
+    case CHANGE_RESOURCE:
+      const changeResPlayer = new Player(action.playerNumber);
+      const getResPlayer = state.get(action.playerNumber);
+
+      if (getResPlayer !== undefined) {
+        changeResPlayer.copyFromPlayer(getResPlayer);
+        changeResPlayer.changeResourceVal(action.resource, action.amount);
+
+        return new Map([...state, [action.playerNumber, changeResPlayer]]);
       } else {
         return state;
       }

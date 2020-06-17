@@ -19,6 +19,8 @@ export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
 export const EVALUATE_TURN = "EVALUATE_TURN";
 export const BUY_ROAD = "BUY_ROAD";
+// Changes the amount of resource in a player's hand
+export const CHANGE_RESOURCE = "CHANGE_RESOURCE";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -57,11 +59,19 @@ interface BuyRoadAction {
   playerNumber: PlayerNumber;
 }
 
+interface ChangeResourceAction {
+  type: typeof CHANGE_RESOURCE;
+  playerNumber: PlayerNumber;
+  resource: ResourceString;
+  amount: number;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
   | CollectResourcesAction
-  | BuyRoadAction;
+  | BuyRoadAction
+  | ChangeResourceAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -211,6 +221,19 @@ export function buyRoad(playerNumber: PlayerNumber): BuyRoadAction {
   return {
     type: BUY_ROAD,
     playerNumber,
+  };
+}
+
+export function changeResource(
+  playerNumber: PlayerNumber,
+  resource: ResourceString,
+  amount: number
+): ChangeResourceAction {
+  return {
+    type: CHANGE_RESOURCE,
+    playerNumber,
+    resource,
+    amount,
   };
 }
 

@@ -12,6 +12,8 @@ import {
 import { colorMap } from "../../colors";
 import { PlayerNumber } from "../../redux/Actions";
 import { socket } from "../../App";
+import { FoAppState } from "../../redux/reducers/reducers";
+import { connect } from "react-redux";
 
 type TradeProps = {
   getResources: { [index: string]: number };
@@ -27,8 +29,20 @@ export type ResourceChangePackage = {
   gameID: string;
 };
 
-export default class TradeProposed extends Component<TradeProps, {}> {
-  constructor(props: TradeProps) {
+type ExtraProps = {
+  personalPlayerNumber: PlayerNumber;
+};
+
+function mapStateToProps(store: FoAppState): ExtraProps {
+  return {
+    personalPlayerNumber: store.inGamePlayerNumber,
+  };
+}
+
+type TradeProposedProps = TradeProps & ExtraProps;
+
+class TradeProposed extends Component<TradeProposedProps, {}> {
+  constructor(props: TradeProposedProps) {
     super(props);
 
     this.decline = this.decline.bind(this);
@@ -75,13 +89,13 @@ export default class TradeProposed extends Component<TradeProps, {}> {
   // TODO: Change GameID's
   acceptDeal() {
     const personalGetPkg: ResourceChangePackage = {
-      playerNumber: 1,
+      playerNumber: this.props.personalPlayerNumber,
       resourceDeltaMap: this.props.getResources,
       gameID: "1",
     };
 
     const personalGivePkg: ResourceChangePackage = {
-      playerNumber: 1,
+      playerNumber: this.props.personalPlayerNumber,
       resourceDeltaMap: this.getNegativeDeltaMap(this.props.giveResources),
       gameID: "1",
     };
@@ -90,19 +104,20 @@ export default class TradeProposed extends Component<TradeProps, {}> {
     socket.emit("resourceChange", personalGivePkg);
 
     const otherGetPkg: ResourceChangePackage = {
-      playerNumber: 2,
+      playerNumber: this.props.playerTrading,
       resourceDeltaMap: this.props.giveResources,
       gameID: "1",
     };
 
     const otherGivePkg: ResourceChangePackage = {
-      playerNumber: 2,
+      playerNumber: this.props.playerTrading,
       resourceDeltaMap: this.getNegativeDeltaMap(this.props.getResources),
       gameID: "1",
     };
 
-    socket.emit("resouceChange", otherGetPkg);
-    socket.emit("resouceChange", otherGivePkg);
+    socket.emit("resourceChange", otherGetPkg);
+    socket.emit("resourceChange", otherGivePkg);
+    this.props.closeWindowCB(this.props.tradeIndex);
   }
 
   decline() {
@@ -149,3 +164,5 @@ export default class TradeProposed extends Component<TradeProps, {}> {
     );
   }
 }
+
+export default connect(mapStateToProps)(TradeProposed);

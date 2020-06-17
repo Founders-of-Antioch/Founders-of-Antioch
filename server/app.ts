@@ -62,7 +62,6 @@ function randCounters() {
 
 // make typeorm connection
 createConnection().then((connection) => {
-  console.log("wowowo");
   // const userRepository = connection.getRepository(User);
   const gameRepository = connection.getRepository(Game);
   const boardRepository = connection.getRepository(Board);
