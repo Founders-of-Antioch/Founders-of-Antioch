@@ -27,6 +27,7 @@ import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
 import TradeProposed, {
   ResourceChangePackage,
 } from "./components/Trading/TradeProposed";
+import { Port } from "./components/Port";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -515,6 +516,36 @@ export default class App extends React.Component<AppProps, UIState> {
     return resCardArr;
   }
 
+  constructPorts() {
+    // X, Y, Edge
+    const portLocations = [
+      [-1, -2, 2],
+      [-2, -2, 3],
+      [-2, -1, 4],
+      [-1, 1, 4],
+      [0, 2, 5],
+      [1, 2, 0],
+      [2, 1, 0],
+      [2, 0, 1],
+      [1, -1, 2],
+    ];
+
+    let portArr = [];
+    let key = 0;
+
+    for (const currLocation of portLocations) {
+      const x = currLocation[0];
+      const y = currLocation[1];
+      const e = currLocation[2];
+
+      portArr.push(
+        <Port key={key++} boardXPos={x} boardYPos={y} hexEdge={e} />
+      );
+    }
+
+    return portArr;
+  }
+
   render() {
     const { isLoading } = this.state;
 
@@ -562,6 +593,8 @@ export default class App extends React.Component<AppProps, UIState> {
             giveAmounts={[1, 1, 1, 1, 1]}
           /> */}
           {this.renderTrades()}
+
+          {/* {this.constructPorts()} */}
         </div>
       );
     }
