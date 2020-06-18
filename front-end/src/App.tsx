@@ -576,7 +576,6 @@ export default class App extends React.Component<AppProps, UIState> {
               />
               <Board />
               {this.renderDice()}
-              {this.generateAllPlayerCards()}
               {this.endTurnButton()}
               {this.highlightNeededSpaces()}
               {this.renderRoads()}
@@ -584,6 +583,8 @@ export default class App extends React.Component<AppProps, UIState> {
               {this.generateResourceCards()}
             </svg>
           </div>
+
+          {this.generateAllPlayerCards()}
 
           <VisibleActionButtonSet />
           {/* <TradeProposed

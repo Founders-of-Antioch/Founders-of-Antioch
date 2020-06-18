@@ -30,7 +30,7 @@ export class Port extends React.Component<PortProps, {}> {
   }
 
   getY() {
-    const { boardXPos, boardYPos, hexEdge } = this.props;
+    const { boardYPos, hexEdge } = this.props;
     let y = centerTileY(boardYPos);
 
     if (hexEdge === 5 || hexEdge === 0) {

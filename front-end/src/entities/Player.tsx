@@ -48,6 +48,16 @@ export class Player {
     this.changeResourceVal(res, 1);
   }
 
+  numberOfCardsInHand() {
+    let sum = 0;
+
+    this.resourceHand.forEach((val) => {
+      sum += val;
+    });
+
+    return sum;
+  }
+
   changeResourceVal(res: ResourceString, val: number) {
     const stored = this.resourceHand.get(res);
     if (typeof stored === "number") {
