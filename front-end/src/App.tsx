@@ -15,7 +15,7 @@ import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { LIST_OF_RESOURCES } from "./entities/Player";
-import { ResourceCard } from "./components/ResourceCard";
+import { ResourceCard } from "./components/GameCards/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
 import { PlayerNumber, ResourceString } from "./redux/Actions";
 import store from "./redux/store";
@@ -28,6 +28,7 @@ import TradeProposed, {
   ResourceChangePackage,
 } from "./components/Trading/TradeProposed";
 import { Port } from "./components/Port";
+import DevelopmentCard from "./components/GameCards/DevelopmentCard";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -596,6 +597,7 @@ export default class App extends React.Component<AppProps, UIState> {
           {this.renderTrades()}
 
           {/* {this.constructPorts()} */}
+          {/* <DevelopmentCard /> */}
         </div>
       );
     }
