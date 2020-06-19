@@ -7,15 +7,16 @@ import { FoAppState } from "../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 
 export const playerCardWidth = widthOfSVG / 7.5;
-export const playerCardHeight = playerCardWidth / 2;
 
 type PlayerCardState = {
   currentPersonPlaying: PlayerNumber;
+  inGamePlayerNumber: PlayerNumber;
 };
 
 function mapStateToProps(store: FoAppState): PlayerCardState {
   return {
     currentPersonPlaying: store.currentPersonPlaying,
+    inGamePlayerNumber: store.inGamePlayerNumber,
   };
 }
 
@@ -26,12 +27,16 @@ type PropsFromRedux = ConnectedProps<typeof connector>;
 type PlayerCardProps = PropsFromRedux & {
   playerModel: Player;
   bkgX: number;
-  bkgY: number;
 };
 
 class PlayerCard extends React.Component<PlayerCardProps, {}> {
   render() {
-    const { bkgX, bkgY, playerModel, currentPersonPlaying } = this.props;
+    const {
+      bkgX,
+      playerModel,
+      currentPersonPlaying,
+      inGamePlayerNumber,
+    } = this.props;
     const isTurn = currentPersonPlaying === playerModel.playerNum;
 
     const labelStyle = { backgroundColor: "#878683", color: "#bebebe" };
@@ -44,7 +49,8 @@ class PlayerCard extends React.Component<PlayerCardProps, {}> {
           position: "absolute",
           opacity: isTurn ? 1 : 0.8,
           marginLeft: `${bkgX}px`,
-          marginTop: `${bkgY}px`,
+          bottom: `${playerModel.playerNum === inGamePlayerNumber ? 0 : null}`,
+          top: `${playerModel.playerNum !== inGamePlayerNumber ? 0 : null}`,
         }}
       >
         <div style={{ backgroundColor: "#444444" }} className="ui card">

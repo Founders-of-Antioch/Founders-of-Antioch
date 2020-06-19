@@ -3,10 +3,7 @@ import React from "react";
 import Board, { widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
 import Dice, { diceLength } from "./components/Dice";
-import PlayerCard, {
-  playerCardWidth,
-  playerCardHeight,
-} from "./components/PlayerCard";
+import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import HighlightPoint from "./components/HighlightPoint";
@@ -459,22 +456,16 @@ export default class App extends React.Component<AppProps, UIState> {
           <PlayerCard
             key={key++}
             bkgX={widthOfSVG / 2 - playerCardWidth / 2}
-            bkgY={heightOfSVG - playerCardHeight}
             playerModel={getPlayer}
           />
         );
       } else {
+        // TODO: Fix so it's CSS
         // Junk but equally distributes three cards across top
         let currX = (widthOfSVG - playerCardWidth) * (topX++ / 2);
-        let currY = 0;
 
         playerCards.push(
-          <PlayerCard
-            key={key++}
-            bkgX={currX}
-            bkgY={currY}
-            playerModel={getPlayer}
-          />
+          <PlayerCard key={key++} bkgX={currX} playerModel={getPlayer} />
         );
       }
     }
@@ -556,7 +547,15 @@ export default class App extends React.Component<AppProps, UIState> {
       return null;
     } else {
       return (
-        <div style={{ width: "100%", height: "100%", position: "relative" }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <div
             style={{
               width: "100%",
@@ -597,7 +596,7 @@ export default class App extends React.Component<AppProps, UIState> {
           {this.renderTrades()}
 
           {/* {this.constructPorts()} */}
-          {/* <DevelopmentCard /> */}
+          <DevelopmentCard />
         </div>
       );
     }
