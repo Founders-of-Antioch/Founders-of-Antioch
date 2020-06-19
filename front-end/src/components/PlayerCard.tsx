@@ -6,6 +6,7 @@ import { PlayerNumber } from "../redux/Actions";
 import { FoAppState } from "../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 
+// TODO: Get rid of this and replace with CSS
 export const playerCardWidth = widthOfSVG / 7.5;
 
 type PlayerCardState = {

@@ -1,4 +1,12 @@
 import { PlayerNumber } from "./redux/Actions";
+import {
+  faHorse,
+  faBreadSlice,
+  faGem,
+  faGripVertical,
+  faTree,
+  IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
 
 // Tile colors
 export const WHEAT = "#fec40d";
@@ -14,6 +22,14 @@ export const colorMap: { [index: string]: string } = {
   wheat: WHEAT,
   sheep: SHEEP,
   ore: ORE,
+};
+
+export const resMap: { [index: string]: IconDefinition } = {
+  sheep: faHorse,
+  wheat: faBreadSlice,
+  ore: faGem,
+  brick: faGripVertical,
+  wood: faTree,
 };
 
 // Alt tiles

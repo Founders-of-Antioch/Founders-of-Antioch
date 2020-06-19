@@ -477,32 +477,30 @@ export default class App extends React.Component<AppProps, UIState> {
     const { listOfPlayers, inGamePlayerNumber } = this.props;
 
     let key = 0;
-
-    const cardWidth = widthOfSVG / 15;
-    const cardHeight = (cardWidth * 4) / 3;
-    let cardX = widthOfSVG * 0.01;
-    const cardY = heightOfSVG - cardHeight;
-
     let resCardArr = [];
+
     for (const res of LIST_OF_RESOURCES) {
-      let resAmount = listOfPlayers
-        .get(inGamePlayerNumber)
-        ?.getNumberOfResources(res);
+      let player = listOfPlayers.get(inGamePlayerNumber);
 
-      if (resAmount === undefined) {
-        resAmount = -1;
+      if (player !== undefined) {
+        let resAmount = player.getNumberOfResources(res);
+
+        if (resAmount === undefined) {
+          resAmount = -1;
+        }
+
+        resCardArr.push(
+          <ResourceCard
+            key={key++}
+            resource={res}
+            amount={resAmount}
+            positionInHand={key - 1}
+          />
+        );
+      } else {
+        // If they're not part of the game
+        return null;
       }
-
-      resCardArr.push(
-        <ResourceCard
-          x={cardX}
-          y={cardY}
-          key={key++}
-          resource={res}
-          amount={resAmount}
-        />
-      );
-      cardX += widthOfSVG * 0.05;
     }
 
     return resCardArr;
@@ -580,7 +578,6 @@ export default class App extends React.Component<AppProps, UIState> {
               {this.highlightNeededSpaces()}
               {this.renderRoads()}
               {this.renderBuildings()}
-              {this.generateResourceCards()}
             </svg>
           </div>
 
@@ -596,7 +593,8 @@ export default class App extends React.Component<AppProps, UIState> {
           {this.renderTrades()}
 
           {/* {this.constructPorts()} */}
-          <DevelopmentCard />
+          {/* <DevelopmentCard /> */}
+          {this.generateResourceCards()}
         </div>
       );
     }

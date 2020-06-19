@@ -9,6 +9,7 @@ export default class DevelopmentCard extends Component {
           zIndex: 2,
           position: "absolute",
           maxWidth: "10%",
+          left: "5%",
         }}
       >
         <div className="ui card">

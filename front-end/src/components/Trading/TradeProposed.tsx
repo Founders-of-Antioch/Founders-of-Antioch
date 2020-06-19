@@ -1,15 +1,7 @@
 import React, { Component } from "react";
 import { Button, Card } from "semantic-ui-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHorse,
-  faBreadSlice,
-  faGem,
-  faGripVertical,
-  faTree,
-  IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
-import { colorMap } from "../../colors";
+import { colorMap, resMap } from "../../colors";
 import { PlayerNumber } from "../../redux/Actions";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
@@ -52,13 +44,6 @@ class TradeProposed extends Component<TradeProposedProps, {}> {
   listResources(resAmountMap: { [index: string]: number }) {
     let key = 0;
     let resDisplayArr = [];
-    let resMap: { [index: string]: IconDefinition } = {
-      sheep: faHorse,
-      wheat: faBreadSlice,
-      ore: faGem,
-      brick: faGripVertical,
-      wood: faTree,
-    };
 
     for (const currRes in resAmountMap) {
       const currAmount = resAmountMap[currRes];
