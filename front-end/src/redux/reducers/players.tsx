@@ -1,5 +1,4 @@
 import {
-  PlayerNumber,
   PlayerAction,
   PLACE_SETTLEMENT,
   PLACE_ROAD,
@@ -8,6 +7,7 @@ import {
   CHANGE_RESOURCE,
 } from "../Actions";
 import { Player } from "../../entities/Player";
+import { PlayerNumber } from "../../../../types/Primitives";
 
 export default function players(
   state: Map<PlayerNumber, Player> = new Map([

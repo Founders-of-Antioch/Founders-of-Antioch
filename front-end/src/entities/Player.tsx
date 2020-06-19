@@ -1,6 +1,7 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
-import { PlayerNumber, ResourceString } from "../redux/Actions";
+import { ResourceString, PlayerNumber } from "../../../types/Primitives";
+import { PlayerProperties } from "../../../types/entities/Player";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -11,7 +12,7 @@ export const LIST_OF_RESOURCES: Array<ResourceString> = [
   "wheat",
 ];
 
-export class Player {
+export class Player implements PlayerProperties {
   playerNum: PlayerNumber;
   victoryPoints: number;
   buildings: Array<Building>;

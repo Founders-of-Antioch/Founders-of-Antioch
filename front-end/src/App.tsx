@@ -13,19 +13,24 @@ import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/GameCards/ResourceCard";
-import { TileModel } from "./entities/TIleModel";
-import { PlayerNumber, ResourceString } from "./redux/Actions";
+import { TileModel } from "./entities/TileModel";
 import store from "./redux/store";
 import { SeedState } from "./redux/reducers/reducers";
 import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
-import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
-import TradeProposed, {
-  ResourceChangePackage,
-} from "./components/Trading/TradeProposed";
+import TradeProposed from "./components/Trading/TradeProposed";
 import { Port } from "./components/Port";
-import DevelopmentCard from "./components/GameCards/DevelopmentCard";
+import DevelopmentCardBack from "./components/GameCards/DevelopmentCardBack";
+import {
+  DevCardCode,
+  ResourceString,
+  PlayerNumber,
+} from "../../types/Primitives";
+import {
+  ResourceChangePackage,
+  ProposedTradeSocketPackage,
+} from "../../types/SocketPackages";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -273,6 +278,7 @@ export default class App extends React.Component<AppProps, UIState> {
     currentPersonPlaying: number;
     counters: Array<string>;
     resources: Array<ResourceString>;
+    devCards: Array<DevCardCode>;
   }) {
     if (this.state.isLoading) {
       let tileList: Array<TileModel> = [];
@@ -593,7 +599,6 @@ export default class App extends React.Component<AppProps, UIState> {
           {this.renderTrades()}
 
           {/* {this.constructPorts()} */}
-          {/* <DevelopmentCard /> */}
           {this.generateResourceCards()}
         </div>
       );

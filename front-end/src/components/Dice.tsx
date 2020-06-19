@@ -2,7 +2,6 @@ import React from "react";
 import { socket } from "../App";
 import { widthOfSVG } from "./Board";
 import {
-  PlayerNumber,
   HasRolledAction,
   hasRolledTheDice,
   collectResources,
@@ -11,6 +10,7 @@ import {
 import { connect, ConnectedProps } from "react-redux";
 import { FoAppState } from "../redux/reducers/reducers";
 import { Dispatch } from "redux";
+import { PlayerNumber } from "../../../types/Primitives";
 
 export type DiceNumber = 1 | 2 | 3 | 4 | 5 | 6;
 

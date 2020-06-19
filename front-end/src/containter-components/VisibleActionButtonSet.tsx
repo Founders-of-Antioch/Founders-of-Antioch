@@ -1,9 +1,10 @@
 import { FoAppState } from "../redux/reducers/reducers";
-import { PlayerNumber, isPlacingRoad, buyRoad } from "../redux/Actions";
+import { isPlacingRoad, buyRoad } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { connect, ConnectedProps } from "react-redux";
 import ActionButtonSet from "../components/ActionButtonSet";
 import { Dispatch, bindActionCreators } from "redux";
+import { PlayerNumber } from "../../../types/Primitives";
 
 type ActionButtonSetProps = {
   playersByID: Map<PlayerNumber, Player>;

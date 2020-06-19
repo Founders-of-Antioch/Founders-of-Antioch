@@ -3,16 +3,12 @@ import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
-import {
-  PlayerNumber,
-  isPlacingASettlement,
-  isPlacingRoad,
-  buyRoad,
-} from "../redux/Actions";
+import { isPlacingASettlement, isPlacingRoad, buyRoad } from "../redux/Actions";
 import { FoAppState } from "../redux/reducers/reducers";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { connect, ConnectedProps } from "react-redux";
 import { Dispatch, bindActionCreators } from "redux";
+import { PlayerNumber } from "../../../types/Primitives";
 
 // Highlights a point where a player can build a settlement
 

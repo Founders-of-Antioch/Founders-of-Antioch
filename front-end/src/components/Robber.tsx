@@ -1,7 +1,7 @@
 import React from "react";
 import { hexRadius } from "./Board";
 import robber from "../icons/robber.svg";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { centerTileX, centerTileY } from "./Settlement";
 import { FoAppState } from "../redux/reducers/reducers";
 import { connect } from "react-redux";

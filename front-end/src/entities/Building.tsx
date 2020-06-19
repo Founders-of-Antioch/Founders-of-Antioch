@@ -1,8 +1,8 @@
-import { PlayerNumber } from "../redux/Actions";
-import { TileModel } from "./TIleModel";
+import { TileModel } from "./TileModel";
+import { PlayerNumber } from "../../../types/Primitives";
+import { BuildingProperties } from "../../../types/entities/Building";
 
-// Stolen from the API repo
-export class Building {
+export class Building implements BuildingProperties {
   boardXPos: number;
   boardYPos: number;
   corner: number;

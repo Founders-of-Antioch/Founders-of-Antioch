@@ -1,4 +1,3 @@
-import { PlayerNumber } from "./redux/Actions";
 import {
   faHorse,
   faBreadSlice,
@@ -7,6 +6,7 @@ import {
   faTree,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { PlayerNumber } from "../../types/Primitives";
 
 // Tile colors
 export const WHEAT = "#fec40d";

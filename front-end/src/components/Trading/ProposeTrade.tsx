@@ -10,22 +10,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { colorMap } from "../../colors";
-import { ResourceString, PlayerNumber } from "../../redux/Actions";
 import { LIST_OF_RESOURCES } from "../../entities/Player";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { connect } from "react-redux";
+import { PlayerNumber, ResourceString } from "../../../../types/Primitives";
+import { ProposedTradeSocketPackage } from "../../../../types/SocketPackages";
 
 type PTState = {
   getRes: Map<ResourceString, number>;
   giveRes: Map<ResourceString, number>;
-};
-
-export type ProposedTradeSocketPackage = {
-  gameID: string;
-  playerNumber: PlayerNumber;
-  playerGetResources: { [index: string]: number };
-  playerGiveResources: { [index: string]: number };
 };
 
 type PTProps = {

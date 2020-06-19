@@ -1,7 +1,7 @@
 import React from "react";
 import { heightOfSVG, hexRadius, widthOfSVG } from "./Board";
-import { PlayerNumber } from "../redux/Actions";
 import { PLAYER_COLORS } from "../colors";
+import { PlayerNumber } from "../../../types/Primitives";
 
 export interface SettlementProps {
   playerNum: PlayerNumber;

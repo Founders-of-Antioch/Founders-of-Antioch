@@ -1,4 +1,3 @@
-import { PlayerNumber } from "../Actions";
 import { combineReducers } from "redux";
 import { Player } from "../../entities/Player";
 import currentPersonPlaying from "./currentPersonPlaying";
@@ -6,11 +5,12 @@ import players from "./players";
 import inGamePlayerNumber from "./inGamePlayerNumber";
 import dice from "./dice";
 import turnNumber from "./turnNumber";
-import { TileModel } from "../../entities/TIleModel";
+import { TileModel } from "../../entities/TileModel";
 import boardToPlay from "./boardToPlay";
 import canEndTurn from "./canEndTurn";
 import isCurrentlyPlacingSettlement from "./isCurrentlyPlacingSettlement";
 import isCurrentlyPlacingRoad from "./isCurrentlyPlacingRoad";
+import { PlayerNumber } from "../../../../types/Primitives";
 
 export interface FoAppState {
   currentPersonPlaying: PlayerNumber;

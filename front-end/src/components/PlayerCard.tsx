@@ -2,9 +2,9 @@ import React from "react";
 
 import { widthOfSVG } from "./Board";
 import { Player } from "../entities/Player";
-import { PlayerNumber } from "../redux/Actions";
 import { FoAppState } from "../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
+import { PlayerNumber } from "../../../types/Primitives";
 
 // TODO: Get rid of this and replace with CSS
 export const playerCardWidth = widthOfSVG / 7.5;

@@ -1,7 +1,8 @@
 import { RoadModel } from "../entities/RoadModel";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { Building } from "../entities/Building";
 import { SeedState } from "./reducers/reducers";
+import { PlayerNumber, ResourceString } from "../../../types/Primitives";
 import store from "./store";
 
 // Action types
@@ -26,17 +27,6 @@ export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
   playerNum: PlayerNumber;
 }
-
-// -1 For when the have not joined yet and are waiting for the backend
-export type PlayerNumber = 1 | 2 | 3 | 4 | -1;
-
-export type ResourceString =
-  | "desert"
-  | "wood"
-  | "brick"
-  | "ore"
-  | "sheep"
-  | "wheat";
 
 // TODO: Migrate to just take in 'Building' instead of 4 params
 interface PlaceSettlementAction {

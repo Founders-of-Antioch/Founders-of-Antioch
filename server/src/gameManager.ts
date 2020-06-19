@@ -1,11 +1,14 @@
 import { ServerPlayer } from "./Player";
 import { ServerBuilding } from "./Building";
 import { Road } from "./entity/Road";
-import { ProposedTradeSocketPackage } from "../../front-end/src/components/Trading/ProposeTrade";
-import { ResourceChangePackage } from "../../front-end/src/components/Trading/TradeProposed";
+import { DevCardCode } from "../../types/Primitives";
+import {
+  ResourceChangePackage,
+  ProposedTradeSocketPackage,
+} from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
-function shuffle(a: Array<string>): Array<string> {
+function shuffle<T>(a: Array<T>): Array<T> {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
@@ -43,6 +46,26 @@ function randCounters() {
   return shuffle(counterSequence);
 }
 
+function randDevCards() {
+  let arr: Array<DevCardCode> = [];
+
+  for (let i = 0; i < 14; i++) {
+    arr.push("KNIGHT");
+
+    if (i < 5) {
+      arr.push("VP");
+    }
+
+    if (i < 2) {
+      arr.push("YOP");
+      arr.push("MONOPOLY");
+      arr.push("ROADS");
+    }
+  }
+
+  return shuffle(arr);
+}
+
 export class Game {
   listOfPlayers: Array<ServerPlayer>;
   currentPersonPlaying: number;
@@ -50,6 +73,7 @@ export class Game {
   resources: Array<string>;
   // Number that changes every time all four players have gone
   currentTurnNumber: number;
+  devCardCodes: Array<DevCardCode>;
 
   constructor() {
     this.listOfPlayers = [];
@@ -57,6 +81,7 @@ export class Game {
     this.counters = randCounters();
     this.resources = randResources();
     this.currentTurnNumber = 1;
+    this.devCardCodes = randDevCards();
   }
 
   addPlayer(p: ServerPlayer): boolean {

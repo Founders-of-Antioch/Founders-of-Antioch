@@ -1,6 +1,7 @@
-import { PlayerNumber } from "../redux/Actions";
+import { PlayerNumber } from "../../../types/Primitives";
+import { RoadModelProperties } from "../../../types/entities/RoadModel";
 
-export class RoadModel {
+export class RoadModel implements RoadModelProperties {
   boardXPos: number;
   boardYPos: number;
   playerNum: PlayerNumber;

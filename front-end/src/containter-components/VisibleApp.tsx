@@ -1,6 +1,5 @@
 import { FoAppState } from "../redux/reducers/reducers";
 import {
-  PlayerNumber,
   placeSettlement,
   placeRoad,
   declareBoard,
@@ -15,10 +14,11 @@ import {
   changeResource,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { Dispatch, bindActionCreators } from "redux";
 import { connect, ConnectedProps } from "react-redux";
 import App from "../App";
+import { PlayerNumber } from "../../../types/Primitives";
 
 type AppState = {
   listOfPlayers: Map<PlayerNumber, Player>;

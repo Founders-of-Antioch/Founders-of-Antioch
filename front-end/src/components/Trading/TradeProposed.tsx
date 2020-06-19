@@ -2,10 +2,11 @@ import React, { Component } from "react";
 import { Button, Card } from "semantic-ui-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { colorMap, resMap } from "../../colors";
-import { PlayerNumber } from "../../redux/Actions";
+import { PlayerNumber } from "../../../../types/Primitives";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { connect } from "react-redux";
+import { ResourceChangePackage } from "../../../../types/SocketPackages";
 
 type TradeProps = {
   getResources: { [index: string]: number };
@@ -13,12 +14,6 @@ type TradeProps = {
   playerTrading: PlayerNumber;
   tradeIndex: number;
   closeWindowCB: (idx: number) => void;
-};
-
-export type ResourceChangePackage = {
-  playerNumber: PlayerNumber;
-  resourceDeltaMap: { [index: string]: number };
-  gameID: string;
 };
 
 type ExtraProps = {

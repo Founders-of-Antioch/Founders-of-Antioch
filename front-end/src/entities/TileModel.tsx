@@ -1,8 +1,7 @@
-// import { Building } from "./Building";
+import { TileProperties } from "../../../types/entities/TileModel";
+import { ResourceString } from "../../../types/Primitives";
 
-import { ResourceString } from "../redux/Actions";
-
-export class TileModel {
+export class TileModel implements TileProperties {
   resource: ResourceString;
   counter: number;
   boardXPos: number;

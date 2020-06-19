@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Icon } from "semantic-ui-react";
 
-export default class DevelopmentCard extends Component {
+export default class DevelopmentCardBack extends Component {
   render() {
     return (
       <div

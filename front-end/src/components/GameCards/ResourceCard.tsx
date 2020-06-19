@@ -1,7 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { colorMap, resMap } from "../../colors";
-import { ResourceString } from "../../redux/Actions";
+import { ResourceString } from "../../../../types/Primitives";
 
 // TODO: Consider changing amount to state? Might not matter
 type RCardProps = {

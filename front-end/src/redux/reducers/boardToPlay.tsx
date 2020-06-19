@@ -1,4 +1,4 @@
-import { TileModel } from "../../entities/TIleModel";
+import { TileModel } from "../../entities/TileModel";
 import { DeclareBoardAction, DECLARE_BOARD } from "../Actions";
 
 type board = { listOfTiles: Array<TileModel>; gameID: string };
