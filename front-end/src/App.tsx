@@ -272,6 +272,10 @@ export default class App extends React.Component<AppProps, UIState> {
         );
       }
     });
+
+    socket.on("tradeClose", (tIndex: number) => {
+      this.closeTradeWindow(tIndex);
+    });
   }
 
   processGetGame(game: {

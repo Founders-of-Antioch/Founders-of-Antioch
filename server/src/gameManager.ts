@@ -1,7 +1,7 @@
 import { ServerPlayer } from "./Player";
 import { ServerBuilding } from "./Building";
 import { Road } from "./entity/Road";
-import { DevCardCode } from "../../types/Primitives";
+import { DevCardCode, PlayerNumber } from "../../types/Primitives";
 import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
@@ -168,6 +168,14 @@ export class Game {
       }
     });
   }
+
+  broadcastTradeAccepted(tradeIdx: number, tradePlayer: PlayerNumber) {
+    this.listOfPlayers.forEach((currPl, idx) => {
+      if (idx + 1 !== tradePlayer) {
+        currPl.playerSocket.emit("tradeClose", tradeIdx);
+      }
+    });
+  }
 }
 
 export class GameManager {
@@ -269,14 +277,6 @@ export class GameManager {
     }
   }
 
-  addResources(res: Array<string>, pNum: number, gameID: string) {
-    const getGame = this.mapOfGames.get(gameID);
-
-    if (getGame) {
-      getGame.listOfPlayers[pNum - 1].addResources;
-    }
-  }
-
   proposeTrade(pkg: ProposedTradeSocketPackage) {
     const getGame = this.mapOfGames.get(pkg.gameID);
 
@@ -290,6 +290,14 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastResourceUpdate(pkg);
+    }
+  }
+
+  acceptTrade(tI: number, pl: PlayerNumber, gameID: string) {
+    const getGame = this.mapOfGames.get(gameID);
+
+    if (getGame) {
+      getGame.broadcastTradeAccepted(tI, pl);
     }
   }
 }

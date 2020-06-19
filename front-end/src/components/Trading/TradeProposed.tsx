@@ -97,7 +97,12 @@ class TradeProposed extends Component<TradeProposedProps, {}> {
 
     socket.emit("resourceChange", otherGetPkg);
     socket.emit("resourceChange", otherGivePkg);
-    this.props.closeWindowCB(this.props.tradeIndex);
+    socket.emit(
+      "tradeAccepted",
+      this.props.tradeIndex,
+      this.props.playerTrading,
+      "1"
+    );
   }
 
   decline() {

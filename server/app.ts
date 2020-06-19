@@ -17,6 +17,7 @@ import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
 } from "../types/SocketPackages";
+import { PlayerNumber } from "../types/Primitives";
 
 // make typeorm connection
 createConnection().then((connection) => {
@@ -180,6 +181,13 @@ createConnection().then((connection) => {
     client.on("resourceChange", (pkg: ResourceChangePackage) => {
       gameManager.changeResources(pkg);
     });
+
+    client.on(
+      "tradeAccepted",
+      (tradeIndex: number, tradePlayer: PlayerNumber, gameID: string) => {
+        gameManager.acceptTrade(tradeIndex, tradePlayer, gameID);
+      }
+    );
   });
 
   app.use(bodyParser.json());
