@@ -3,10 +3,7 @@ import React from "react";
 import Board, { widthOfSVG, heightOfSVG } from "./components/Board";
 import test from "./tester.jpg";
 import Dice, { diceLength } from "./components/Dice";
-import PlayerCard, {
-  playerCardWidth,
-  playerCardHeight,
-} from "./components/PlayerCard";
+import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import HighlightPoint from "./components/HighlightPoint";
@@ -14,24 +11,21 @@ import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
-import { Player, LIST_OF_RESOURCES } from "./entities/Player";
-import { ResourceCard } from "./components/ResourceCard";
+import { LIST_OF_RESOURCES } from "./entities/Player";
+import { ResourceCard } from "./components/GameCards/ResourceCard";
 import { TileModel } from "./entities/TIleModel";
-import {
-  changePlayer,
-  PlayerNumber,
-  declarePlayerNumber,
-  hasRolled,
-  nextTurn,
-  placeSettlement,
-  placeRoad,
-  ResourceString,
-  declareBoard,
-} from "./redux/Actions";
+import { PlayerNumber, ResourceString } from "./redux/Actions";
 import store from "./redux/store";
-import { FoAppState } from "./redux/reducers/reducers";
-import { Dispatch } from "redux";
-import { connect, ConnectedProps } from "react-redux";
+import { SeedState } from "./redux/reducers/reducers";
+import "semantic-ui-css/semantic.min.css";
+import { AppProps } from "./containter-components/VisibleApp";
+import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
+import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
+import TradeProposed, {
+  ResourceChangePackage,
+} from "./components/Trading/TradeProposed";
+import { Port } from "./components/Port";
+import DevelopmentCard from "./components/GameCards/DevelopmentCard";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -40,77 +34,31 @@ export const socket = socketIOClient.connect("http://localhost:3001");
 
 type UIState = {
   isLoading: boolean;
-  canEndTurn: boolean;
-  isCurrentlyPlacingSettlement: boolean;
-  isCurrentlyPlacingRoad: boolean;
-};
-
-type AppState = {
-  listOfPlayers: Map<PlayerNumber, Player>;
-  inGamePlayerNumber: PlayerNumber;
-  boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
-  currentPersonPlaying: PlayerNumber;
+  showTrades: boolean;
+  trades: Array<ProposedTradeSocketPackage>;
 };
 
 let hasSeeded = false;
 
-function mapStateToProps(store: FoAppState): AppState {
-  return {
-    listOfPlayers: store.playersByID,
-    inGamePlayerNumber: store.inGamePlayerNumber,
-    boardToBePlayed: store.boardToBePlayed,
-    currentPersonPlaying: store.currentPersonPlaying,
-  };
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    placeASettlement: (build: Building) => {
-      return dispatch(placeSettlement(build));
-    },
-    placeARoad: (road: RoadModel) => {
-      return dispatch(placeRoad(road));
-    },
-    declareBoardState: (board: {
-      listOfTiles: Array<TileModel>;
-      gameID: string;
-    }) => {
-      return dispatch(declareBoard(board.listOfTiles, board.gameID));
-    },
-    declarePlayerN: (pNum: PlayerNumber) => {
-      return dispatch(declarePlayerNumber(pNum));
-    },
-  };
-}
-
-const connector = connect(mapStateToProps, mapDispatchToProps);
-
-type AppProps = ConnectedProps<typeof connector>;
-
-class App extends React.Component<AppProps, UIState> {
+export default class App extends React.Component<AppProps, UIState> {
   constructor(props: AppProps) {
     super(props);
 
     this.state = {
       isLoading: true,
-      canEndTurn: false,
-      isCurrentlyPlacingSettlement: true,
-      isCurrentlyPlacingRoad: false,
+      showTrades: false,
+      trades: [],
     };
 
     // Probably change to arrow functions to we don't have to do this
     this.endTurn = this.endTurn.bind(this);
-    this.hasRolledCB = this.hasRolledCB.bind(this);
     this.endTurn = this.endTurn.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
-    this.selectSettlementSpotCB = this.selectSettlementSpotCB.bind(this);
-    this.selectRoadSpotCB = this.selectRoadSpotCB.bind(this);
-    this.evaluateEndTurnEligibility = this.evaluateEndTurnEligibility.bind(
-      this
-    );
     this.processGetGame = this.processGetGame.bind(this);
     this.renderRoads = this.renderRoads.bind(this);
+    this.renderTrades = this.renderTrades.bind(this);
+    this.closeTradeWindow = this.closeTradeWindow.bind(this);
 
     this.setupSockets();
 
@@ -120,6 +68,46 @@ class App extends React.Component<AppProps, UIState> {
 
   componentDidMount() {
     // this.seed();
+  }
+
+  componentDidUpdate() {
+    this.props.evaluateTurn();
+  }
+
+  closeTradeWindow(index: number) {
+    const { trades } = this.state;
+
+    this.setState({
+      ...this.state,
+      trades: [...trades.slice(0, index), ...trades.slice(index + 1)],
+    });
+  }
+
+  renderTrades() {
+    if (this.state.showTrades) {
+      let trades = [];
+      let key = 0;
+      // TODO: Fix for multiple trades
+      for (const currTrade of this.state.trades) {
+        // Give/get are swapped because the trade is giving resources from
+        // player x to y, but in the view of player y, it's getting
+        // from player x
+        trades.push(
+          <TradeProposed
+            key={key++}
+            getResources={currTrade.playerGiveResources}
+            giveResources={currTrade.playerGetResources}
+            playerTrading={currTrade.playerNumber}
+            tradeIndex={key - 1}
+            closeWindowCB={this.closeTradeWindow}
+          />
+        );
+      }
+
+      return trades;
+    } else {
+      return null;
+    }
   }
 
   // TODO: Move to backend
@@ -175,62 +163,15 @@ class App extends React.Component<AppProps, UIState> {
   // Callback for socket event, see "setupSockets"
   // Backend sockets will send turn updates, and this moves the state to the next player
   processTurnUpdate(nextPlayer: PlayerNumber, incomingTurnNumber: number) {
-    const inGamePlayerNum = store.getState().inGamePlayerNumber;
+    const { inGamePlayerNumber } = this.props;
 
-    store.dispatch(changePlayer(nextPlayer));
-    store.dispatch(nextTurn(incomingTurnNumber));
-    this.setState({
-      ...this.state,
-      // Is true if it's still in the snake draft and it's the player's turn
-      isCurrentlyPlacingSettlement:
-        inGamePlayerNum === nextPlayer && incomingTurnNumber <= 2,
-    });
-  }
+    this.props.changePlayer(nextPlayer);
+    this.props.nextTurn(incomingTurnNumber);
+    this.props.isPlacingASettlement(
+      inGamePlayerNumber === nextPlayer && incomingTurnNumber <= 2
+    );
 
-  // Returns an array of TileModel representing the resources the building touches
-  tilesBuildingIsOn(knownBuilding: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-  }) {
-    const { boardToBePlayed } = this.props;
-
-    let adjTiles: Array<TileModel> = [];
-    // https://www.redblobgames.com/grids/hexagons/#neighbors
-    let directions = [
-      [1, 1],
-      [1, 0],
-      [0, -1],
-      [-1, -1],
-      [-1, 0],
-      [0, 1],
-    ];
-
-    // This filters out checking for any tiles that are not touching the building
-    directions = directions.filter((el, idx) => {
-      const checkOne = knownBuilding.corner;
-      let checkTwo = checkOne - 1;
-      if (checkTwo === -1) {
-        checkTwo = 5;
-      }
-
-      return idx === checkOne || idx === checkTwo;
-    });
-    // Count the tile it is on as well
-    directions.push([0, 0]);
-
-    for (const currDirection of directions) {
-      const expecX = currDirection[0] + knownBuilding.boardXPos;
-      const expecY = currDirection[1] + knownBuilding.boardYPos;
-
-      for (const currTile of boardToBePlayed.listOfTiles) {
-        if (currTile.boardXPos === expecX && currTile.boardYPos === expecY) {
-          adjTiles.push(currTile);
-        }
-      }
-    }
-
-    return adjTiles;
+    this.forceUpdate();
   }
 
   processBuildingUpdate(building: {
@@ -239,20 +180,15 @@ class App extends React.Component<AppProps, UIState> {
     corner: number;
     playerNum: PlayerNumber;
   }) {
-    const touchingTiles = this.tilesBuildingIsOn({
-      boardXPos: building.boardXPos,
-      boardYPos: building.boardYPos,
-      corner: building.corner,
-    });
     const build = new Building(
       building.boardXPos,
       building.boardYPos,
       building.corner,
       building.playerNum,
-      touchingTiles
+      this.props.boardToBePlayed.listOfTiles
     );
 
-    this.props.placeASettlement(build);
+    this.props.placeSettlement(build);
   }
 
   renderBuildings(): Array<any> {
@@ -282,7 +218,7 @@ class App extends React.Component<AppProps, UIState> {
     // Listens for whose turn in the game it is. Every time it changes, it will go to changeCurrentPlayer
     // Listens for the response to 'whose turn is it' (below)
     socket.on("getWhoseTurnItIs", (pNum: PlayerNumber) =>
-      store.dispatch(changePlayer(pNum))
+      this.props.changePlayer(pNum)
     );
 
     // Start off by joining the game, ID
@@ -294,7 +230,7 @@ class App extends React.Component<AppProps, UIState> {
     // Backend sends an event once the player has joined
     socket.on("joinedGame", (inGamePNum: PlayerNumber) => {
       if (this.props.inGamePlayerNumber === -1) {
-        this.props.declarePlayerN(inGamePNum);
+        this.props.declarePlayerNumber(inGamePNum);
       }
     });
     // Backend sends an event when the turn changes
@@ -303,10 +239,34 @@ class App extends React.Component<AppProps, UIState> {
     socket.on("buildingUpdate", this.processBuildingUpdate);
     // Backend sends an event when someone places a new road
     socket.on("roadUpdate", (r: RoadModel) => {
-      this.props.placeARoad(r);
+      this.props.placeRoad(r);
     });
 
     socket.on("giveGame", this.processGetGame);
+
+    socket.emit("getSeedState", this.props.boardToBePlayed.listOfTiles);
+    socket.on("sendSeed", (seedState: SeedState) => {
+      // this.props.plantTheSeed(seedState);
+    });
+
+    socket.on("tradeProposed", (pkg: ProposedTradeSocketPackage) => {
+      console.log(pkg);
+      this.setState({
+        showTrades: true,
+        trades: [...this.state.trades, pkg],
+      });
+    });
+
+    socket.on("resourceUpdate", (pkg: ResourceChangePackage) => {
+      for (const res in pkg.resourceDeltaMap) {
+        const amount = pkg.resourceDeltaMap[res];
+        this.props.changeResource(
+          pkg.playerNumber,
+          res as ResourceString,
+          amount
+        );
+      }
+    });
   }
 
   processGetGame(game: {
@@ -344,43 +304,17 @@ class App extends React.Component<AppProps, UIState> {
         ...this.state,
         isLoading: false,
       });
-      this.props.declareBoardState({ listOfTiles: tileList, gameID: "1" });
-    }
-  }
-
-  // Callback function for the 'Dice' component
-  // TODO: Move into Dice component once Redux migration is mature enough
-  hasRolledCB() {
-    this.evaluateEndTurnEligibility();
-  }
-
-  // Determines if the player can end their turn or not
-  evaluateEndTurnEligibility() {
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
-
-    const { turnNumber } = store.getState();
-
-    if (
-      (store.getState().hasRolled || turnNumber <= 2) &&
-      !isCurrentlyPlacingSettlement &&
-      !isCurrentlyPlacingRoad
-    ) {
-      this.setState({
-        ...this.state,
-        canEndTurn: true,
-      });
+      this.props.declareBoard(tileList, "1");
     }
   }
 
   // Ends the players turn
   // Should only be used as callback for the end turn button
+  // TODO: Move into endTurnButton
   endTurn() {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
-    store.dispatch(hasRolled(false));
-    this.setState({
-      ...this.state,
-      canEndTurn: false,
-    });
+    this.props.hasRolledTheDice(false);
+    this.props.possibleToEndTurn(false);
   }
 
   // Returns the end turn button component
@@ -393,7 +327,7 @@ class App extends React.Component<AppProps, UIState> {
       return (
         <FoAButton
           onClick={this.endTurn}
-          canEndTurn={this.state.canEndTurn}
+          canEndTurn={this.props.canEndTurn}
           // TODO: Change for dynamic size
           width={175}
           height={50}
@@ -402,35 +336,16 @@ class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  // Callback for when a player is done selecting where their settlement should go
-  selectSettlementSpotCB() {
-    this.setState(
-      {
-        isCurrentlyPlacingSettlement: false,
-        isCurrentlyPlacingRoad: store.getState().turnNumber <= 2,
-      },
-      this.evaluateEndTurnEligibility
-    );
-  }
-
-  // Callback for when a player is done selecting where the road should go
-  selectRoadSpotCB() {
-    this.setState(
-      {
-        isCurrentlyPlacingRoad: false,
-      },
-      this.evaluateEndTurnEligibility
-    );
-  }
-
   // Highlights the available places to put settlements
   // TODD: Move most of this into it's own component
   highlightSettlingSpaces(typeofHighlight: string) {
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    // const { isCurrentlyPlacingRoad } = this.state;
     const {
       listOfPlayers,
       currentPersonPlaying,
       inGamePlayerNumber,
+      isCurrentlyPlacingSettlement,
+      isCurrentlyPlacingRoad,
     } = this.props;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
@@ -438,10 +353,6 @@ class App extends React.Component<AppProps, UIState> {
       typeofHighlight === "road"
         ? isCurrentlyPlacingRoad
         : isCurrentlyPlacingSettlement;
-    const callback =
-      typeofHighlight === "road"
-        ? this.selectRoadSpotCB
-        : this.selectSettlementSpotCB;
 
     if (isTurn && placing) {
       const spots = [];
@@ -476,7 +387,6 @@ class App extends React.Component<AppProps, UIState> {
                 boardXPos={x}
                 boardYPos={y}
                 corner={corner}
-                finishedSelectingCallback={callback}
                 playerWhoSelected={inGamePlayerNumber}
                 typeOfHighlight={typeofHighlight}
               />
@@ -492,10 +402,9 @@ class App extends React.Component<AppProps, UIState> {
 
   renderDice() {
     // Only render the dice if we're done with initial placements
-    if (store.getState().turnNumber > 2) {
+    if (this.props.turnNumber > 2) {
       return (
         <Dice
-          hasRolledCallBack={this.hasRolledCB}
           diceOneX={(widthOfSVG * 4) / 5}
           diceOneY={heightOfSVG / 2 - diceLength / 2}
         />
@@ -504,7 +413,8 @@ class App extends React.Component<AppProps, UIState> {
   }
 
   highlightNeededSpaces() {
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.state;
+    // const { isCurrentlyPlacingRoad } = this.state;
+    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.props;
     if (isCurrentlyPlacingRoad) {
       return this.highlightSettlingSpaces("road");
     } else if (isCurrentlyPlacingSettlement) {
@@ -546,22 +456,16 @@ class App extends React.Component<AppProps, UIState> {
           <PlayerCard
             key={key++}
             bkgX={widthOfSVG / 2 - playerCardWidth / 2}
-            bkgY={heightOfSVG - playerCardHeight}
             playerModel={getPlayer}
           />
         );
       } else {
+        // TODO: Fix so it's CSS
         // Junk but equally distributes three cards across top
         let currX = (widthOfSVG - playerCardWidth) * (topX++ / 2);
-        let currY = 0;
 
         playerCards.push(
-          <PlayerCard
-            key={key++}
-            bkgX={currX}
-            bkgY={currY}
-            playerModel={getPlayer}
-          />
+          <PlayerCard key={key++} bkgX={currX} playerModel={getPlayer} />
         );
       }
     }
@@ -573,35 +477,63 @@ class App extends React.Component<AppProps, UIState> {
     const { listOfPlayers, inGamePlayerNumber } = this.props;
 
     let key = 0;
-
-    const cardWidth = widthOfSVG / 15;
-    const cardHeight = (cardWidth * 4) / 3;
-    let cardX = widthOfSVG * 0.01;
-    const cardY = heightOfSVG - cardHeight;
-
     let resCardArr = [];
+
     for (const res of LIST_OF_RESOURCES) {
-      let resAmount = listOfPlayers
-        .get(inGamePlayerNumber)
-        ?.getNumberOfResources(res);
+      let player = listOfPlayers.get(inGamePlayerNumber);
 
-      if (resAmount === undefined) {
-        resAmount = -1;
+      if (player !== undefined) {
+        let resAmount = player.getNumberOfResources(res);
+
+        if (resAmount === undefined) {
+          resAmount = -1;
+        }
+
+        resCardArr.push(
+          <ResourceCard
+            key={key++}
+            resource={res}
+            amount={resAmount}
+            positionInHand={key - 1}
+          />
+        );
+      } else {
+        // If they're not part of the game
+        return null;
       }
-
-      resCardArr.push(
-        <ResourceCard
-          x={cardX}
-          y={cardY}
-          key={key++}
-          resource={res}
-          amount={resAmount}
-        />
-      );
-      cardX += widthOfSVG * 0.05;
     }
 
     return resCardArr;
+  }
+
+  constructPorts() {
+    // X, Y, Edge
+    const portLocations = [
+      [-1, -2, 2],
+      [-2, -2, 3],
+      [-2, -1, 4],
+      [-1, 1, 4],
+      [0, 2, 5],
+      [1, 2, 0],
+      [2, 1, 0],
+      [2, 0, 1],
+      [1, -1, 2],
+    ];
+
+    let portArr = [];
+    let key = 0;
+
+    for (const currLocation of portLocations) {
+      const x = currLocation[0];
+      const y = currLocation[1];
+      const e = currLocation[2];
+
+      portArr.push(
+        <Port key={key++} boardXPos={x} boardYPos={y} hexEdge={e} />
+      );
+    }
+
+    return portArr;
   }
 
   render() {
@@ -613,28 +545,58 @@ class App extends React.Component<AppProps, UIState> {
       return null;
     } else {
       return (
-        <svg width="100%" height="100%">
-          {/* <rect width="100%" height="100%" fill="#00a6e4"></rect> */}
-          <image
-            href={test}
-            x="0"
-            y="0"
-            preserveAspectRatio="none"
-            width="100%"
-            height="100%"
-          />
-          <Board />
-          {this.renderDice()}
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              zIndex: 1,
+            }}
+          >
+            <svg style={{ width: "100%", height: "100%" }}>
+              {/* <rect width="100%" height="100%" fill="#00a6e4"></rect> */}
+              <image
+                href={test}
+                x="0"
+                y="0"
+                preserveAspectRatio="none"
+                width="100%"
+                height="100%"
+              />
+              <Board />
+              {this.renderDice()}
+              {this.endTurnButton()}
+              {this.highlightNeededSpaces()}
+              {this.renderRoads()}
+              {this.renderBuildings()}
+            </svg>
+          </div>
+
           {this.generateAllPlayerCards()}
-          {this.endTurnButton()}
-          {this.highlightNeededSpaces()}
-          {this.renderRoads()}
-          {this.renderBuildings()}
+
+          <VisibleActionButtonSet />
+          {/* <TradeProposed
+            getResources={["wheat", "brick", "ore", "sheep", "wood"]}
+            getAmounts={[1, 1, 1, 1, 1]}
+            giveResources={["wheat", "brick", "ore", "sheep", "wood"]}
+            giveAmounts={[1, 1, 1, 1, 1]}
+          /> */}
+          {this.renderTrades()}
+
+          {/* {this.constructPorts()} */}
+          {/* <DevelopmentCard /> */}
           {this.generateResourceCards()}
-        </svg>
+        </div>
       );
     }
   }
 }
-
-export default connector(App);

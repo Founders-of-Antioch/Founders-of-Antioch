@@ -3,7 +3,16 @@ import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
-import { PlayerNumber } from "../redux/Actions";
+import {
+  PlayerNumber,
+  isPlacingASettlement,
+  isPlacingRoad,
+  buyRoad,
+} from "../redux/Actions";
+import { FoAppState } from "../redux/reducers/reducers";
+import { TileModel } from "../entities/TIleModel";
+import { connect, ConnectedProps } from "react-redux";
+import { Dispatch, bindActionCreators } from "redux";
 
 // Highlights a point where a player can build a settlement
 
@@ -11,14 +20,44 @@ type Props = {
   boardXPos: number;
   boardYPos: number;
   corner: number;
-  finishedSelectingCallback: Function;
   playerWhoSelected: PlayerNumber;
   // Should be 'road' or 'settlement'
   typeOfHighlight: string;
 };
 
-export default class HighlightPoint extends Component<Props, {}> {
-  constructor(props: Props) {
+type HPProps = {
+  tiles: Array<TileModel>;
+  turnNumber: number;
+  inGamePlayerNumber: PlayerNumber;
+};
+
+function mapStateToProps(store: FoAppState): HPProps {
+  return {
+    tiles: store.boardToBePlayed.listOfTiles,
+    turnNumber: store.turnNumber,
+    inGamePlayerNumber: store.inGamePlayerNumber,
+  };
+}
+
+function mapDispatchToProps(dispatch: Dispatch) {
+  return bindActionCreators(
+    {
+      isPlacingASettlement,
+      isPlacingRoad,
+      buyRoad,
+    },
+    dispatch
+  );
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type ReduxProps = ConnectedProps<typeof connector>;
+
+type HighlightProps = ReduxProps & Props;
+
+class HighlightPoint extends Component<HighlightProps, {}> {
+  constructor(props: HighlightProps) {
     super(props);
     this.selectedASettlementSpot = this.selectedASettlementSpot.bind(this);
     this.selectedARoadSpot = this.selectedARoadSpot.bind(this);
@@ -26,7 +65,13 @@ export default class HighlightPoint extends Component<Props, {}> {
 
   // TODO: Replace with actual gameID
   selectedASettlementSpot(): void {
-    const { boardXPos, boardYPos, corner, playerWhoSelected } = this.props;
+    const {
+      boardXPos,
+      boardYPos,
+      corner,
+      playerWhoSelected,
+      turnNumber,
+    } = this.props;
     // Emit change for broadcast
     socket.emit(
       "addBuilding",
@@ -34,13 +79,23 @@ export default class HighlightPoint extends Component<Props, {}> {
       boardXPos,
       boardYPos,
       corner,
-      playerWhoSelected
+      playerWhoSelected,
+      this.props.tiles
     );
-    this.props.finishedSelectingCallback();
+
+    this.props.isPlacingASettlement(false);
+    this.props.isPlacingRoad(turnNumber <= 2);
   }
 
   selectedARoadSpot(): void {
-    const { boardXPos, boardYPos, playerWhoSelected, corner } = this.props;
+    const {
+      boardXPos,
+      boardYPos,
+      playerWhoSelected,
+      corner,
+      inGamePlayerNumber,
+      turnNumber,
+    } = this.props;
 
     // TODO: Replace with actual gameID
     socket.emit(
@@ -51,7 +106,12 @@ export default class HighlightPoint extends Component<Props, {}> {
       corner,
       playerWhoSelected
     );
-    this.props.finishedSelectingCallback();
+
+    this.props.isPlacingRoad(false);
+    // Don't have to purchase roads if it's the snake draft
+    if (turnNumber > 2) {
+      this.props.buyRoad(inGamePlayerNumber);
+    }
   }
 
   render() {
@@ -93,3 +153,5 @@ export default class HighlightPoint extends Component<Props, {}> {
     );
   }
 }
+
+export default connector(HighlightPoint);

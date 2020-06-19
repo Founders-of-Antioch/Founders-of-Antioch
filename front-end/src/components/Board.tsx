@@ -53,21 +53,6 @@ class Board extends React.Component<BoardProps, {}> {
     return tileCompoonentList;
   }
 
-  // WIP
-  constructPorts() {
-    let portsArr = [];
-    for (let i = 0; i < 9; i++) {
-      portsArr.push(
-        <Port
-          imgX={widthOfSVG / 2 + (2.5 + 0.25) * Math.sqrt(3) * hexRadius}
-          imgY={heightOfSVG / 2}
-        />
-      );
-    }
-
-    return portsArr;
-  }
-
   render() {
     return (
       <g>
@@ -89,6 +74,15 @@ class Board extends React.Component<BoardProps, {}> {
           points={`0,${heightOfSVG / 2} ${widthOfSVG},${heightOfSVG / 2}`}
           stroke="yellow"
           strokeWidth="3"
+        /> */}
+        {/* <text
+          style={{
+            fontFamily: "FontAwesome",
+            fontSize: "10em",
+            zIndex: 2,
+          }}
+          y={300}
+          id="foo"
         /> */}
       </g>
     );

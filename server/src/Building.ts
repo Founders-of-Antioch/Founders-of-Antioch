@@ -1,4 +1,4 @@
-export class Building {
+export class ServerBuilding {
   boardXPos: number;
   boardYPos: number;
   corner: number;

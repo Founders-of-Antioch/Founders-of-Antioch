@@ -1,6 +1,8 @@
 import { ServerPlayer } from "./Player";
-import { Building } from "./Building";
+import { ServerBuilding } from "./Building";
 import { Road } from "./entity/Road";
+import { ProposedTradeSocketPackage } from "../../front-end/src/components/Trading/ProposeTrade";
+import { ResourceChangePackage } from "../../front-end/src/components/Trading/TradeProposed";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 function shuffle(a: Array<string>): Array<string> {
@@ -114,7 +116,7 @@ export class Game {
   }
 
   // Tells all of the players someone built something
-  broadcastBuildingUpdate(b: Building): void {
+  broadcastBuildingUpdate(b: ServerBuilding): void {
     for (const i of this.listOfPlayers) {
       i.playerSocket.emit("buildingUpdate", b);
     }
@@ -124,6 +126,22 @@ export class Game {
     for (const i of this.listOfPlayers) {
       i.playerSocket.emit("roadUpdate", r);
     }
+  }
+
+  broadcastTradeUpdate(pkg: ProposedTradeSocketPackage) {
+    this.listOfPlayers.forEach((currPl, idx) => {
+      if (idx + 1 !== pkg.playerNumber) {
+        currPl.playerSocket.emit("tradeProposed", pkg);
+      }
+    });
+  }
+
+  broadcastResourceUpdate(pkg: ResourceChangePackage) {
+    this.listOfPlayers.forEach((currPl, idx) => {
+      if (idx + 1 === pkg.playerNumber) {
+        currPl.playerSocket.emit("resourceUpdate", pkg);
+      }
+    });
   }
 }
 
@@ -202,7 +220,7 @@ export class GameManager {
     }
   }
 
-  addBuilding(build: Building, gameID: string): boolean {
+  addBuilding(build: ServerBuilding, gameID: string): boolean {
     const getGame = this.mapOfGames.get(gameID);
     if (getGame) {
       // Player numbers are 1 to 4, -1 is for indexing
@@ -231,6 +249,22 @@ export class GameManager {
 
     if (getGame) {
       getGame.listOfPlayers[pNum - 1].addResources;
+    }
+  }
+
+  proposeTrade(pkg: ProposedTradeSocketPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastTradeUpdate(pkg);
+    }
+  }
+
+  changeResources(pkg: ResourceChangePackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastResourceUpdate(pkg);
     }
   }
 }

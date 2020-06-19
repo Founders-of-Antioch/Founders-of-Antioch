@@ -3,7 +3,13 @@ import { RoadModel } from "./RoadModel";
 import { PlayerNumber, ResourceString } from "../redux/Actions";
 
 // Should be moved into helper and given Array<ResourceString> type
-export const LIST_OF_RESOURCES = ["wood", "brick", "ore", "sheep", "wheat"];
+export const LIST_OF_RESOURCES: Array<ResourceString> = [
+  "wood",
+  "brick",
+  "ore",
+  "sheep",
+  "wheat",
+];
 
 export class Player {
   playerNum: PlayerNumber;
@@ -11,6 +17,7 @@ export class Player {
   buildings: Array<Building>;
   roads: Array<RoadModel>;
   knights: number;
+  // TODO: Change key type to ResourceString
   resourceHand: Map<string, number>;
   // cards
   // dev cards
@@ -38,9 +45,23 @@ export class Player {
   }
 
   addResource(res: ResourceString) {
+    this.changeResourceVal(res, 1);
+  }
+
+  numberOfCardsInHand() {
+    let sum = 0;
+
+    this.resourceHand.forEach((val) => {
+      sum += val;
+    });
+
+    return sum;
+  }
+
+  changeResourceVal(res: ResourceString, val: number) {
     const stored = this.resourceHand.get(res);
     if (typeof stored === "number") {
-      this.resourceHand.set(res, stored + 1);
+      this.resourceHand.set(res, stored + val);
     }
   }
 

@@ -1,6 +1,6 @@
 import React from "react";
 import brick from "../icons/brick.svg";
-import { SAND, BRICK, WHEAT } from "../colors";
+import { SAND, BRICK, WHEAT, SHEEP, ORE, WOOD } from "../colors";
 import { ResourceString } from "../redux/Actions";
 // import cloud from "../icons/cloud.svg";
 
@@ -41,13 +41,13 @@ export class Tile extends React.Component<TileProps, {}> {
   colorOfTile() {
     switch (this.props.resource) {
       case "ore":
-        return "grey";
+        return ORE;
       case "wheat":
         return WHEAT;
       case "sheep":
-        return "gainsboro";
+        return SHEEP;
       case "wood":
-        return "#8B4513";
+        return WOOD;
       case "desert":
         return "#e9b13f";
       case "brick":

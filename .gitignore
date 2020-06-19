@@ -28,3 +28,5 @@ yarn-error.log*
 
 # Gets rid of compiled files
 /server/**/*.js
+
+.vscode

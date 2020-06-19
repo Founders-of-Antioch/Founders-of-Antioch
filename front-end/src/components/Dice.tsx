@@ -4,8 +4,9 @@ import { widthOfSVG } from "./Board";
 import {
   PlayerNumber,
   HasRolledAction,
-  hasRolled,
+  hasRolledTheDice,
   collectResources,
+  evaluateTurn,
 } from "../redux/Actions";
 import { connect, ConnectedProps } from "react-redux";
 import { FoAppState } from "../redux/reducers/reducers";
@@ -35,10 +36,13 @@ function mapStateToProps(store: FoAppState): DiceState {
 function mapDispatch(dispatch: Dispatch) {
   return {
     rolled: (didRoll: boolean): HasRolledAction => {
-      return dispatch(hasRolled(didRoll));
+      return dispatch(hasRolledTheDice(didRoll));
     },
     collectResourcesFromRoll: (diceSum: number) => {
       return dispatch(collectResources(diceSum));
+    },
+    evaluateTurn: () => {
+      return dispatch(evaluateTurn());
     },
   };
 }
@@ -47,8 +51,6 @@ const connector = connect(mapStateToProps, mapDispatch);
 
 type PropsFromRedux = ConnectedProps<typeof connector>;
 type DiceProps = PropsFromRedux & {
-  // Callback for when the dice have been rolled
-  hasRolledCallBack: Function;
   // X and Y of the first die
   diceOneX: number;
   diceOneY: number;
@@ -102,8 +104,7 @@ class Dice extends React.Component<DiceProps, UIState> {
       socket.emit("roll", diceOne, diceTwo, "1");
 
       this.props.rolled(true);
-      // Tells the app state that the dice have been rolled
-      this.props.hasRolledCallBack(diceOne + diceTwo);
+      this.props.evaluateTurn();
     }
   }
 

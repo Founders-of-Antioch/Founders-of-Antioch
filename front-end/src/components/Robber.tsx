@@ -34,7 +34,6 @@ class Robber extends React.Component<RobberProps, {}> {
 
   render() {
     const dTiles = this.findDesertTileCoordinates();
-    console.log(dTiles);
     const boardXPos = dTiles[0];
     const boardYPos = dTiles[1];
 

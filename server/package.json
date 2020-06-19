@@ -4,7 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node -r ts-node/register ./app.ts",
+    "start:watch": "nodemon",
+    "build": "rm -rf js/ && tsc"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "src",
+      "app.ts"
+    ],
+    "exec": "npm start",
+    "ext": "ts"
   },
   "keywords": [],
   "author": "",

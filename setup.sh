@@ -1,0 +1,1 @@
+cd front-end && npm i && cd ../server && npm i

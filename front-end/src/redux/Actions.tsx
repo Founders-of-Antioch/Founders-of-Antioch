@@ -1,6 +1,8 @@
 import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TIleModel";
 import { Building } from "../entities/Building";
+import { SeedState } from "./reducers/reducers";
+import store from "./store";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -11,6 +13,14 @@ export const HAS_ROLLED = "HAS_ROLLED";
 export const NEXT_TURN = "NEXT_TURN";
 export const COLLECT_RESOURCES = "COLLECT_RESOURCES";
 export const DECLARE_BOARD = "DECLARE_BOARD";
+export const SET_SEED = "SET_SEED";
+export const CAN_END_TURN = "CAN_END_TURN";
+export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
+export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
+export const EVALUATE_TURN = "EVALUATE_TURN";
+export const BUY_ROAD = "BUY_ROAD";
+// Changes the amount of resource in a player's hand
+export const CHANGE_RESOURCE = "CHANGE_RESOURCE";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -44,10 +54,24 @@ interface CollectResourcesAction {
   diceSum: number;
 }
 
+interface BuyRoadAction {
+  type: typeof BUY_ROAD;
+  playerNumber: PlayerNumber;
+}
+
+interface ChangeResourceAction {
+  type: typeof CHANGE_RESOURCE;
+  playerNumber: PlayerNumber;
+  resource: ResourceString;
+  amount: number;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
-  | CollectResourcesAction;
+  | CollectResourcesAction
+  | BuyRoadAction
+  | ChangeResourceAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -69,8 +93,40 @@ export interface DeclareBoardAction {
   board: { listOfTiles: Array<TileModel>; gameID: string };
 }
 
+export interface SetSeedAction {
+  type: typeof SET_SEED;
+  stateSeed: SeedState;
+}
+
+export interface EndTurnAction {
+  type: typeof CAN_END_TURN;
+  canOrCant: boolean;
+}
+
+export interface EvaluateTurnAction {
+  type: typeof EVALUATE_TURN;
+  slice: {
+    hasRolled: boolean;
+    turnNumber: number;
+    isCurrentlyPlacingRoad: boolean;
+    isCurrentlyPlacingSettlement: boolean;
+  };
+}
+
+export type AllEndTurnActions = EndTurnAction | EvaluateTurnAction;
+
+export interface IsPlacingSettlementAction {
+  type: typeof IS_PLACING_SETTLEMENT;
+  isOrIsnt: boolean;
+}
+
+export interface IsPlacingRoadAction {
+  type: typeof IS_PLACING_ROAD;
+  isOrIsnt: boolean;
+}
+
 /** Action creators */
-export function hasRolled(hasRolled: boolean): HasRolledAction {
+export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
   return { type: HAS_ROLLED, hasRolled };
 }
 
@@ -117,6 +173,68 @@ export function declareBoard(
   gameID: string
 ): DeclareBoardAction {
   return { type: DECLARE_BOARD, board: { listOfTiles, gameID } };
+}
+
+export function setSeed(stateSeed: SeedState): SetSeedAction {
+  console.log(1234);
+  return { type: SET_SEED, stateSeed };
+}
+
+export function possibleToEndTurn(canOrCant: boolean): EndTurnAction {
+  return {
+    type: CAN_END_TURN,
+    canOrCant,
+  };
+}
+
+export function evaluateTurn(): EvaluateTurnAction {
+  // If you have an idea to fix this, please do =)
+  const currState = store.getState();
+  return {
+    type: EVALUATE_TURN,
+    slice: {
+      hasRolled: currState.hasRolled,
+      turnNumber: currState.turnNumber,
+      isCurrentlyPlacingSettlement: currState.isCurrentlyPlacingSettlement,
+      isCurrentlyPlacingRoad: currState.isCurrentlyPlacingRoad,
+    },
+  };
+}
+
+export function isPlacingASettlement(
+  isOrIsnt: boolean
+): IsPlacingSettlementAction {
+  return {
+    type: IS_PLACING_SETTLEMENT,
+    isOrIsnt,
+  };
+}
+
+export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
+  return {
+    type: IS_PLACING_ROAD,
+    isOrIsnt,
+  };
+}
+
+export function buyRoad(playerNumber: PlayerNumber): BuyRoadAction {
+  return {
+    type: BUY_ROAD,
+    playerNumber,
+  };
+}
+
+export function changeResource(
+  playerNumber: PlayerNumber,
+  resource: ResourceString,
+  amount: number
+): ChangeResourceAction {
+  return {
+    type: CHANGE_RESOURCE,
+    playerNumber,
+    resource,
+    amount,
+  };
 }
 
 // export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;

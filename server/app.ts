@@ -12,11 +12,14 @@ import { GameManager } from "./src/gameManager";
 import { Socket } from "socket.io";
 import { ServerPlayer } from "./src/Player";
 import { Player } from "../front-end/src/entities/Player";
-import { Building } from "./src/Building";
+import { ServerBuilding } from "./src/Building";
 import { Road } from "./src/entity/Road";
-import { FoAppState } from "../front-end/src/redux/reducers/reducers";
+import { SeedState } from "../front-end/src/redux/reducers/reducers";
 import { TileModel } from "../front-end/src/entities/TIleModel";
 import { PlayerNumber } from "../front-end/src/redux/Actions";
+import { Building } from "../front-end/src/entities/Building";
+import { ProposedTradeSocketPackage } from "../front-end/src/components/Trading/ProposeTrade";
+import { ResourceChangePackage } from "../front-end/src/components/Trading/TradeProposed";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 function shuffle(a: Array<string>): Array<string> {
@@ -136,7 +139,12 @@ createConnection().then((connection) => {
         corner: number,
         playerNum: number
       ) => {
-        const location = new Building(boardXPos, boardYPos, corner, playerNum);
+        const location = new ServerBuilding(
+          boardXPos,
+          boardYPos,
+          corner,
+          playerNum
+        );
         gameManager.addBuilding(location, gameID);
       }
     );
@@ -157,43 +165,62 @@ createConnection().then((connection) => {
 
     client.on(
       "getSeedState",
-      (listOfTiles: Array<TileModel>): FoAppState => {
+      (listOfTiles: Array<TileModel>): SeedState => {
         const listOfBuildings = [
-          new Building(0, 0, 0, 1),
-          new Building(0, 0, 2, 1),
-          new Building(1, 1, 2, 2),
-          new Building(2, 0, 5, 2),
-          new Building(-2, -2, 0, 3),
-          new Building(-1, -1, 2, 3),
-          new Building(0, 2, 2, 4),
-          new Building(0, 0, 4, 4),
+          new Building(0, 0, 0, 1, listOfTiles),
+          new Building(0, 0, 2, 1, listOfTiles),
+          new Building(1, 1, 2, 2, listOfTiles),
+          new Building(2, 0, 5, 2, listOfTiles),
+          new Building(-2, -2, 0, 3, listOfTiles),
+          new Building(-1, -1, 2, 3, listOfTiles),
+          new Building(0, 2, 2, 4, listOfTiles),
+          new Building(0, 0, 4, 4, listOfTiles),
         ];
 
         // If someone knows a way around the 'as', please feel free to fix it!
-        let playersMap = new Map<PlayerNumber, Player>();
+        let playersArray: Array<Player> = [];
         for (let i = 1; i <= 4; i++) {
           const playerToAdd = new Player(i as PlayerNumber);
 
-          if (listOfBuildings[0] !== undefined) {
-            // playerToAdd.buildings.push(listOfBuildings.pop() as Building);
+          const b1 = listOfBuildings.pop();
+          const b2 = listOfBuildings.pop();
+          if (b1 !== undefined && b2 !== undefined) {
+            playerToAdd.buildings.push(b1);
+            playerToAdd.buildings.push(b2);
           }
 
-          playersMap.set(i as PlayerNumber, playerToAdd);
+          playersArray.push(playerToAdd);
         }
 
-        return {
-          currentPersonPlaying: 1,
-          inGamePlayerNumber: 1,
+        const currentPersonPlaying: PlayerNumber = 1;
+        const inGamePlayerNumber: PlayerNumber = 1;
+
+        const retState: SeedState = {
+          currentPersonPlaying,
+          inGamePlayerNumber,
           hasRolled: false,
           turnNumber: 3,
           boardToBePlayed: {
             listOfTiles,
             gameID: "1",
           },
-          playersByID: playersMap,
+          playersArray,
         };
+
+        console.log("Sending Seed");
+        io.emit("sendSeed", retState);
+
+        return retState;
       }
     );
+
+    client.on("proposedTrade", (pkg: ProposedTradeSocketPackage) => {
+      gameManager.proposeTrade(pkg);
+    });
+
+    client.on("resourceChange", (pkg: ResourceChangePackage) => {
+      gameManager.changeResources(pkg);
+    });
   });
 
   app.use(bodyParser.json());

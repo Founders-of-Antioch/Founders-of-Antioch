@@ -1,46 +1,47 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Founders of Antioch
 
-chmod +x start.sh
+Founders of Antioch (FoA) is an open source alternative to the board game Settler of Catan.
 
-## Available Scripts
+## Setup
 
-In the project directory, you can run:
+NOTE: Dockerfile does not work yet
 
-### `yarn start`
+Simply run
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+`./setup.sh`
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+to install all of the dependencies. If this fails for some reason, you can install the dependencies manually just as easy with
 
-### `yarn test`
+`cd front-end && npm i`
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+`cd server && npm i`
 
-### `yarn build`
+Then you'll need to run
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+`tsc`
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+to build the server
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+You should only need to run this once.
 
-### `yarn eject`
+## Running
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+To dev-run the whole application in one terminal, just use
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+`./start-dev.sh`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+and to prod-run the app in one terminal us
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+`./start.sh`
 
-## Learn More
+If you want to run them separately, use
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+`cd front-end && yarn start`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+for the front-end and
+
+`npm run start:watch`
+
+for the back-end.
+
+See each of the README's in the two folers (`server` and `front-end`) for more details.
