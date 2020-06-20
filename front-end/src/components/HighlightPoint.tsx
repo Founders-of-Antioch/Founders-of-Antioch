@@ -3,12 +3,13 @@ import { WHITE } from "../colors";
 import { xValofCorner, yValofCorner } from "./Settlement";
 import { widthOfSVG, hexRadius } from "./Board";
 import { socket } from "../App";
-import { isPlacingASettlement, isPlacingRoad, buyRoad } from "../redux/Actions";
+import { isPlacingASettlement, isPlacingRoad } from "../redux/Actions";
 import { FoAppState } from "../redux/reducers/reducers";
 import { TileModel } from "../entities/TileModel";
 import { connect, ConnectedProps } from "react-redux";
 import { Dispatch, bindActionCreators } from "redux";
 import { PlayerNumber } from "../../../types/Primitives";
+import { ResourceChangePackage } from "../../../types/SocketPackages";
 
 // Highlights a point where a player can build a settlement
 
@@ -40,7 +41,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     {
       isPlacingASettlement,
       isPlacingRoad,
-      buyRoad,
     },
     dispatch
   );
@@ -105,8 +105,14 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     this.props.isPlacingRoad(false);
     // Don't have to purchase roads if it's the snake draft
+    // TODO: Fix Game ID
     if (turnNumber > 2) {
-      this.props.buyRoad(inGamePlayerNumber);
+      const roadPKG: ResourceChangePackage = {
+        gameID: "1",
+        resourceDeltaMap: { brick: -1, wood: -1 },
+        playerNumber: inGamePlayerNumber,
+      };
+      socket.emit("resourceChange", roadPKG);
     }
   }
 

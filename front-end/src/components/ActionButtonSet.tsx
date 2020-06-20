@@ -16,6 +16,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     this.roadClick = this.roadClick.bind(this);
     this.toggleTradeMenu = this.toggleTradeMenu.bind(this);
     this.closeMenu = this.closeMenu.bind(this);
+    this.purchaseDevCard = this.purchaseDevCard.bind(this);
   }
 
   closeMenu() {
@@ -52,8 +53,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   }
 
   canTrade() {
-    return true;
-    // return this.isTurn() && this.props.hasRolled && this.props.turnNumber > 2;
+    return this.isTurn() && this.props.hasRolled && this.props.turnNumber > 2;
   }
 
   canBuySettlement() {
@@ -99,6 +99,20 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     this.props.isPlacingRoad(true);
   }
 
+  purchaseDevCard() {
+    const { inGamePlayerNumber, devCardPile } = this.props;
+
+    if (devCardPile.length !== 0) {
+      const topCode = devCardPile[devCardPile.length - 1].code;
+      if (topCode !== undefined) {
+        this.props.getCurrentPlayerADevelopmentCard(
+          inGamePlayerNumber,
+          topCode
+        );
+      }
+    }
+  }
+
   render() {
     return (
       <div>
@@ -135,6 +149,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
             <Button
               color="yellow"
               icon="copy"
+              onClick={this.purchaseDevCard}
               disabled={!this.canBuyDevCard()}
             />
             <Button

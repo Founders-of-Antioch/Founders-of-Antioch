@@ -2,6 +2,7 @@ import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
 import { ResourceString, PlayerNumber } from "../../../types/Primitives";
 import { PlayerProperties } from "../../../types/entities/Player";
+import DevCard from "./DevCard";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -18,10 +19,8 @@ export class Player implements PlayerProperties {
   buildings: Array<Building>;
   roads: Array<RoadModel>;
   knights: number;
-  // TODO: Change key type to ResourceString
   resourceHand: Map<string, number>;
-  // cards
-  // dev cards
+  devCardHand: Array<DevCard>;
 
   constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
@@ -30,6 +29,7 @@ export class Player implements PlayerProperties {
     this.roads = [];
     this.knights = 0;
     this.resourceHand = new Map();
+    this.devCardHand = [];
 
     for (const res of LIST_OF_RESOURCES) {
       this.resourceHand.set(res, 0);
@@ -43,6 +43,7 @@ export class Player implements PlayerProperties {
     this.roads = [...p.roads];
     this.knights = p.knights;
     this.resourceHand = new Map([...p.resourceHand]);
+    this.devCardHand = [...p.devCardHand];
   }
 
   addResource(res: ResourceString) {

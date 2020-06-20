@@ -3,11 +3,12 @@ import {
   PLACE_SETTLEMENT,
   PLACE_ROAD,
   COLLECT_RESOURCES,
-  BUY_ROAD,
   CHANGE_RESOURCE,
+  GET_TOP_DEV_CARD,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 import { PlayerNumber } from "../../../../types/Primitives";
+import DevCard from "../../entities/DevCard";
 
 export default function players(
   state: Map<PlayerNumber, Player> = new Map([
@@ -65,29 +66,6 @@ export default function players(
       }
 
       return newPlayersMap;
-    case BUY_ROAD:
-      const buyRoadPlayer = new Player(action.playerNumber);
-      const getPlayer = state.get(action.playerNumber);
-      if (getPlayer !== undefined) {
-        buyRoadPlayer.copyFromPlayer(getPlayer);
-
-        const currWood = buyRoadPlayer.resourceHand.get("wood");
-        const currBrick = buyRoadPlayer.resourceHand.get("brick");
-
-        if (currWood !== undefined && currBrick !== undefined) {
-          buyRoadPlayer.resourceHand.set("wood", currWood - 1);
-          buyRoadPlayer.resourceHand.set("brick", currBrick - 1);
-
-          return new Map([...state, [action.playerNumber, buyRoadPlayer]]);
-        } else {
-          console.log(
-            "Something is really wrong! For some reason, the player doesn't have wood or brick"
-          );
-          return state;
-        }
-      } else {
-        return state;
-      }
     case CHANGE_RESOURCE:
       const changeResPlayer = new Player(action.playerNumber);
       const getResPlayer = state.get(action.playerNumber);
@@ -98,6 +76,20 @@ export default function players(
 
         return new Map([...state, [action.playerNumber, changeResPlayer]]);
       } else {
+        return state;
+      }
+    case GET_TOP_DEV_CARD:
+      const getDCardPlayer = state.get(action.playerNumber);
+      const newDevCardPlayer = new Player(action.playerNumber);
+
+      if (getDCardPlayer !== undefined) {
+        newDevCardPlayer.copyFromPlayer(getDCardPlayer);
+
+        newDevCardPlayer.devCardHand.push(new DevCard(action.cardCode));
+
+        return new Map([...state, [action.playerNumber, newDevCardPlayer]]);
+      } else {
+        console.log("Error player not found for dev card");
         return state;
       }
     default:

@@ -30,7 +30,10 @@ import {
 import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
+  AcquireDevCardPackage,
 } from "../../types/SocketPackages";
+import devCards from "./redux/reducers/devCards";
+import DevCard from "./entities/DevCard";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -273,6 +276,10 @@ export default class App extends React.Component<AppProps, UIState> {
       }
     });
 
+    socket.on("devCardUpdate", (pkg: AcquireDevCardPackage) => {
+      this.props.getPlayerADevCard(pkg.playerNumber, pkg.code);
+    });
+
     socket.on("tradeClose", (tIndex: number) => {
       this.closeTradeWindow(tIndex);
     });
@@ -309,12 +316,18 @@ export default class App extends React.Component<AppProps, UIState> {
         }
       }
 
+      let devCardArr = [];
+      for (const currCode of game.devCards) {
+        devCardArr.push(new DevCard(currCode));
+      }
+
       // TODO: Fix GameID
       this.setState({
         ...this.state,
         isLoading: false,
       });
       this.props.declareBoard(tileList, "1");
+      this.props.declareDevelopmentCards(devCardArr);
     }
   }
 

@@ -1,4 +1,4 @@
-import { PlayerNumber } from "../types/Primitives";
+import { PlayerNumber, ResourceString, DevCardCode } from "../types/Primitives";
 
 export type ResourceChangePackage = {
   playerNumber: PlayerNumber;
@@ -11,4 +11,10 @@ export type ProposedTradeSocketPackage = {
   playerNumber: PlayerNumber;
   playerGetResources: { [index: string]: number };
   playerGiveResources: { [index: string]: number };
+};
+
+export type AcquireDevCardPackage = {
+  gameID: string;
+  playerNumber: PlayerNumber;
+  code: DevCardCode;
 };

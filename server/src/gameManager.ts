@@ -5,6 +5,7 @@ import { DevCardCode, PlayerNumber } from "../../types/Primitives";
 import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
+  AcquireDevCardPackage,
 } from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -163,9 +164,9 @@ export class Game {
 
   broadcastResourceUpdate(pkg: ResourceChangePackage) {
     this.listOfPlayers.forEach((currPl, idx) => {
-      if (idx + 1 === pkg.playerNumber) {
-        currPl.playerSocket.emit("resourceUpdate", pkg);
-      }
+      // if (idx + 1 === pkg.playerNumber) {
+      currPl.playerSocket.emit("resourceUpdate", pkg);
+      // }
     });
   }
 
@@ -175,6 +176,12 @@ export class Game {
         currPl.playerSocket.emit("tradeClose", tradeIdx);
       }
     });
+  }
+
+  broadcastDevCardUpdate(pkg: AcquireDevCardPackage) {
+    for (const pl of this.listOfPlayers) {
+      pl.playerSocket.emit("devCardUpdate", pkg);
+    }
   }
 }
 
@@ -298,6 +305,14 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastTradeAccepted(tI, pl);
+    }
+  }
+
+  acquireDevCard(pkg: AcquireDevCardPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastDevCardUpdate(pkg);
     }
   }
 }

@@ -1,6 +1,7 @@
 import { PlayerNumber } from "../Primitives";
 import { BuildingProperties } from "./Building";
 import { RoadModelProperties } from "./RoadModel";
+import DevCard from "../../front-end/src/entities/DevCard";
 
 export interface PlayerProperties {
   playerNum: PlayerNumber;
@@ -10,4 +11,5 @@ export interface PlayerProperties {
   knights: number;
   // TODO: Change key type to ResourceString
   resourceHand: Map<string, number>;
+  devCardHand: Array<DevCard>;
 }

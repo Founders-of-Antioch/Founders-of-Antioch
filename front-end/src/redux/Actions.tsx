@@ -2,8 +2,13 @@ import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TileModel";
 import { Building } from "../entities/Building";
 import { SeedState } from "./reducers/reducers";
-import { PlayerNumber, ResourceString } from "../../../types/Primitives";
+import {
+  PlayerNumber,
+  ResourceString,
+  DevCardCode,
+} from "../../../types/Primitives";
 import store from "./store";
+import DevCard from "../entities/DevCard";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -19,9 +24,13 @@ export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
 export const EVALUATE_TURN = "EVALUATE_TURN";
-export const BUY_ROAD = "BUY_ROAD";
 // Changes the amount of resource in a player's hand
 export const CHANGE_RESOURCE = "CHANGE_RESOURCE";
+export const DECLARE_DEV_CARDS = "DELCARE_DEV_CARDS";
+// Pops off the state list
+export const TAKE_TOP_DEV_CARD = "TAKE_TOP_DEV_CARD";
+// Puts it into the players hand
+export const GET_TOP_DEV_CARD = "GET_TOP_DEV_CARD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -44,11 +53,6 @@ interface CollectResourcesAction {
   diceSum: number;
 }
 
-interface BuyRoadAction {
-  type: typeof BUY_ROAD;
-  playerNumber: PlayerNumber;
-}
-
 interface ChangeResourceAction {
   type: typeof CHANGE_RESOURCE;
   playerNumber: PlayerNumber;
@@ -56,12 +60,18 @@ interface ChangeResourceAction {
   amount: number;
 }
 
+interface GetDevCardAction {
+  type: typeof GET_TOP_DEV_CARD;
+  playerNumber: PlayerNumber;
+  cardCode: DevCardCode;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
   | CollectResourcesAction
-  | BuyRoadAction
-  | ChangeResourceAction;
+  | ChangeResourceAction
+  | GetDevCardAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -114,6 +124,17 @@ export interface IsPlacingRoadAction {
   type: typeof IS_PLACING_ROAD;
   isOrIsnt: boolean;
 }
+
+interface DeclareDevCardsAction {
+  type: typeof DECLARE_DEV_CARDS;
+  listOfCards: Array<DevCard>;
+}
+
+interface TakeTopDevCardAction {
+  type: typeof TAKE_TOP_DEV_CARD;
+}
+
+export type DevCardActions = DeclareDevCardsAction | TakeTopDevCardAction;
 
 /** Action creators */
 export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
@@ -207,13 +228,6 @@ export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
   };
 }
 
-export function buyRoad(playerNumber: PlayerNumber): BuyRoadAction {
-  return {
-    type: BUY_ROAD,
-    playerNumber,
-  };
-}
-
 export function changeResource(
   playerNumber: PlayerNumber,
   resource: ResourceString,
@@ -227,4 +241,37 @@ export function changeResource(
   };
 }
 
-// export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;
+export function declareDevelopmentCards(
+  listOfCards: Array<DevCard>
+): DeclareDevCardsAction {
+  return {
+    type: DECLARE_DEV_CARDS,
+    listOfCards,
+  };
+}
+
+/**
+ * NOTE: The next two action creators (dev card ones) should only be used
+ * in the action button set when clicking on the dev card button
+ *
+ * This removes it from the state pile
+ */
+export function takeTopDevelopmentCardOff(): TakeTopDevCardAction {
+  return {
+    type: TAKE_TOP_DEV_CARD,
+  };
+}
+
+/** SEE NOTE ^
+ * This puts it in the players hand, should go first
+ */
+export function acquireDevelopmentCard(
+  playerNumber: PlayerNumber,
+  cardCode: DevCardCode
+): GetDevCardAction {
+  return {
+    type: GET_TOP_DEV_CARD,
+    playerNumber,
+    cardCode,
+  };
+}

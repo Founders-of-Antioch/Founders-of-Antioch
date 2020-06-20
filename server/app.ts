@@ -16,6 +16,7 @@ import { Road } from "./src/entity/Road";
 import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
+  AcquireDevCardPackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -188,6 +189,10 @@ createConnection().then((connection) => {
         gameManager.acceptTrade(tradeIndex, tradePlayer, gameID);
       }
     );
+
+    client.on("acquireDevelopmentCard", (pkg: AcquireDevCardPackage) => {
+      gameManager.acquireDevCard(pkg);
+    });
   });
 
   app.use(bodyParser.json());

@@ -12,13 +12,16 @@ import {
   hasRolledTheDice,
   evaluateTurn,
   changeResource,
+  declareDevelopmentCards,
+  takeTopDevelopmentCardOff,
+  acquireDevelopmentCard,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
 import { Dispatch, bindActionCreators } from "redux";
 import { connect, ConnectedProps } from "react-redux";
 import App from "../App";
-import { PlayerNumber } from "../../../types/Primitives";
+import { PlayerNumber, DevCardCode } from "../../../types/Primitives";
 
 type AppState = {
   listOfPlayers: Map<PlayerNumber, Player>;
@@ -47,23 +50,30 @@ function mapStateToProps(store: FoAppState): AppState {
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
-  return bindActionCreators(
-    {
-      placeSettlement,
-      placeRoad,
-      declareBoard,
-      declarePlayerNumber,
-      possibleToEndTurn,
-      isPlacingASettlement,
-      isPlacingRoad,
-      nextTurn,
-      changePlayer,
-      hasRolledTheDice,
-      evaluateTurn,
-      changeResource,
+  return {
+    ...bindActionCreators(
+      {
+        placeSettlement,
+        placeRoad,
+        declareBoard,
+        declarePlayerNumber,
+        possibleToEndTurn,
+        isPlacingASettlement,
+        isPlacingRoad,
+        nextTurn,
+        changePlayer,
+        hasRolledTheDice,
+        evaluateTurn,
+        changeResource,
+        declareDevelopmentCards,
+      },
+      dispatch
+    ),
+    getPlayerADevCard: (p: PlayerNumber, c: DevCardCode) => {
+      dispatch(acquireDevelopmentCard(p, c));
+      dispatch(takeTopDevelopmentCardOff());
     },
-    dispatch
-  );
+  };
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

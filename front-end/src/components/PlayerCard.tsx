@@ -75,7 +75,8 @@ class PlayerCard extends React.Component<PlayerCardProps, {}> {
                 {playerModel.numberOfCardsInHand()}
               </div>
               <div style={labelStyle} className={labelClass}>
-                <i className="yellow plus square icon"></i> 23
+                <i className="yellow plus square icon"></i>
+                {playerModel.devCardHand.length}
               </div>
             </div>
           </div>

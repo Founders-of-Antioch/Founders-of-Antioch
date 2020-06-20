@@ -18,11 +18,9 @@ to install all of the dependencies. If this fails for some reason, you can insta
 
 Then you'll need to run
 
-`tsc`
+`cd server && tsc`
 
-to build the server
-
-You should only need to run this once.
+to build the server.
 
 ## Running
 
@@ -43,5 +41,13 @@ for the front-end and
 `npm run start:watch`
 
 for the back-end.
+
+#### Making Changes
+
+For the front-end, it should automatically reload anytime you save a change. The server will do this too, but sometimes when you make changes that reference another file, you have to stop and run
+
+`cd server && tsc`
+
+to build again. However, the start-dev script will automatically build for you, so you can restart that as well. If anyone knows a way around this, feel free to make an issue and a PR =).
 
 See each of the README's in the two folers (`server` and `front-end`) for more details.
