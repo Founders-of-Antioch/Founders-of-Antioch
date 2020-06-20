@@ -86,8 +86,11 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   }
 
   canBuyDevCard() {
+    const { devCardPile, hasRolled } = this.props;
+
     return (
-      this.props.hasRolled &&
+      devCardPile.length > 0 &&
+      hasRolled &&
       this.isTurn() &&
       this.getResAmount("sheep") >= 1 &&
       this.getResAmount("ore") >= 1 &&

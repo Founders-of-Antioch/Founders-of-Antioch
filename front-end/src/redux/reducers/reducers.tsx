@@ -13,6 +13,7 @@ import isCurrentlyPlacingRoad from "./isCurrentlyPlacingRoad";
 import { PlayerNumber } from "../../../../types/Primitives";
 import DevCard from "../../entities/DevCard";
 import devCards from "./devCards";
+import { hasPlayedDevCard } from "./hasPlayedDevCard";
 
 export interface FoAppState {
   currentPersonPlaying: PlayerNumber;
@@ -21,6 +22,7 @@ export interface FoAppState {
   // Number 1-4 representing which player the client is
   inGamePlayerNumber: PlayerNumber;
   hasRolled: boolean;
+  hasPlayedDevCard: boolean;
   turnNumber: number;
   boardToBePlayed: {
     listOfTiles: Array<TileModel>;
@@ -54,6 +56,7 @@ export const FoAPP = combineReducers({
   playersByID: players,
   inGamePlayerNumber,
   hasRolled: dice,
+  hasPlayedDevCard,
   turnNumber,
   boardToBePlayed: boardToPlay,
   canEndTurn,

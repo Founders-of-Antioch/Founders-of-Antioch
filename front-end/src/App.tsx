@@ -21,7 +21,6 @@ import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
 import TradeProposed from "./components/Trading/TradeProposed";
 import { Port } from "./components/Port";
-import DevelopmentCardBack from "./components/GameCards/DevelopmentCardBack";
 import {
   DevCardCode,
   ResourceString,
@@ -32,8 +31,9 @@ import {
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
 } from "../../types/SocketPackages";
-import devCards from "./redux/reducers/devCards";
 import DevCard from "./entities/DevCard";
+import InHandDevCard from "./components/GameCards/InHandDevCard";
+import DevCardHand from "./components/GameCards/DevCardHand";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -59,7 +59,6 @@ export default class App extends React.Component<AppProps, UIState> {
     };
 
     // Probably change to arrow functions to we don't have to do this
-    this.endTurn = this.endTurn.bind(this);
     this.endTurn = this.endTurn.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
@@ -338,6 +337,7 @@ export default class App extends React.Component<AppProps, UIState> {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
     this.props.hasRolledTheDice(false);
     this.props.possibleToEndTurn(false);
+    this.props.playerHasPlayedDC(false);
   }
 
   // Returns the end turn button component
@@ -606,16 +606,13 @@ export default class App extends React.Component<AppProps, UIState> {
 
           {this.generateAllPlayerCards()}
 
+          {/* <InHandDevCard code={"MONOPOLY"} /> */}
+          <DevCardHand />
+
           <VisibleActionButtonSet />
-          {/* <TradeProposed
-            getResources={["wheat", "brick", "ore", "sheep", "wood"]}
-            getAmounts={[1, 1, 1, 1, 1]}
-            giveResources={["wheat", "brick", "ore", "sheep", "wood"]}
-            giveAmounts={[1, 1, 1, 1, 1]}
-          /> */}
+
           {this.renderTrades()}
 
-          {/* {this.constructPorts()} */}
           {this.generateResourceCards()}
         </div>
       );

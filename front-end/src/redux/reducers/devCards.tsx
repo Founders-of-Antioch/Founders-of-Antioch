@@ -15,8 +15,10 @@ export default function devCards(
     case TAKE_TOP_DEV_CARD:
       if (state.length === 0) {
         return state;
+      } else if (state.length === 1) {
+        return [];
       } else {
-        return [...state.slice(1)];
+        return [...state.slice(0, state.length - 1)];
       }
     default:
       return state;

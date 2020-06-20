@@ -31,6 +31,7 @@ export const DECLARE_DEV_CARDS = "DELCARE_DEV_CARDS";
 export const TAKE_TOP_DEV_CARD = "TAKE_TOP_DEV_CARD";
 // Puts it into the players hand
 export const GET_TOP_DEV_CARD = "GET_TOP_DEV_CARD";
+export const HAS_PLAYED_DEV_CARD = "HAS_PLAYED_DEV_CARD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -135,6 +136,11 @@ interface TakeTopDevCardAction {
 }
 
 export type DevCardActions = DeclareDevCardsAction | TakeTopDevCardAction;
+
+export interface HasPlayedDevCardAction {
+  type: typeof HAS_PLAYED_DEV_CARD;
+  hasPlayed: boolean;
+}
 
 /** Action creators */
 export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
@@ -273,5 +279,12 @@ export function acquireDevelopmentCard(
     type: GET_TOP_DEV_CARD,
     playerNumber,
     cardCode,
+  };
+}
+
+export function playerHasPlayedDC(hasPlayed: boolean): HasPlayedDevCardAction {
+  return {
+    type: HAS_PLAYED_DEV_CARD,
+    hasPlayed,
   };
 }

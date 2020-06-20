@@ -1,9 +1,5 @@
 import { FoAppState } from "../redux/reducers/reducers";
-import {
-  isPlacingRoad,
-  takeTopDevelopmentCardOff,
-  acquireDevelopmentCard,
-} from "../redux/Actions";
+import { isPlacingRoad } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { connect, ConnectedProps } from "react-redux";
 import ActionButtonSet from "../components/ActionButtonSet";
@@ -45,7 +41,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch
     ),
     getCurrentPlayerADevelopmentCard: (p: PlayerNumber, c: DevCardCode) => {
-      // TODO: Fix Game ID
+      // TODO: Fix Game ID's
       const devPkg: ResourceChangePackage = {
         gameID: "1",
         resourceDeltaMap: { sheep: -1, ore: -1, wheat: -1 },
