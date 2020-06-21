@@ -30,6 +30,7 @@ import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
+  DevCardRemovalPackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import InHandDevCard from "./components/GameCards/InHandDevCard";
@@ -281,6 +282,10 @@ export default class App extends React.Component<AppProps, UIState> {
 
     socket.on("tradeClose", (tIndex: number) => {
       this.closeTradeWindow(tIndex);
+    });
+
+    socket.on("removeDevCardUpdate", (pkg: DevCardRemovalPackage) => {
+      this.props.removeDevelopmentCardFromHand(pkg.playerNumber, pkg.handIndex);
     });
   }
 
@@ -606,7 +611,7 @@ export default class App extends React.Component<AppProps, UIState> {
 
           {this.generateAllPlayerCards()}
 
-          {/* <InHandDevCard code={"MONOPOLY"} /> */}
+          {/* <InHandDevCard code={"YOP"} positionIndex={0} /> */}
           <DevCardHand />
 
           <VisibleActionButtonSet />

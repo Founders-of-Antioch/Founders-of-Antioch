@@ -32,6 +32,7 @@ export const TAKE_TOP_DEV_CARD = "TAKE_TOP_DEV_CARD";
 // Puts it into the players hand
 export const GET_TOP_DEV_CARD = "GET_TOP_DEV_CARD";
 export const HAS_PLAYED_DEV_CARD = "HAS_PLAYED_DEV_CARD";
+export const REMOVE_DEV_CARD = "REMOVED_DEV_CARD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -67,12 +68,19 @@ interface GetDevCardAction {
   cardCode: DevCardCode;
 }
 
+interface RemoveDevCardAction {
+  type: typeof REMOVE_DEV_CARD;
+  playerNumber: PlayerNumber;
+  handIndex: number;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
   | CollectResourcesAction
   | ChangeResourceAction
-  | GetDevCardAction;
+  | GetDevCardAction
+  | RemoveDevCardAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -286,5 +294,16 @@ export function playerHasPlayedDC(hasPlayed: boolean): HasPlayedDevCardAction {
   return {
     type: HAS_PLAYED_DEV_CARD,
     hasPlayed,
+  };
+}
+
+export function removeDevelopmentCardFromHand(
+  playerNumber: PlayerNumber,
+  handIndex: number
+): RemoveDevCardAction {
+  return {
+    type: REMOVE_DEV_CARD,
+    playerNumber,
+    handIndex,
   };
 }

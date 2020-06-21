@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Button, Card } from "semantic-ui-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { colorMap, resMap } from "../../colors";
+import { colorMap, resIconMap } from "../../colors";
 import { PlayerNumber } from "../../../../types/Primitives";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
@@ -47,7 +47,7 @@ class TradeProposed extends Component<TradeProposedProps, {}> {
         <div key={key++}>
           <span className="date">{currAmount + " " + currRes}</span>
           <FontAwesomeIcon
-            icon={resMap[currRes]}
+            icon={resIconMap[currRes]}
             size="2x"
             color={colorMap[currRes]}
           />

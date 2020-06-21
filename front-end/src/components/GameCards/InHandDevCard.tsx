@@ -9,13 +9,12 @@ import {
   faTractor,
   faMoneyBillWave,
 } from "@fortawesome/free-solid-svg-icons";
-import { DevCardCode } from "../../../../types/Primitives";
+import { DevCardCode, PlayerNumber } from "../../../../types/Primitives";
 import { PLAYER_COLORS, WHEAT } from "../../colors";
 import { Button } from "semantic-ui-react";
-import { FoAppState } from "../../redux/reducers/reducers";
-import { connect, ConnectedProps } from "react-redux";
-import { Dispatch, bindActionCreators } from "redux";
-import { playerHasPlayedDC } from "../../redux/Actions";
+import YOPSelection from "../DevCardModals/YOPSelection";
+import { DevCardRemovalPackage } from "../../../../types/SocketPackages";
+import { socket } from "../../App";
 
 const descriptionMap = {
   KNIGHT:
@@ -28,40 +27,17 @@ const descriptionMap = {
   ROADS: "Build two roads for free",
 };
 
-type RedProps = {
-  hasPlayedDevCard: boolean;
-  isTurn: boolean;
-};
-
-function mapStateToProps(store: FoAppState): RedProps {
-  return {
-    hasPlayedDevCard: store.hasPlayedDevCard,
-    isTurn: store.currentPersonPlaying === store.inGamePlayerNumber,
-  };
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return bindActionCreators(
-    {
-      playerHasPlayedDC,
-    },
-    dispatch
-  );
-}
-
-const connector = connect(mapStateToProps, mapDispatchToProps);
-type ReduxType = ConnectedProps<typeof connector>;
-
-type CardProps = ReduxType & {
+type CardProps = {
   code: DevCardCode;
   positionIndex: number;
+  inGamePNum: PlayerNumber;
 };
 
-class InHandDevCard extends Component<CardProps, {}> {
+export default class InHandDevCard extends Component<CardProps, {}> {
   constructor(props: CardProps) {
     super(props);
 
-    this.playCard = this.playCard.bind(this);
+    this.selfDestructSequence = this.selfDestructSequence.bind(this);
   }
 
   codeToName(): string {
@@ -103,8 +79,28 @@ class InHandDevCard extends Component<CardProps, {}> {
     }
   }
 
-  playCard() {
-    this.props.playerHasPlayedDC(true);
+  bottomOfCard() {
+    const { code } = this.props;
+
+    switch (code) {
+      case "YOP":
+        return <YOPSelection discardDevCard={this.selfDestructSequence} />;
+      case "VP":
+        return <Button disabled>+1 VP</Button>;
+      default:
+        return <Button>Play</Button>;
+    }
+  }
+
+  // 😈
+  selfDestructSequence() {
+    // TODO: Fix GameID
+    const removalPackage: DevCardRemovalPackage = {
+      gameID: "1",
+      playerNumber: this.props.inGamePNum,
+      handIndex: this.props.positionIndex,
+    };
+    socket.emit("devCardRemoval", removalPackage);
   }
 
   render() {
@@ -159,22 +155,10 @@ class InHandDevCard extends Component<CardProps, {}> {
               {descriptionMap[code]}
             </p>
 
-            {code === "VP" ? (
-              <Button disabled>+1 VP</Button>
-            ) : (
-              <Button
-                disabled={this.props.hasPlayedDevCard || !this.props.isTurn}
-                onClick={this.playCard}
-                positive
-              >
-                Play
-              </Button>
-            )}
+            {this.bottomOfCard()}
           </div>
         </div>
       </div>
     );
   }
 }
-
-export default connector(InHandDevCard);

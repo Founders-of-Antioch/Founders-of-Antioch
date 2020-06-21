@@ -16,6 +16,7 @@ import {
   takeTopDevelopmentCardOff,
   acquireDevelopmentCard,
   playerHasPlayedDC,
+  removeDevelopmentCardFromHand,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
@@ -68,6 +69,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         changeResource,
         declareDevelopmentCards,
         playerHasPlayedDC,
+        removeDevelopmentCardFromHand,
       },
       dispatch
     ),

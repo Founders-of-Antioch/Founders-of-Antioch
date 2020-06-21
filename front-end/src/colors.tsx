@@ -24,7 +24,7 @@ export const colorMap: { [index: string]: string } = {
   ore: ORE,
 };
 
-export const resMap: { [index: string]: IconDefinition } = {
+export const resIconMap: { [index: string]: IconDefinition } = {
   sheep: faHorse,
   wheat: faBreadSlice,
   ore: faGem,

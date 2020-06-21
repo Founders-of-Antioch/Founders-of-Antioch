@@ -18,3 +18,9 @@ export type AcquireDevCardPackage = {
   playerNumber: PlayerNumber;
   code: DevCardCode;
 };
+
+export type DevCardRemovalPackage = {
+  gameID: string;
+  playerNumber: PlayerNumber;
+  handIndex: number;
+};

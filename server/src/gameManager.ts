@@ -6,6 +6,7 @@ import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
+  DevCardRemovalPackage,
 } from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -91,6 +92,12 @@ export class Game {
     } else {
       this.listOfPlayers = this.listOfPlayers.concat(p);
       return true;
+    }
+  }
+
+  broadcastEvent(emitFunction: (p: ServerPlayer) => void) {
+    for (const pl of this.listOfPlayers) {
+      emitFunction(pl);
     }
   }
 
@@ -182,6 +189,12 @@ export class Game {
     for (const pl of this.listOfPlayers) {
       pl.playerSocket.emit("devCardUpdate", pkg);
     }
+  }
+
+  broadcastDCRemovalUpdate(pkg: DevCardRemovalPackage) {
+    this.broadcastEvent((p: ServerPlayer) => {
+      p.playerSocket.emit("removeDevCardUpdate", pkg);
+    });
   }
 }
 
@@ -313,6 +326,14 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastDevCardUpdate(pkg);
+    }
+  }
+
+  removeDevCard(pkg: DevCardRemovalPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastDCRemovalUpdate(pkg);
     }
   }
 }

@@ -17,6 +17,7 @@ import {
   ResourceChangePackage,
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
+  DevCardRemovalPackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -192,6 +193,10 @@ createConnection().then((connection) => {
 
     client.on("acquireDevelopmentCard", (pkg: AcquireDevCardPackage) => {
       gameManager.acquireDevCard(pkg);
+    });
+
+    client.on("devCardRemoval", (pkg: DevCardRemovalPackage) => {
+      gameManager.removeDevCard(pkg);
     });
   });
 

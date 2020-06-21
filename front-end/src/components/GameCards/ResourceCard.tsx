@@ -1,6 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { colorMap, resMap } from "../../colors";
+import { colorMap, resIconMap } from "../../colors";
 import { ResourceString } from "../../../../types/Primitives";
 
 // TODO: Consider changing amount to state? Might not matter
@@ -44,7 +44,7 @@ export class ResourceCard extends React.Component<RCardProps, {}> {
               style={{ stroke: "black", strokeWidth: 2 }}
               size="6x"
               color={colorMap[resource]}
-              icon={resMap[resource]}
+              icon={resIconMap[resource]}
             />
           </div>
         </div>

@@ -5,6 +5,7 @@ import {
   COLLECT_RESOURCES,
   CHANGE_RESOURCE,
   GET_TOP_DEV_CARD,
+  REMOVE_DEV_CARD,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 import { PlayerNumber } from "../../../../types/Primitives";
@@ -90,6 +91,22 @@ export default function players(
         return new Map([...state, [action.playerNumber, newDevCardPlayer]]);
       } else {
         console.log("Error player not found for dev card");
+        return state;
+      }
+    case REMOVE_DEV_CARD:
+      const getCardPlayer = state.get(action.playerNumber);
+      const newCardPlayer = new Player(action.playerNumber);
+
+      if (getCardPlayer !== undefined) {
+        newCardPlayer.copyFromPlayer(getCardPlayer);
+        newCardPlayer.devCardHand = newCardPlayer.devCardHand.filter(
+          (val, idx) => {
+            return idx !== action.handIndex;
+          }
+        );
+
+        return new Map([...state, [action.playerNumber, newCardPlayer]]);
+      } else {
         return state;
       }
     default:
