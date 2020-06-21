@@ -1,7 +1,7 @@
 import React, { Component, ChangeEvent } from "react";
 import { Modal, Button, FormGroup, Form } from "semantic-ui-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { resIconMap, colorMap } from "../../colors";
+import { resIconMap, resColorMap } from "../../colors";
 import { ResourceString, PlayerNumber } from "../../../../types/Primitives";
 import { LIST_OF_RESOURCES } from "../../entities/Player";
 import { FoAppState } from "../../redux/reducers/reducers";
@@ -94,7 +94,7 @@ class YOPSelection extends Component<YearProps, UIState> {
           className="one wide"
           icon={resIconMap[res]}
           size="2x"
-          color={colorMap[res]}
+          color={resColorMap[res]}
         />
         <Form.Field className="two wide">
           <input
@@ -151,7 +151,6 @@ class YOPSelection extends Component<YearProps, UIState> {
     return (
       <Modal
         open={this.state.modalOpen}
-        closeOnDimmerClick={false}
         trigger={<PlayCardButton openModalFunction={this.openModal} />}
       >
         <Modal.Header>Select 2 Resources</Modal.Header>

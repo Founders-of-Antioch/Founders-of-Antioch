@@ -16,9 +16,9 @@ function mapStateToProps(store: FoAppState) {
       playerModel: getPlayer,
     };
   } else {
-    console.log(
-      "Something is very wrong, the in game player number was not found while trying to render the development cards"
-    );
+    return {
+      playerModel: new Player(-1),
+    };
   }
 }
 

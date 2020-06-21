@@ -1,4 +1,4 @@
-import { PlayerNumber, ResourceString, DevCardCode } from "../types/Primitives";
+import { PlayerNumber, DevCardCode, ResourceString } from "../types/Primitives";
 
 export type ResourceChangePackage = {
   playerNumber: PlayerNumber;
@@ -24,3 +24,16 @@ export type DevCardRemovalPackage = {
   playerNumber: PlayerNumber;
   handIndex: number;
 };
+
+export type ClaimMonopolyPackage = {
+  gameID: string;
+  playerNumber: PlayerNumber;
+  resource: ResourceString;
+};
+
+export type FoASocketPackage =
+  | ResourceChangePackage
+  | ProposedTradeSocketPackage
+  | AcquireDevCardPackage
+  | DevCardRemovalPackage
+  | ClaimMonopolyPackage;

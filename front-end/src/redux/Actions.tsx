@@ -31,8 +31,11 @@ export const DECLARE_DEV_CARDS = "DELCARE_DEV_CARDS";
 export const TAKE_TOP_DEV_CARD = "TAKE_TOP_DEV_CARD";
 // Puts it into the players hand
 export const GET_TOP_DEV_CARD = "GET_TOP_DEV_CARD";
+// Prevents playing more than one in a turn
 export const HAS_PLAYED_DEV_CARD = "HAS_PLAYED_DEV_CARD";
+// Remove card from player hand
 export const REMOVE_DEV_CARD = "REMOVED_DEV_CARD";
+export const CLAIM_MONOPOLY = "CLAIM_MONOPOLY";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -74,13 +77,20 @@ interface RemoveDevCardAction {
   handIndex: number;
 }
 
+interface ClaimMonopolyAction {
+  type: typeof CLAIM_MONOPOLY;
+  playerNumber: PlayerNumber;
+  resource: ResourceString;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
   | CollectResourcesAction
   | ChangeResourceAction
   | GetDevCardAction
-  | RemoveDevCardAction;
+  | RemoveDevCardAction
+  | ClaimMonopolyAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -305,5 +315,16 @@ export function removeDevelopmentCardFromHand(
     type: REMOVE_DEV_CARD,
     playerNumber,
     handIndex,
+  };
+}
+
+export function claimMonopolyForPlayer(
+  playerNumber: PlayerNumber,
+  resource: ResourceString
+): ClaimMonopolyAction {
+  return {
+    type: CLAIM_MONOPOLY,
+    playerNumber,
+    resource,
   };
 }

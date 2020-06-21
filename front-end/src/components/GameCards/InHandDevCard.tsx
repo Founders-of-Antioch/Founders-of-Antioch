@@ -15,6 +15,7 @@ import { Button } from "semantic-ui-react";
 import YOPSelection from "../DevCardModals/YOPSelection";
 import { DevCardRemovalPackage } from "../../../../types/SocketPackages";
 import { socket } from "../../App";
+import MonopolySelection from "../DevCardModals/MonopolySelection";
 
 const descriptionMap = {
   KNIGHT:
@@ -85,6 +86,13 @@ export default class InHandDevCard extends Component<CardProps, {}> {
     switch (code) {
       case "YOP":
         return <YOPSelection discardDevCard={this.selfDestructSequence} />;
+      case "MONOPOLY":
+        return (
+          <MonopolySelection
+            discardDevCard={this.selfDestructSequence}
+            inGamePlayerNumber={this.props.inGamePNum}
+          />
+        );
       case "VP":
         return <Button disabled>+1 VP</Button>;
       default:

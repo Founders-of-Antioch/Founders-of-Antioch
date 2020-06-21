@@ -16,7 +16,7 @@ export const ORE = "grey";
 export const WOOD = "green";
 // export const WOOD = "#8B4513";
 
-export const colorMap: { [index: string]: string } = {
+export const resColorMap: { [index: string]: string } = {
   wood: WOOD,
   brick: BRICK,
   wheat: WHEAT,

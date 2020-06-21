@@ -31,9 +31,9 @@ import {
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
   DevCardRemovalPackage,
+  ClaimMonopolyPackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
-import InHandDevCard from "./components/GameCards/InHandDevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
 
 // const unsubscribe =
@@ -286,6 +286,10 @@ export default class App extends React.Component<AppProps, UIState> {
 
     socket.on("removeDevCardUpdate", (pkg: DevCardRemovalPackage) => {
       this.props.removeDevelopmentCardFromHand(pkg.playerNumber, pkg.handIndex);
+    });
+
+    socket.on("monopolyClaimed", (pkg: ClaimMonopolyPackage) => {
+      this.props.claimMonopolyForPlayer(pkg.playerNumber, pkg.resource);
     });
   }
 
@@ -611,7 +615,11 @@ export default class App extends React.Component<AppProps, UIState> {
 
           {this.generateAllPlayerCards()}
 
-          {/* <InHandDevCard code={"YOP"} positionIndex={0} /> */}
+          {/* <InHandDevCard
+            inGamePNum={this.props.inGamePlayerNumber}
+            code={"MONOPOLY"}
+            positionIndex={0}
+          /> */}
           <DevCardHand />
 
           <VisibleActionButtonSet />

@@ -17,6 +17,7 @@ import {
   acquireDevelopmentCard,
   playerHasPlayedDC,
   removeDevelopmentCardFromHand,
+  claimMonopolyForPlayer,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
@@ -70,6 +71,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         declareDevelopmentCards,
         playerHasPlayedDC,
         removeDevelopmentCardFromHand,
+        claimMonopolyForPlayer,
       },
       dispatch
     ),

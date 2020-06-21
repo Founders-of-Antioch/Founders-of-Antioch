@@ -9,7 +9,7 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { colorMap } from "../../colors";
+import { resColorMap } from "../../colors";
 import { LIST_OF_RESOURCES } from "../../entities/Player";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
@@ -149,7 +149,7 @@ class ProposeTrade extends Component<ProposeTradeProps, PTState> {
               className="one wide"
               icon={resMap[currRes]}
               size="2x"
-              color={colorMap[currRes]}
+              color={resColorMap[currRes]}
             />
             <Form.Field className="five wide">
               <input

@@ -18,6 +18,7 @@ import {
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
   DevCardRemovalPackage,
+  ClaimMonopolyPackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -197,6 +198,10 @@ createConnection().then((connection) => {
 
     client.on("devCardRemoval", (pkg: DevCardRemovalPackage) => {
       gameManager.removeDevCard(pkg);
+    });
+
+    client.on("claimMonopoly", (pkg: ClaimMonopolyPackage) => {
+      gameManager.claimMonopoly(pkg);
     });
   });
 

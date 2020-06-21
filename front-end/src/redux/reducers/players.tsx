@@ -6,6 +6,7 @@ import {
   CHANGE_RESOURCE,
   GET_TOP_DEV_CARD,
   REMOVE_DEV_CARD,
+  CLAIM_MONOPOLY,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 import { PlayerNumber } from "../../../../types/Primitives";
@@ -109,6 +110,52 @@ export default function players(
       } else {
         return state;
       }
+    case CLAIM_MONOPOLY:
+      const listOfPlayerNumbers: Array<PlayerNumber> = [1, 2, 3, 4];
+      // Kinda fell on the TypeScript sword here
+      const resToGain = [...state.keys()].reduce((acc: number, currKey) => {
+        if (currKey !== action.playerNumber) {
+          const currPl = state.get(currKey);
+          if (currPl !== undefined) {
+            const getVal = currPl.resourceHand.get(action.resource);
+            if (getVal !== undefined) {
+              return acc + getVal;
+            } else {
+              return acc;
+            }
+          } else {
+            return acc;
+          }
+        } else {
+          return acc;
+        }
+      }, 0);
+
+      let newMonopolyMap = new Map<PlayerNumber, Player>();
+      for (const currPNum of listOfPlayerNumbers) {
+        const newMonoPlayer = new Player(currPNum);
+        const getMonoPlayer = state.get(currPNum);
+
+        if (getMonoPlayer !== undefined) {
+          newMonoPlayer.copyFromPlayer(getMonoPlayer);
+
+          if (currPNum === action.playerNumber) {
+            const currResVal = newMonoPlayer.resourceHand.get(action.resource);
+            if (currResVal !== undefined) {
+              newMonoPlayer.resourceHand.set(
+                action.resource,
+                currResVal + resToGain
+              );
+            }
+          } else {
+            newMonoPlayer.resourceHand.set(action.resource, 0);
+          }
+        }
+
+        newMonopolyMap.set(currPNum, newMonoPlayer);
+      }
+
+      return newMonopolyMap;
     default:
       return state;
   }

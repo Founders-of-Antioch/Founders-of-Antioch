@@ -7,6 +7,8 @@ import {
   ProposedTradeSocketPackage,
   AcquireDevCardPackage,
   DevCardRemovalPackage,
+  FoASocketPackage,
+  ClaimMonopolyPackage,
 } from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -95,9 +97,9 @@ export class Game {
     }
   }
 
-  broadcastEvent(emitFunction: (p: ServerPlayer) => void) {
+  broadcastEvent(eventName: string, pkg: FoASocketPackage) {
     for (const pl of this.listOfPlayers) {
-      emitFunction(pl);
+      pl.playerSocket.emit(eventName, pkg);
     }
   }
 
@@ -182,18 +184,6 @@ export class Game {
       if (idx + 1 !== tradePlayer) {
         currPl.playerSocket.emit("tradeClose", tradeIdx);
       }
-    });
-  }
-
-  broadcastDevCardUpdate(pkg: AcquireDevCardPackage) {
-    for (const pl of this.listOfPlayers) {
-      pl.playerSocket.emit("devCardUpdate", pkg);
-    }
-  }
-
-  broadcastDCRemovalUpdate(pkg: DevCardRemovalPackage) {
-    this.broadcastEvent((p: ServerPlayer) => {
-      p.playerSocket.emit("removeDevCardUpdate", pkg);
     });
   }
 }
@@ -325,7 +315,7 @@ export class GameManager {
     const getGame = this.mapOfGames.get(pkg.gameID);
 
     if (getGame) {
-      getGame.broadcastDevCardUpdate(pkg);
+      getGame.broadcastEvent("devCardUpdate", pkg);
     }
   }
 
@@ -333,7 +323,15 @@ export class GameManager {
     const getGame = this.mapOfGames.get(pkg.gameID);
 
     if (getGame) {
-      getGame.broadcastDCRemovalUpdate(pkg);
+      getGame.broadcastEvent("removeDevCardUpdate", pkg);
+    }
+  }
+
+  claimMonopoly(pkg: ClaimMonopolyPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+    console.log(1234);
+    if (getGame) {
+      getGame.broadcastEvent("monopolyClaimed", pkg);
     }
   }
 }
