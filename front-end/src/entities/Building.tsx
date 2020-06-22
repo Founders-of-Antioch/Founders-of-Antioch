@@ -1,6 +1,7 @@
 import { TileModel } from "./TileModel";
 import { PlayerNumber } from "../../../types/Primitives";
 import { BuildingProperties } from "../../../types/entities/Building";
+import { tilesPointIsOn } from "./TilePointHelper";
 
 export class Building implements BuildingProperties {
   boardXPos: number;
@@ -11,42 +12,8 @@ export class Building implements BuildingProperties {
 
   // Returns an array of TileModel representing the resources the building touches
   tilesBuildingIsOn(listOfTiles: Array<TileModel>) {
-    let adjTiles: Array<TileModel> = [];
-    // https://www.redblobgames.com/grids/hexagons/#neighbors
-    let directions = [
-      [1, 1],
-      [1, 0],
-      [0, -1],
-      [-1, -1],
-      [-1, 0],
-      [0, 1],
-    ];
-
-    // This filters out checking for any tiles that are not touching the building
-    directions = directions.filter((el, idx) => {
-      const checkOne = this.corner;
-      let checkTwo = checkOne - 1;
-      if (checkTwo === -1) {
-        checkTwo = 5;
-      }
-
-      return idx === checkOne || idx === checkTwo;
-    });
-    // Count the tile it is on as well
-    directions.push([0, 0]);
-
-    for (const currDirection of directions) {
-      const expecX = currDirection[0] + this.boardXPos;
-      const expecY = currDirection[1] + this.boardYPos;
-
-      for (const currTile of listOfTiles) {
-        if (currTile.boardXPos === expecX && currTile.boardYPos === expecY) {
-          adjTiles.push(currTile);
-        }
-      }
-    }
-
-    return adjTiles;
+    const { boardXPos, boardYPos, corner } = this;
+    return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
   }
 
   constructor(

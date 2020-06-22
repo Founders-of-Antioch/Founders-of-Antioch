@@ -35,6 +35,7 @@ import {
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
+import { areSamePoints, pointsAreOneApart } from "./entities/TilePointHelper";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -378,7 +379,10 @@ export default class App extends React.Component<AppProps, UIState> {
       inGamePlayerNumber,
       isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad,
+      boardToBePlayed,
     } = this.props;
+
+    const { listOfTiles } = boardToBePlayed;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
     const placing =
@@ -401,16 +405,26 @@ export default class App extends React.Component<AppProps, UIState> {
         for (; numRowsDone < numRows; y--) {
           cornerLoop: for (let corner = 0; corner <= 5; corner++) {
             // If there is already a building in the spot, don't highlight it
-            for (const pl of listOfPlayers.values()) {
-              for (const setl of pl.buildings) {
-                if (
-                  x === setl.boardXPos &&
-                  y === setl.boardYPos &&
-                  corner === setl.corner
-                ) {
-                  continue cornerLoop;
+            if (typeofHighlight !== "road") {
+              for (const pl of listOfPlayers.values()) {
+                for (const setl of pl.buildings) {
+                  const p1 = { boardXPos: x, boardYPos: y, corner };
+                  const p2 = {
+                    boardXPos: setl.boardXPos,
+                    boardYPos: setl.boardYPos,
+                    corner: setl.corner,
+                  };
+
+                  if (
+                    areSamePoints(listOfTiles, p1, p2) ||
+                    pointsAreOneApart(p1, p2)
+                  ) {
+                    continue cornerLoop;
+                  }
                 }
               }
+            } else {
+              // Roads
             }
 
             spots.push(

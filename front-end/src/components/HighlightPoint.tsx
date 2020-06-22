@@ -79,6 +79,8 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       this.props.tiles
     );
 
+    console.log(boardXPos, boardYPos, corner);
+
     this.props.isPlacingASettlement(false);
     this.props.isPlacingRoad(turnNumber <= 2);
   }
@@ -141,6 +143,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     return (
       <circle
+        id={`${this.props.boardXPos}-${this.props.boardYPos}-${this.props.corner}`}
         cx={x}
         cy={y}
         r={widthOfSVG / 100}
