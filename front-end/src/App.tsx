@@ -6,7 +6,6 @@ import Dice, { diceLength } from "./components/Dice";
 import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
-import HighlightPoint from "./components/HighlightPoint";
 import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
@@ -32,10 +31,11 @@ import {
   AcquireDevCardPackage,
   DevCardRemovalPackage,
   ClaimMonopolyPackage,
+  MoveRobberPackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
-import { areSamePoints, pointsAreOneApart } from "./entities/TilePointHelper";
+import HighlightSet from "./components/Highlighting/HighlightSet";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -292,6 +292,10 @@ export default class App extends React.Component<AppProps, UIState> {
     socket.on("monopolyClaimed", (pkg: ClaimMonopolyPackage) => {
       this.props.claimMonopolyForPlayer(pkg.playerNumber, pkg.resource);
     });
+
+    socket.on("robberUpdate", (pkg: MoveRobberPackage) => {
+      this.props.moveRobberTo(pkg.boardXPos, pkg.boardYPos);
+    });
   }
 
   processGetGame(game: {
@@ -369,83 +373,6 @@ export default class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  // Highlights the available places to put settlements
-  // TODD: Move most of this into it's own component
-  highlightSettlingSpaces(typeofHighlight: string) {
-    // const { isCurrentlyPlacingRoad } = this.state;
-    const {
-      listOfPlayers,
-      currentPersonPlaying,
-      inGamePlayerNumber,
-      isCurrentlyPlacingSettlement,
-      isCurrentlyPlacingRoad,
-      boardToBePlayed,
-    } = this.props;
-
-    const { listOfTiles } = boardToBePlayed;
-
-    const isTurn = currentPersonPlaying === inGamePlayerNumber;
-    const placing =
-      typeofHighlight === "road"
-        ? isCurrentlyPlacingRoad
-        : isCurrentlyPlacingSettlement;
-
-    if (isTurn && placing) {
-      const spots = [];
-      let keyForHighlights = 0;
-
-      for (let x = 2; x >= -2; x--) {
-        const numRows = 5 - Math.abs(x);
-        let y = 2;
-        if (x < 0) {
-          y -= Math.abs(x);
-        }
-
-        let numRowsDone = 0;
-        for (; numRowsDone < numRows; y--) {
-          cornerLoop: for (let corner = 0; corner <= 5; corner++) {
-            // If there is already a building in the spot, don't highlight it
-            if (typeofHighlight !== "road") {
-              for (const pl of listOfPlayers.values()) {
-                for (const setl of pl.buildings) {
-                  const p1 = { boardXPos: x, boardYPos: y, corner };
-                  const p2 = {
-                    boardXPos: setl.boardXPos,
-                    boardYPos: setl.boardYPos,
-                    corner: setl.corner,
-                  };
-
-                  if (
-                    areSamePoints(listOfTiles, p1, p2) ||
-                    pointsAreOneApart(p1, p2)
-                  ) {
-                    continue cornerLoop;
-                  }
-                }
-              }
-            } else {
-              // Roads
-            }
-
-            spots.push(
-              <HighlightPoint
-                key={keyForHighlights++}
-                boardXPos={x}
-                boardYPos={y}
-                corner={corner}
-                playerWhoSelected={inGamePlayerNumber}
-                typeOfHighlight={typeofHighlight}
-              />
-            );
-          }
-
-          numRowsDone++;
-        }
-      }
-      return spots;
-    }
-  }
-
   renderDice() {
     // Only render the dice if we're done with initial placements
     if (this.props.turnNumber > 2) {
@@ -455,16 +382,6 @@ export default class App extends React.Component<AppProps, UIState> {
           diceOneY={heightOfSVG / 2 - diceLength / 2}
         />
       );
-    }
-  }
-
-  highlightNeededSpaces() {
-    // const { isCurrentlyPlacingRoad } = this.state;
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.props;
-    if (isCurrentlyPlacingRoad) {
-      return this.highlightSettlingSpaces("road");
-    } else if (isCurrentlyPlacingSettlement) {
-      return this.highlightSettlingSpaces("settlement");
     }
   }
 
@@ -621,7 +538,8 @@ export default class App extends React.Component<AppProps, UIState> {
               <Board />
               {this.renderDice()}
               {this.endTurnButton()}
-              {this.highlightNeededSpaces()}
+              {/* {this.highlightNeededSpaces()} */}
+              <HighlightSet />
               {this.renderRoads()}
               {this.renderBuildings()}
             </svg>

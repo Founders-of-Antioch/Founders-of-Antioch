@@ -1,25 +1,37 @@
 import React, { Component } from "react";
-import { WHITE } from "../colors";
-import { xValofCorner, yValofCorner } from "./Settlement";
-import { widthOfSVG, hexRadius } from "./Board";
-import { socket } from "../App";
-import { isPlacingASettlement, isPlacingRoad } from "../redux/Actions";
-import { FoAppState } from "../redux/reducers/reducers";
-import { TileModel } from "../entities/TileModel";
-import { connect, ConnectedProps } from "react-redux";
-import { Dispatch, bindActionCreators } from "redux";
-import { PlayerNumber } from "../../../types/Primitives";
-import { ResourceChangePackage } from "../../../types/SocketPackages";
+import { PlayerNumber } from "../../../../types/Primitives";
+import { TileModel } from "../../entities/TileModel";
+import { FoAppState } from "../../redux/reducers/reducers";
+import { bindActionCreators } from "redux";
+import { ConnectedProps, connect } from "react-redux";
+import { socket } from "../../App";
+import {
+  ResourceChangePackage,
+  MoveRobberPackage,
+} from "../../../../types/SocketPackages";
+import {
+  xValofCorner,
+  yValofCorner,
+  centerTileX,
+  centerTileY,
+} from "../Settlement";
+import { hexRadius, widthOfSVG } from "../Board";
+import { WHITE, PLAYER_COLORS } from "../../colors";
+import { Dispatch } from "redux";
+import {
+  isPlacingASettlement,
+  isPlacingRoad,
+  playerIsPlacingRobber,
+} from "../../redux/Actions";
 
-// Highlights a point where a player can build a settlement
+export type HighlightType = "settlement" | "road" | "robber";
 
 type Props = {
   boardXPos: number;
   boardYPos: number;
   corner: number;
   playerWhoSelected: PlayerNumber;
-  // Should be 'road' or 'settlement'
-  typeOfHighlight: string;
+  typeOfHighlight: HighlightType;
 };
 
 type HPProps = {
@@ -41,6 +53,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     {
       isPlacingASettlement,
       isPlacingRoad,
+      playerIsPlacingRobber,
     },
     dispatch
   );
@@ -55,8 +68,11 @@ type HighlightProps = ReduxProps & Props;
 class HighlightPoint extends Component<HighlightProps, {}> {
   constructor(props: HighlightProps) {
     super(props);
+
     this.selectedASettlementSpot = this.selectedASettlementSpot.bind(this);
     this.selectedARoadSpot = this.selectedARoadSpot.bind(this);
+    this.selectedARobberSpot = this.selectedARobberSpot.bind(this);
+    this.getOnClick = this.getOnClick.bind(this);
   }
 
   // TODO: Replace with actual gameID
@@ -78,8 +94,6 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       playerWhoSelected,
       this.props.tiles
     );
-
-    console.log(boardXPos, boardYPos, corner);
 
     this.props.isPlacingASettlement(false);
     this.props.isPlacingRoad(turnNumber <= 2);
@@ -118,13 +132,44 @@ class HighlightPoint extends Component<HighlightProps, {}> {
     }
   }
 
+  // TODO: Fix GameID
+  selectedARobberSpot() {
+    const { boardXPos, boardYPos } = this.props;
+    const pkg: MoveRobberPackage = {
+      gameID: "1",
+      boardXPos,
+      boardYPos,
+    };
+
+    this.props.playerIsPlacingRobber(false);
+    socket.emit("moveRobber", pkg);
+  }
+
+  getOnClick() {
+    switch (this.props.typeOfHighlight) {
+      case "settlement":
+        return this.selectedASettlementSpot;
+      case "road":
+        return this.selectedARoadSpot;
+      case "robber":
+        return this.selectedARobberSpot;
+      default:
+        return () => {
+          console.log("On click for highlighted component not found");
+        };
+    }
+  }
+
   render() {
     const { boardXPos, boardYPos, corner, typeOfHighlight } = this.props;
 
+    const isRoad = typeOfHighlight === "road";
+    const isRobber = typeOfHighlight === "robber";
+
+    console.log(typeOfHighlight, corner);
+
     let x = xValofCorner(boardXPos, boardYPos, corner);
     let y = yValofCorner(boardYPos, corner);
-
-    const isRoad = typeOfHighlight === "road";
 
     // Special garbo adjustment if it's a road highlight
     if (isRoad) {
@@ -139,21 +184,28 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       } else {
         y = y + (hexRadius / 2) * sign;
       }
+    } else if (isRobber) {
+      x = centerTileX(boardXPos, boardYPos);
+      y = centerTileY(boardYPos);
+    } else {
+      // Settlement
     }
+
+    const playerRed = PLAYER_COLORS.get(2);
 
     return (
       <circle
-        id={`${this.props.boardXPos}-${this.props.boardYPos}-${this.props.corner}`}
+        id="doughy"
         cx={x}
         cy={y}
         r={widthOfSVG / 100}
-        stroke={WHITE}
+        stroke={isRobber ? playerRed : WHITE}
         // TODO: Change to dynamic
         strokeWidth={2}
         cursor="pointer"
-        fill="white"
+        fill={isRobber ? playerRed : WHITE}
         fillOpacity={0.25}
-        onClick={isRoad ? this.selectedARoadSpot : this.selectedASettlementSpot}
+        onClick={this.getOnClick()}
       />
     );
   }

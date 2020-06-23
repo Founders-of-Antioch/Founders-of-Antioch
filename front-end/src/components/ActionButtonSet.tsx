@@ -58,6 +58,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuySettlement() {
     return (
+      !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("wood") >= 1 &&
@@ -69,6 +70,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuyCity() {
     return (
+      !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("ore") >= 3 &&
@@ -78,6 +80,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuyRoad() {
     return (
+      !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("wood") >= 1 &&
@@ -88,6 +91,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   canBuyDevCard() {
     const { devCardPile, hasRolled } = this.props;
     return (
+      !this.props.isPlacingRobber &&
       devCardPile.length > 0 &&
       hasRolled &&
       this.isTurn() &&

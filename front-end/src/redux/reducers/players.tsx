@@ -59,7 +59,12 @@ export default function players(
         for (const currBuilding of targetPlayer.buildings) {
           for (const currTile of currBuilding.touchingTiles) {
             if (action.diceSum === currTile.counter) {
-              targetPlayer.addResource(currTile.resource);
+              if (
+                action.robber.boardXPos !== currTile.boardXPos ||
+                action.robber.boardYPos !== currTile.boardYPos
+              ) {
+                targetPlayer.addResource(currTile.resource);
+              }
             }
           }
         }

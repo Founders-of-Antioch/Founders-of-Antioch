@@ -9,6 +9,7 @@ import {
   DevCardRemovalPackage,
   FoASocketPackage,
   ClaimMonopolyPackage,
+  MoveRobberPackage,
 } from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -329,9 +330,17 @@ export class GameManager {
 
   claimMonopoly(pkg: ClaimMonopolyPackage) {
     const getGame = this.mapOfGames.get(pkg.gameID);
-    console.log(1234);
+
     if (getGame) {
       getGame.broadcastEvent("monopolyClaimed", pkg);
+    }
+  }
+
+  moveRobber(pkg: MoveRobberPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("robberUpdate", pkg);
     }
   }
 }

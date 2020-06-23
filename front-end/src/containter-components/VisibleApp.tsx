@@ -18,6 +18,7 @@ import {
   playerHasPlayedDC,
   removeDevelopmentCardFromHand,
   claimMonopolyForPlayer,
+  moveRobberTo,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
@@ -36,6 +37,7 @@ type AppState = {
   turnNumber: number;
   isCurrentlyPlacingRoad: boolean;
   hasRolled: boolean;
+  isCurrentlyPlacingRobber: boolean;
 };
 
 function mapStateToProps(store: FoAppState): AppState {
@@ -49,6 +51,7 @@ function mapStateToProps(store: FoAppState): AppState {
     turnNumber: store.turnNumber,
     isCurrentlyPlacingRoad: store.isCurrentlyPlacingRoad,
     hasRolled: store.hasRolled,
+    isCurrentlyPlacingRobber: store.isCurrentlyPlacingRobber,
   };
 }
 
@@ -72,6 +75,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         playerHasPlayedDC,
         removeDevelopmentCardFromHand,
         claimMonopolyForPlayer,
+        moveRobberTo,
       },
       dispatch
     ),

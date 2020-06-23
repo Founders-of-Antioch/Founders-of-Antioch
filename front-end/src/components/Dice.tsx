@@ -2,14 +2,14 @@ import React from "react";
 import { socket } from "../App";
 import { widthOfSVG } from "./Board";
 import {
-  HasRolledAction,
   hasRolledTheDice,
   collectResources,
   evaluateTurn,
+  playerIsPlacingRobber,
 } from "../redux/Actions";
 import { connect, ConnectedProps } from "react-redux";
 import { FoAppState } from "../redux/reducers/reducers";
-import { Dispatch } from "redux";
+import { Dispatch, bindActionCreators } from "redux";
 import { PlayerNumber } from "../../../types/Primitives";
 
 export type DiceNumber = 1 | 2 | 3 | 4 | 5 | 6;
@@ -33,21 +33,14 @@ function mapStateToProps(store: FoAppState): DiceState {
   };
 }
 
-function mapDispatch(dispatch: Dispatch) {
-  return {
-    rolled: (didRoll: boolean): HasRolledAction => {
-      return dispatch(hasRolledTheDice(didRoll));
-    },
-    collectResourcesFromRoll: (diceSum: number) => {
-      return dispatch(collectResources(diceSum));
-    },
-    evaluateTurn: () => {
-      return dispatch(evaluateTurn());
-    },
-  };
+function mapDispatchToProps(dispatch: Dispatch) {
+  return bindActionCreators(
+    { hasRolledTheDice, collectResources, evaluateTurn, playerIsPlacingRobber },
+    dispatch
+  );
 }
 
-const connector = connect(mapStateToProps, mapDispatch);
+const connector = connect(mapStateToProps, mapDispatchToProps);
 
 type PropsFromRedux = ConnectedProps<typeof connector>;
 type DiceProps = PropsFromRedux & {
@@ -76,7 +69,7 @@ class Dice extends React.Component<DiceProps, UIState> {
     socket.on("diceUpdate", (d1: DiceNumber, d2: DiceNumber) => {
       // Once the backend tells all the players what someone rolled, then
       // give the appropriate resources
-      this.props.collectResourcesFromRoll(d1 + d2);
+      this.props.collectResources(d1 + d2);
       this.setState({
         ...this.state,
         diceOneValue: d1,
@@ -92,18 +85,22 @@ class Dice extends React.Component<DiceProps, UIState> {
       const diceOne = Math.floor(Math.random() * 6) + 1;
       const diceTwo = Math.floor(Math.random() * 6) + 1;
 
-      // The 'as' is dangerous, but see here
-      // https://stackoverflow.com/questions/62272938/interfacing-random-numbers-in-typescrip
-      this.setState({
-        diceOneValue: diceOne as DiceNumber,
-        diceTwoValue: diceTwo as DiceNumber,
-      });
+      // // The 'as' is dangerous, but see here
+      // // https://stackoverflow.com/questions/62272938/interfacing-random-numbers-in-typescrip
+      // this.setState({
+      //   diceOneValue: diceOne as DiceNumber,
+      //   diceTwoValue: diceTwo as DiceNumber,
+      // });
 
       // TODO: Fix to have actual gameID
       // Tells the backend what the player has rolled
       socket.emit("roll", diceOne, diceTwo, "1");
 
-      this.props.rolled(true);
+      if (diceOne + diceTwo === 7) {
+        this.props.playerIsPlacingRobber(true);
+      }
+
+      this.props.hasRolledTheDice(true);
       this.props.evaluateTurn();
     }
   }

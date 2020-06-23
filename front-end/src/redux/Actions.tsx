@@ -1,7 +1,7 @@
 import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TileModel";
 import { Building } from "../entities/Building";
-import { SeedState } from "./reducers/reducers";
+import { SeedState, RobberCoordinates } from "./reducers/reducers";
 import {
   PlayerNumber,
   ResourceString,
@@ -36,6 +36,8 @@ export const HAS_PLAYED_DEV_CARD = "HAS_PLAYED_DEV_CARD";
 // Remove card from player hand
 export const REMOVE_DEV_CARD = "REMOVED_DEV_CARD";
 export const CLAIM_MONOPOLY = "CLAIM_MONOPOLY";
+export const IS_PLACING_ROBBER = "IS_PLACING_ROBBER";
+export const MOVE_ROBBER = "MOVE_ROBBER";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -56,6 +58,7 @@ interface PlaceRoadAction {
 interface CollectResourcesAction {
   type: typeof COLLECT_RESOURCES;
   diceSum: number;
+  robber: RobberCoordinates;
 }
 
 interface ChangeResourceAction {
@@ -129,6 +132,7 @@ export interface EvaluateTurnAction {
     turnNumber: number;
     isCurrentlyPlacingRoad: boolean;
     isCurrentlyPlacingSettlement: boolean;
+    isCurrentlyPlacingRobber: boolean;
   };
 }
 
@@ -158,6 +162,17 @@ export type DevCardActions = DeclareDevCardsAction | TakeTopDevCardAction;
 export interface HasPlayedDevCardAction {
   type: typeof HAS_PLAYED_DEV_CARD;
   hasPlayed: boolean;
+}
+
+export interface IsPlacingRobberAction {
+  type: typeof IS_PLACING_ROBBER;
+  isPlacingRobber: boolean;
+}
+
+export interface MoveRobberAction {
+  type: typeof MOVE_ROBBER;
+  boardXPos: number;
+  boardYPos: number;
 }
 
 /** Action creators */
@@ -200,7 +215,12 @@ export function nextTurn(turnNumber: number): NextTurnAction {
 // it'll send a mass update to all players,
 // including itself. So don't create double counts!
 export function collectResources(diceSum: number): CollectResourcesAction {
-  return { type: COLLECT_RESOURCES, diceSum };
+  const currState = store.getState();
+  return {
+    type: COLLECT_RESOURCES,
+    diceSum,
+    robber: currState.robberCoordinates,
+  };
 }
 
 export function declareBoard(
@@ -232,6 +252,7 @@ export function evaluateTurn(): EvaluateTurnAction {
       turnNumber: currState.turnNumber,
       isCurrentlyPlacingSettlement: currState.isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad: currState.isCurrentlyPlacingRoad,
+      isCurrentlyPlacingRobber: currState.isCurrentlyPlacingRobber,
     },
   };
 }
@@ -326,5 +347,25 @@ export function claimMonopolyForPlayer(
     type: CLAIM_MONOPOLY,
     playerNumber,
     resource,
+  };
+}
+
+export function playerIsPlacingRobber(
+  isPlacingRobber: boolean
+): IsPlacingRobberAction {
+  return {
+    type: IS_PLACING_ROBBER,
+    isPlacingRobber,
+  };
+}
+
+export function moveRobberTo(
+  boardXPos: number,
+  boardYPos: number
+): MoveRobberAction {
+  return {
+    type: MOVE_ROBBER,
+    boardXPos,
+    boardYPos,
   };
 }

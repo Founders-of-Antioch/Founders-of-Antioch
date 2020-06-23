@@ -31,9 +31,16 @@ export type ClaimMonopolyPackage = {
   resource: ResourceString;
 };
 
+export type MoveRobberPackage = {
+  gameID: string;
+  boardXPos: number;
+  boardYPos: number;
+};
+
 export type FoASocketPackage =
   | ResourceChangePackage
   | ProposedTradeSocketPackage
   | AcquireDevCardPackage
   | DevCardRemovalPackage
-  | ClaimMonopolyPackage;
+  | ClaimMonopolyPackage
+  | MoveRobberPackage;

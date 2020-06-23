@@ -19,6 +19,7 @@ type ActionButtonSetProps = {
   hasRolled: boolean;
   turnNumber: number;
   devCardPile: Array<DevCard>;
+  isPlacingRobber: boolean;
 };
 
 function mapStateToProps(store: FoAppState): ActionButtonSetProps {
@@ -29,6 +30,7 @@ function mapStateToProps(store: FoAppState): ActionButtonSetProps {
     hasRolled: store.hasRolled,
     turnNumber: store.turnNumber,
     devCardPile: store.devCards,
+    isPlacingRobber: store.isCurrentlyPlacingRobber,
   };
 }
 
