@@ -1,8 +1,8 @@
 import React from "react";
 // import './App.css';
-import Board, { widthOfSVG, heightOfSVG } from "./components/Board";
+import Board, { widthOfSVG } from "./components/Board";
 import test from "./tester.jpg";
-import Dice, { diceLength } from "./components/Dice";
+import Dice from "./components/Dice";
 import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
@@ -373,18 +373,6 @@ export default class App extends React.Component<AppProps, UIState> {
     }
   }
 
-  renderDice() {
-    // Only render the dice if we're done with initial placements
-    if (this.props.turnNumber > 2) {
-      return (
-        <Dice
-          diceOneX={(widthOfSVG * 4) / 5}
-          diceOneY={heightOfSVG / 2 - diceLength / 2}
-        />
-      );
-    }
-  }
-
   renderRoads() {
     const { listOfPlayers } = this.props;
     let roadArr = [];
@@ -536,7 +524,7 @@ export default class App extends React.Component<AppProps, UIState> {
                 height="100%"
               />
               <Board />
-              {this.renderDice()}
+              <Dice />
               {this.endTurnButton()}
               {/* {this.highlightNeededSpaces()} */}
               <HighlightSet />

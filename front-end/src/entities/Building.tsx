@@ -11,7 +11,7 @@ export class Building implements BuildingProperties {
   touchingTiles: Array<TileModel>;
 
   // Returns an array of TileModel representing the resources the building touches
-  tilesBuildingIsOn(listOfTiles: Array<TileModel>) {
+  private tilesBuildingIsOn(listOfTiles: Array<TileModel>) {
     const { boardXPos, boardYPos, corner } = this;
     return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
   }

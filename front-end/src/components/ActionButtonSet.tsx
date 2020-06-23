@@ -47,17 +47,46 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     }
   }
 
+  getNumberOfRoads() {
+    const { playersByID, inGamePlayerNumber } = this.props;
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer) {
+      return currPlayer.roads.length;
+    } else {
+      return -1;
+    }
+  }
+
+  getNumberOfSettlements() {
+    const { playersByID, inGamePlayerNumber } = this.props;
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer) {
+      // Will have to change with cities added
+      return currPlayer.buildings.length;
+    } else {
+      return -1;
+    }
+  }
+
   isTurn() {
     const { inGamePlayerNumber, currentPersonPlaying } = this.props;
     return inGamePlayerNumber === currentPersonPlaying;
   }
 
   canTrade() {
-    return this.isTurn() && this.props.hasRolled && this.props.turnNumber > 2;
+    return (
+      !this.props.isPlacingRobber &&
+      this.isTurn() &&
+      this.props.hasRolled &&
+      this.props.turnNumber > 2
+    );
   }
 
   canBuySettlement() {
     return (
+      !(this.getNumberOfSettlements() > 5) &&
       !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
@@ -80,6 +109,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuyRoad() {
     return (
+      !(this.getNumberOfSettlements() > 15) &&
       !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&

@@ -60,9 +60,7 @@ class HighlightSet extends Component<RedProps, {}> {
     } = this.props;
 
     if (isCurrentlyPlacingRoad) {
-      const val = this.makeHighlightSet("road");
-      // console.log(val);
-      return val;
+      return this.makeHighlightSet("road");
     } else if (isCurrentlyPlacingSettlement) {
       return this.makeHighlightSet("settlement");
     } else if (isCurrentlyPlacingRobber) {
@@ -179,9 +177,7 @@ class HighlightSet extends Component<RedProps, {}> {
   }
 
   render() {
-    const val = this.highlightNeededSpaces();
-    console.log(val);
-    return val;
+    return this.highlightNeededSpaces();
   }
 }
 

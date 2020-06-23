@@ -23,6 +23,7 @@ import {
   isPlacingRoad,
   playerIsPlacingRobber,
 } from "../../redux/Actions";
+import { Player } from "../../entities/Player";
 
 export type HighlightType = "settlement" | "road" | "robber";
 
@@ -38,6 +39,7 @@ type HPProps = {
   tiles: Array<TileModel>;
   turnNumber: number;
   inGamePlayerNumber: PlayerNumber;
+  playersByID: Map<PlayerNumber, Player>;
 };
 
 function mapStateToProps(store: FoAppState): HPProps {
@@ -45,6 +47,7 @@ function mapStateToProps(store: FoAppState): HPProps {
     tiles: store.boardToBePlayed.listOfTiles,
     turnNumber: store.turnNumber,
     inGamePlayerNumber: store.inGamePlayerNumber,
+    playersByID: store.playersByID,
   };
 }
 
@@ -134,12 +137,29 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   // TODO: Fix GameID
   selectedARobberSpot() {
-    const { boardXPos, boardYPos } = this.props;
+    const { boardXPos, boardYPos, playersByID } = this.props;
     const pkg: MoveRobberPackage = {
       gameID: "1",
       boardXPos,
       boardYPos,
     };
+
+    let availablePlayersToStealFrom: Array<PlayerNumber> = [];
+    PlayerLoop: for (const currPlayer of playersByID.values()) {
+      for (const currBuild of currPlayer.buildings) {
+        for (const currTile of currBuild.touchingTiles) {
+          if (
+            currTile.boardXPos === boardXPos &&
+            currTile.boardYPos === boardYPos
+          ) {
+            availablePlayersToStealFrom.push(currPlayer.playerNum);
+            continue PlayerLoop;
+          }
+        }
+      }
+    }
+
+    console.log(availablePlayersToStealFrom);
 
     this.props.playerIsPlacingRobber(false);
     socket.emit("moveRobber", pkg);
@@ -165,8 +185,6 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     const isRoad = typeOfHighlight === "road";
     const isRobber = typeOfHighlight === "robber";
-
-    console.log(typeOfHighlight, corner);
 
     let x = xValofCorner(boardXPos, boardYPos, corner);
     let y = yValofCorner(boardYPos, corner);
