@@ -97,6 +97,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     );
   }
 
+  // TODO: Add a get number of cities and check if > 4 here
   canBuyCity() {
     return (
       !this.props.isPlacingRobber &&

@@ -8,6 +8,7 @@ import {
   REMOVE_DEV_CARD,
   CLAIM_MONOPOLY,
   STEAL_FROM,
+  PLAY_KNIGHT_CARD,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 import { PlayerNumber } from "../../../../types/Primitives";
@@ -190,7 +191,19 @@ export default function players(
       } else {
         return state;
       }
+    case PLAY_KNIGHT_CARD:
+      const getKnightPlayer = state.get(action.player);
+      const newKnightPlayer = new Player(action.player);
 
+      if (getKnightPlayer !== undefined) {
+        newKnightPlayer.copyFromPlayer(getKnightPlayer);
+
+        newKnightPlayer.knights++;
+
+        return new Map([...state, [action.player, newKnightPlayer]]);
+      } else {
+        return state;
+      }
     default:
       return state;
   }

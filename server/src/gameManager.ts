@@ -11,6 +11,7 @@ import {
   ClaimMonopolyPackage,
   MoveRobberPackage,
   StealFromPackage,
+  KnightUpdatePackage,
 } from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -350,6 +351,14 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastEvent("stealUpdate", pkg);
+    }
+  }
+
+  updateKnights(pkg: KnightUpdatePackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("newKnight", pkg);
     }
   }
 }

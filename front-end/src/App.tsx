@@ -33,6 +33,7 @@ import {
   ClaimMonopolyPackage,
   MoveRobberPackage,
   StealFromPackage,
+  KnightUpdatePackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
@@ -300,6 +301,10 @@ export default class App extends React.Component<AppProps, UIState> {
 
     socket.on("stealUpdate", (pkg: StealFromPackage) => {
       this.props.stealFromPlayer(pkg.stealee, pkg.stealer, pkg.resource);
+    });
+
+    socket.on("newKnight", (pkg: KnightUpdatePackage) => {
+      this.props.playAKnightDevCard(pkg.player);
     });
   }
 

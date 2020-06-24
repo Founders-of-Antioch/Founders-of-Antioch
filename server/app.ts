@@ -21,6 +21,7 @@ import {
   ClaimMonopolyPackage,
   MoveRobberPackage,
   StealFromPackage,
+  KnightUpdatePackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -211,8 +212,11 @@ createConnection().then((connection) => {
     });
 
     client.on("stealFrom", (pkg: StealFromPackage) => {
-      console.log("made it");
       gameManager.stealFrom(pkg);
+    });
+
+    client.on("knightUpdate", (pkg: KnightUpdatePackage) => {
+      gameManager.updateKnights(pkg);
     });
   });
 

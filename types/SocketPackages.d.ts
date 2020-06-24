@@ -44,6 +44,11 @@ export type StealFromPackage = {
   resource: string;
 };
 
+export type KnightUpdatePackage = {
+  gameID: string;
+  player: PlayerNumber;
+};
+
 export type FoASocketPackage =
   | ResourceChangePackage
   | ProposedTradeSocketPackage
@@ -51,4 +56,5 @@ export type FoASocketPackage =
   | DevCardRemovalPackage
   | ClaimMonopolyPackage
   | MoveRobberPackage
-  | StealFromPackage;
+  | StealFromPackage
+  | KnightUpdatePackage;

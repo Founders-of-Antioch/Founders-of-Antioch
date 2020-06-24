@@ -9,13 +9,21 @@ import {
   faTractor,
   faMoneyBillWave,
 } from "@fortawesome/free-solid-svg-icons";
-import { DevCardCode, PlayerNumber } from "../../../../types/Primitives";
+import { DevCardCode } from "../../../../types/Primitives";
 import { PLAYER_COLORS, WHEAT } from "../../colors";
 import { Button } from "semantic-ui-react";
 import YOPSelection from "../DevCardModals/YOPSelection";
-import { DevCardRemovalPackage } from "../../../../types/SocketPackages";
+import {
+  DevCardRemovalPackage,
+  KnightUpdatePackage,
+} from "../../../../types/SocketPackages";
 import { socket } from "../../App";
 import MonopolySelection from "../DevCardModals/MonopolySelection";
+import { FoAppState } from "../../redux/reducers/reducers";
+import { Dispatch, bindActionCreators } from "redux";
+import { playerIsPlacingRobber } from "../../redux/Actions";
+import { ConnectedProps, connect } from "react-redux";
+import PlayCardButton from "../DevCardModals/PlayCardButton";
 
 const descriptionMap = {
   KNIGHT:
@@ -31,14 +39,41 @@ const descriptionMap = {
 type CardProps = {
   code: DevCardCode;
   positionIndex: number;
-  inGamePNum: PlayerNumber;
 };
 
-export default class InHandDevCard extends Component<CardProps, {}> {
-  constructor(props: CardProps) {
+function mapStateToProps(store: FoAppState) {
+  return {
+    inGamePNum: store.inGamePlayerNumber,
+  };
+}
+
+function mapDispatchToProps(dispatch: Dispatch) {
+  return bindActionCreators({ playerIsPlacingRobber }, dispatch);
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type TotalProps = ConnectedProps<typeof connector> & CardProps;
+
+class InHandDevCard extends Component<TotalProps, {}> {
+  constructor(props: TotalProps) {
     super(props);
 
     this.selfDestructSequence = this.selfDestructSequence.bind(this);
+    this.playKnightCard = this.playKnightCard.bind(this);
+  }
+
+  playKnightCard() {
+    this.props.playerIsPlacingRobber(true);
+    this.selfDestructSequence();
+
+    // TODO: Update GameID
+    const pkg: KnightUpdatePackage = {
+      gameID: "1",
+      player: this.props.inGamePNum,
+    };
+
+    socket.emit("knightUpdate", pkg);
   }
 
   codeToName(): string {
@@ -96,7 +131,7 @@ export default class InHandDevCard extends Component<CardProps, {}> {
       case "VP":
         return <Button disabled>+1 VP</Button>;
       default:
-        return <Button>Play</Button>;
+        return <PlayCardButton openModalFunction={this.playKnightCard} />;
     }
   }
 
@@ -170,3 +205,5 @@ export default class InHandDevCard extends Component<CardProps, {}> {
     );
   }
 }
+
+export default connector(InHandDevCard);

@@ -40,6 +40,7 @@ export const IS_PLACING_ROBBER = "IS_PLACING_ROBBER";
 export const MOVE_ROBBER = "MOVE_ROBBER";
 export const IS_STEALING = "IS_STEALING";
 export const STEAL_FROM = "STEAL_FROM";
+export const PLAY_KNIGHT_CARD = "PLAY_KNIGHT_CARD";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -95,6 +96,11 @@ interface StealFromAction {
   resource: string;
 }
 
+interface PlayKnightCardAction {
+  type: typeof PLAY_KNIGHT_CARD;
+  player: PlayerNumber;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
@@ -103,7 +109,8 @@ export type PlayerAction =
   | GetDevCardAction
   | RemoveDevCardAction
   | ClaimMonopolyAction
-  | StealFromAction;
+  | StealFromAction
+  | PlayKnightCardAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -408,5 +415,12 @@ export function stealFromPlayer(
     stealee,
     stealer,
     resource,
+  };
+}
+
+export function playAKnightDevCard(player: PlayerNumber): PlayKnightCardAction {
+  return {
+    type: PLAY_KNIGHT_CARD,
+    player,
   };
 }
