@@ -5,6 +5,7 @@ import { Player } from "../entities/Player";
 import { FoAppState } from "../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import { PlayerNumber } from "../../../types/Primitives";
+import { PLAYER_COLORS } from "../colors";
 
 // TODO: Get rid of this and replace with CSS
 export const playerCardWidth = widthOfSVG / 7.5;
@@ -54,7 +55,15 @@ class PlayerCard extends React.Component<PlayerCardProps, {}> {
           top: `${playerModel.playerNum !== inGamePlayerNumber ? 0 : null}`,
         }}
       >
-        <div style={{ backgroundColor: "#444444" }} className="ui card">
+        <div
+          style={{
+            backgroundColor: "#444444",
+            border: `.5em solid ${PLAYER_COLORS.get(
+              this.props.playerModel.playerNum
+            )}`,
+          }}
+          className="ui card"
+        >
           <div className="content">
             <p style={{ color: "#bebebe" }} className="header">
               Player {playerModel.playerNum}

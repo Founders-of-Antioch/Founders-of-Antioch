@@ -1,5 +1,5 @@
-import React, { Component, ChangeEvent } from "react";
-import { Modal, Button, ButtonProps } from "semantic-ui-react";
+import React, { Component } from "react";
+import { Modal, Button } from "semantic-ui-react";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import { Dispatch, bindActionCreators } from "redux";

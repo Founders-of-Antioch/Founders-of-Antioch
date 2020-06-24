@@ -109,7 +109,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuyRoad() {
     return (
-      !(this.getNumberOfSettlements() > 15) &&
+      !(this.getNumberOfRoads() > 15) &&
       !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
