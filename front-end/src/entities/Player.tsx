@@ -1,6 +1,8 @@
 import { Building } from "./Building";
 import { RoadModel } from "./RoadModel";
-import { PlayerNumber, ResourceString } from "../redux/Actions";
+import { ResourceString, PlayerNumber } from "../../../types/Primitives";
+import { PlayerProperties } from "../../../types/entities/Player";
+import DevCard from "./DevCard";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -11,16 +13,16 @@ export const LIST_OF_RESOURCES: Array<ResourceString> = [
   "wheat",
 ];
 
-export class Player {
+export class Player implements PlayerProperties {
   playerNum: PlayerNumber;
   victoryPoints: number;
   buildings: Array<Building>;
   roads: Array<RoadModel>;
   knights: number;
-  // TODO: Change key type to ResourceString
+  // TODO: Change to resource string
+  // Can't atm because sending this over packages doesn't seem to work
   resourceHand: Map<string, number>;
-  // cards
-  // dev cards
+  devCardHand: Array<DevCard>;
 
   constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
@@ -29,6 +31,7 @@ export class Player {
     this.roads = [];
     this.knights = 0;
     this.resourceHand = new Map();
+    this.devCardHand = [];
 
     for (const res of LIST_OF_RESOURCES) {
       this.resourceHand.set(res, 0);
@@ -42,6 +45,7 @@ export class Player {
     this.roads = [...p.roads];
     this.knights = p.knights;
     this.resourceHand = new Map([...p.resourceHand]);
+    this.devCardHand = [...p.devCardHand];
   }
 
   addResource(res: ResourceString) {
@@ -71,6 +75,32 @@ export class Player {
       return stored;
     } else {
       return -1;
+    }
+  }
+
+  // Gets, but does not take, a random resource
+  getRandomResource() {
+    let arrOfRes = [];
+
+    for (const currRes of this.resourceHand.keys()) {
+      const currVal = this.resourceHand.get(currRes);
+      if (currVal !== 0 && currVal !== undefined) {
+        for (let i = 0; i < currVal; i++) {
+          arrOfRes.push(currRes);
+        }
+      }
+    }
+
+    const randomResource =
+      arrOfRes[Math.floor(Math.random() * arrOfRes.length)];
+
+    return randomResource;
+  }
+
+  stealResource(res: string) {
+    const curr = this.resourceHand.get(res);
+    if (curr !== undefined && curr !== 0) {
+      this.resourceHand.set(res, curr - 1);
     }
   }
 }

@@ -13,12 +13,14 @@ export default function (
         turnNumber,
         isCurrentlyPlacingRoad,
         isCurrentlyPlacingSettlement,
+        isCurrentlyPlacingRobber,
       } = action.slice;
 
       return (
         (hasRolled || turnNumber <= 2) &&
         !isCurrentlyPlacingSettlement &&
-        !isCurrentlyPlacingRoad
+        !isCurrentlyPlacingRoad &&
+        !isCurrentlyPlacingRobber
       );
     default:
       return state;

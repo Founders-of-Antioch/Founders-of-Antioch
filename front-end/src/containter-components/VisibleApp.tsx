@@ -1,6 +1,5 @@
 import { FoAppState } from "../redux/reducers/reducers";
 import {
-  PlayerNumber,
   placeSettlement,
   placeRoad,
   declareBoard,
@@ -13,12 +12,21 @@ import {
   hasRolledTheDice,
   evaluateTurn,
   changeResource,
+  declareDevelopmentCards,
+  takeTopDevelopmentCardOff,
+  acquireDevelopmentCard,
+  playerHasPlayedDC,
+  removeDevelopmentCardFromHand,
+  claimMonopolyForPlayer,
+  moveRobberTo,
+  stealFromPlayer,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { Dispatch, bindActionCreators } from "redux";
 import { connect, ConnectedProps } from "react-redux";
 import App from "../App";
+import { PlayerNumber, DevCardCode } from "../../../types/Primitives";
 
 type AppState = {
   listOfPlayers: Map<PlayerNumber, Player>;
@@ -30,6 +38,7 @@ type AppState = {
   turnNumber: number;
   isCurrentlyPlacingRoad: boolean;
   hasRolled: boolean;
+  isCurrentlyPlacingRobber: boolean;
 };
 
 function mapStateToProps(store: FoAppState): AppState {
@@ -43,27 +52,40 @@ function mapStateToProps(store: FoAppState): AppState {
     turnNumber: store.turnNumber,
     isCurrentlyPlacingRoad: store.isCurrentlyPlacingRoad,
     hasRolled: store.hasRolled,
+    isCurrentlyPlacingRobber: store.isCurrentlyPlacingRobber,
   };
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
-  return bindActionCreators(
-    {
-      placeSettlement,
-      placeRoad,
-      declareBoard,
-      declarePlayerNumber,
-      possibleToEndTurn,
-      isPlacingASettlement,
-      isPlacingRoad,
-      nextTurn,
-      changePlayer,
-      hasRolledTheDice,
-      evaluateTurn,
-      changeResource,
+  return {
+    ...bindActionCreators(
+      {
+        placeSettlement,
+        placeRoad,
+        declareBoard,
+        declarePlayerNumber,
+        possibleToEndTurn,
+        isPlacingASettlement,
+        isPlacingRoad,
+        nextTurn,
+        changePlayer,
+        hasRolledTheDice,
+        evaluateTurn,
+        changeResource,
+        declareDevelopmentCards,
+        playerHasPlayedDC,
+        removeDevelopmentCardFromHand,
+        claimMonopolyForPlayer,
+        moveRobberTo,
+        stealFromPlayer,
+      },
+      dispatch
+    ),
+    getPlayerADevCard: (p: PlayerNumber, c: DevCardCode) => {
+      dispatch(acquireDevelopmentCard(p, c));
+      dispatch(takeTopDevelopmentCardOff());
     },
-    dispatch
-  );
+  };
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

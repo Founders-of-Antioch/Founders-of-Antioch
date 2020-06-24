@@ -16,6 +16,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     this.roadClick = this.roadClick.bind(this);
     this.toggleTradeMenu = this.toggleTradeMenu.bind(this);
     this.closeMenu = this.closeMenu.bind(this);
+    this.purchaseDevCard = this.purchaseDevCard.bind(this);
   }
 
   closeMenu() {
@@ -46,17 +47,47 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     }
   }
 
+  getNumberOfRoads() {
+    const { playersByID, inGamePlayerNumber } = this.props;
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer) {
+      return currPlayer.roads.length;
+    } else {
+      return -1;
+    }
+  }
+
+  getNumberOfSettlements() {
+    const { playersByID, inGamePlayerNumber } = this.props;
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer) {
+      // Will have to change with cities added
+      return currPlayer.buildings.length;
+    } else {
+      return -1;
+    }
+  }
+
   isTurn() {
     const { inGamePlayerNumber, currentPersonPlaying } = this.props;
     return inGamePlayerNumber === currentPersonPlaying;
   }
 
   canTrade() {
-    return this.isTurn() && this.props.hasRolled && this.props.turnNumber > 2;
+    return (
+      !this.props.isPlacingRobber &&
+      this.isTurn() &&
+      this.props.hasRolled &&
+      this.props.turnNumber > 2
+    );
   }
 
   canBuySettlement() {
     return (
+      !(this.getNumberOfSettlements() > 5) &&
+      !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("wood") >= 1 &&
@@ -68,6 +99,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuyCity() {
     return (
+      !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("ore") >= 3 &&
@@ -77,6 +109,8 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuyRoad() {
     return (
+      !(this.getNumberOfRoads() > 15) &&
+      !this.props.isPlacingRobber &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("wood") >= 1 &&
@@ -85,8 +119,11 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   }
 
   canBuyDevCard() {
+    const { devCardPile, hasRolled } = this.props;
     return (
-      this.props.hasRolled &&
+      !this.props.isPlacingRobber &&
+      devCardPile.length > 0 &&
+      hasRolled &&
       this.isTurn() &&
       this.getResAmount("sheep") >= 1 &&
       this.getResAmount("ore") >= 1 &&
@@ -96,6 +133,20 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   roadClick() {
     this.props.isPlacingRoad(true);
+  }
+
+  purchaseDevCard() {
+    const { inGamePlayerNumber, devCardPile } = this.props;
+
+    if (devCardPile.length !== 0) {
+      const topCode = devCardPile[devCardPile.length - 1].code;
+      if (topCode !== undefined) {
+        this.props.getCurrentPlayerADevelopmentCard(
+          inGamePlayerNumber,
+          topCode
+        );
+      }
+    }
   }
 
   render() {
@@ -134,6 +185,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
             <Button
               color="yellow"
               icon="copy"
+              onClick={this.purchaseDevCard}
               disabled={!this.canBuyDevCard()}
             />
             <Button

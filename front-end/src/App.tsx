@@ -1,31 +1,43 @@
 import React from "react";
 // import './App.css';
-import Board, { widthOfSVG, heightOfSVG } from "./components/Board";
+import Board, { widthOfSVG } from "./components/Board";
 import test from "./tester.jpg";
-import Dice, { diceLength } from "./components/Dice";
+import Dice from "./components/Dice";
 import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
-import HighlightPoint from "./components/HighlightPoint";
 import { Building } from "./entities/Building";
 import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { LIST_OF_RESOURCES } from "./entities/Player";
 import { ResourceCard } from "./components/GameCards/ResourceCard";
-import { TileModel } from "./entities/TIleModel";
-import { PlayerNumber, ResourceString } from "./redux/Actions";
+import { TileModel } from "./entities/TileModel";
 import store from "./redux/store";
 import { SeedState } from "./redux/reducers/reducers";
 import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
-import { ProposedTradeSocketPackage } from "./components/Trading/ProposeTrade";
-import TradeProposed, {
-  ResourceChangePackage,
-} from "./components/Trading/TradeProposed";
+import TradeProposed from "./components/Trading/TradeProposed";
 import { Port } from "./components/Port";
-import DevelopmentCard from "./components/GameCards/DevelopmentCard";
+import {
+  DevCardCode,
+  ResourceString,
+  PlayerNumber,
+} from "../../types/Primitives";
+import {
+  ResourceChangePackage,
+  ProposedTradeSocketPackage,
+  AcquireDevCardPackage,
+  DevCardRemovalPackage,
+  ClaimMonopolyPackage,
+  MoveRobberPackage,
+  StealFromPackage,
+} from "../../types/SocketPackages";
+import DevCard from "./entities/DevCard";
+import DevCardHand from "./components/GameCards/DevCardHand";
+import HighlightSet from "./components/Highlighting/HighlightSet";
+import StealingModal from "./components/Robber/StealingModal";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -51,7 +63,6 @@ export default class App extends React.Component<AppProps, UIState> {
     };
 
     // Probably change to arrow functions to we don't have to do this
-    this.endTurn = this.endTurn.bind(this);
     this.endTurn = this.endTurn.bind(this);
     this.processBuildingUpdate = this.processBuildingUpdate.bind(this);
     this.processTurnUpdate = this.processTurnUpdate.bind(this);
@@ -250,7 +261,6 @@ export default class App extends React.Component<AppProps, UIState> {
     });
 
     socket.on("tradeProposed", (pkg: ProposedTradeSocketPackage) => {
-      console.log(pkg);
       this.setState({
         showTrades: true,
         trades: [...this.state.trades, pkg],
@@ -267,12 +277,37 @@ export default class App extends React.Component<AppProps, UIState> {
         );
       }
     });
+
+    socket.on("devCardUpdate", (pkg: AcquireDevCardPackage) => {
+      this.props.getPlayerADevCard(pkg.playerNumber, pkg.code);
+    });
+
+    socket.on("tradeClose", (tIndex: number) => {
+      this.closeTradeWindow(tIndex);
+    });
+
+    socket.on("removeDevCardUpdate", (pkg: DevCardRemovalPackage) => {
+      this.props.removeDevelopmentCardFromHand(pkg.playerNumber, pkg.handIndex);
+    });
+
+    socket.on("monopolyClaimed", (pkg: ClaimMonopolyPackage) => {
+      this.props.claimMonopolyForPlayer(pkg.playerNumber, pkg.resource);
+    });
+
+    socket.on("robberUpdate", (pkg: MoveRobberPackage) => {
+      this.props.moveRobberTo(pkg.boardXPos, pkg.boardYPos);
+    });
+
+    socket.on("stealUpdate", (pkg: StealFromPackage) => {
+      this.props.stealFromPlayer(pkg.stealee, pkg.stealer, pkg.resource);
+    });
   }
 
   processGetGame(game: {
     currentPersonPlaying: number;
     counters: Array<string>;
     resources: Array<ResourceString>;
+    devCards: Array<DevCardCode>;
   }) {
     if (this.state.isLoading) {
       let tileList: Array<TileModel> = [];
@@ -299,12 +334,18 @@ export default class App extends React.Component<AppProps, UIState> {
         }
       }
 
+      let devCardArr = [];
+      for (const currCode of game.devCards) {
+        devCardArr.push(new DevCard(currCode));
+      }
+
       // TODO: Fix GameID
       this.setState({
         ...this.state,
         isLoading: false,
       });
       this.props.declareBoard(tileList, "1");
+      this.props.declareDevelopmentCards(devCardArr);
     }
   }
 
@@ -315,6 +356,7 @@ export default class App extends React.Component<AppProps, UIState> {
     socket.emit("endTurn", String(this.props.boardToBePlayed.gameID));
     this.props.hasRolledTheDice(false);
     this.props.possibleToEndTurn(false);
+    this.props.playerHasPlayedDC(false);
   }
 
   // Returns the end turn button component
@@ -333,92 +375,6 @@ export default class App extends React.Component<AppProps, UIState> {
           height={50}
         />
       );
-    }
-  }
-
-  // Highlights the available places to put settlements
-  // TODD: Move most of this into it's own component
-  highlightSettlingSpaces(typeofHighlight: string) {
-    // const { isCurrentlyPlacingRoad } = this.state;
-    const {
-      listOfPlayers,
-      currentPersonPlaying,
-      inGamePlayerNumber,
-      isCurrentlyPlacingSettlement,
-      isCurrentlyPlacingRoad,
-    } = this.props;
-
-    const isTurn = currentPersonPlaying === inGamePlayerNumber;
-    const placing =
-      typeofHighlight === "road"
-        ? isCurrentlyPlacingRoad
-        : isCurrentlyPlacingSettlement;
-
-    if (isTurn && placing) {
-      const spots = [];
-      let keyForHighlights = 0;
-
-      for (let x = 2; x >= -2; x--) {
-        const numRows = 5 - Math.abs(x);
-        let y = 2;
-        if (x < 0) {
-          y -= Math.abs(x);
-        }
-
-        let numRowsDone = 0;
-        for (; numRowsDone < numRows; y--) {
-          cornerLoop: for (let corner = 0; corner <= 5; corner++) {
-            // If there is already a building in the spot, don't highlight it
-            for (const pl of listOfPlayers.values()) {
-              for (const setl of pl.buildings) {
-                if (
-                  x === setl.boardXPos &&
-                  y === setl.boardYPos &&
-                  corner === setl.corner
-                ) {
-                  continue cornerLoop;
-                }
-              }
-            }
-
-            spots.push(
-              <HighlightPoint
-                key={keyForHighlights++}
-                boardXPos={x}
-                boardYPos={y}
-                corner={corner}
-                playerWhoSelected={inGamePlayerNumber}
-                typeOfHighlight={typeofHighlight}
-              />
-            );
-          }
-
-          numRowsDone++;
-        }
-      }
-      return spots;
-    }
-  }
-
-  renderDice() {
-    // Only render the dice if we're done with initial placements
-    if (this.props.turnNumber > 2) {
-      return (
-        <Dice
-          diceOneX={(widthOfSVG * 4) / 5}
-          diceOneY={heightOfSVG / 2 - diceLength / 2}
-        />
-      );
-    }
-  }
-
-  highlightNeededSpaces() {
-    // const { isCurrentlyPlacingRoad } = this.state;
-    const { isCurrentlyPlacingSettlement, isCurrentlyPlacingRoad } = this.props;
-    if (isCurrentlyPlacingRoad) {
-      return this.highlightSettlingSpaces("road");
-    } else if (isCurrentlyPlacingSettlement) {
-      return this.highlightSettlingSpaces("settlement");
     }
   }
 
@@ -573,9 +529,9 @@ export default class App extends React.Component<AppProps, UIState> {
                 height="100%"
               />
               <Board />
-              {this.renderDice()}
+              <Dice />
               {this.endTurnButton()}
-              {this.highlightNeededSpaces()}
+              <HighlightSet />
               {this.renderRoads()}
               {this.renderBuildings()}
             </svg>
@@ -583,17 +539,19 @@ export default class App extends React.Component<AppProps, UIState> {
 
           {this.generateAllPlayerCards()}
 
-          <VisibleActionButtonSet />
-          {/* <TradeProposed
-            getResources={["wheat", "brick", "ore", "sheep", "wood"]}
-            getAmounts={[1, 1, 1, 1, 1]}
-            giveResources={["wheat", "brick", "ore", "sheep", "wood"]}
-            giveAmounts={[1, 1, 1, 1, 1]}
+          {/* <InHandDevCard
+            inGamePNum={this.props.inGamePlayerNumber}
+            code={"MONOPOLY"}
+            positionIndex={0}
           /> */}
+          <DevCardHand />
+
+          <VisibleActionButtonSet />
+
+          <StealingModal />
+
           {this.renderTrades()}
 
-          {/* {this.constructPorts()} */}
-          {/* <DevelopmentCard /> */}
           {this.generateResourceCards()}
         </div>
       );

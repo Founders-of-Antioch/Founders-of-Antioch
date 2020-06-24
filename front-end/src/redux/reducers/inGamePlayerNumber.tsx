@@ -1,8 +1,5 @@
-import {
-  PlayerNumber,
-  DeclarePlayerNumAction,
-  DECLARE_PLAYER_NUM,
-} from "../Actions";
+import { DeclarePlayerNumAction, DECLARE_PLAYER_NUM } from "../Actions";
+import { PlayerNumber } from "../../../../types/Primitives";
 
 export default function inGamePlayerNumber(
   state: PlayerNumber = -1,

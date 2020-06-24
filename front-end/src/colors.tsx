@@ -1,4 +1,3 @@
-import { PlayerNumber } from "./redux/Actions";
 import {
   faHorse,
   faBreadSlice,
@@ -7,6 +6,7 @@ import {
   faTree,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { PlayerNumber } from "../../types/Primitives";
 
 // Tile colors
 export const WHEAT = "#fec40d";
@@ -16,7 +16,7 @@ export const ORE = "grey";
 export const WOOD = "green";
 // export const WOOD = "#8B4513";
 
-export const colorMap: { [index: string]: string } = {
+export const resColorMap: { [index: string]: string } = {
   wood: WOOD,
   brick: BRICK,
   wheat: WHEAT,
@@ -24,7 +24,7 @@ export const colorMap: { [index: string]: string } = {
   ore: ORE,
 };
 
-export const resMap: { [index: string]: IconDefinition } = {
+export const resIconMap: { [index: string]: IconDefinition } = {
   sheep: faHorse,
   wheat: faBreadSlice,
   ore: faGem,

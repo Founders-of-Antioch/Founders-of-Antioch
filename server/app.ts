@@ -11,54 +11,18 @@ import { ClientManager } from "./src/clientManager";
 import { GameManager } from "./src/gameManager";
 import { Socket } from "socket.io";
 import { ServerPlayer } from "./src/Player";
-import { Player } from "../front-end/src/entities/Player";
 import { ServerBuilding } from "./src/Building";
 import { Road } from "./src/entity/Road";
-import { SeedState } from "../front-end/src/redux/reducers/reducers";
-import { TileModel } from "../front-end/src/entities/TIleModel";
-import { PlayerNumber } from "../front-end/src/redux/Actions";
-import { Building } from "../front-end/src/entities/Building";
-import { ProposedTradeSocketPackage } from "../front-end/src/components/Trading/ProposeTrade";
-import { ResourceChangePackage } from "../front-end/src/components/Trading/TradeProposed";
-
-// Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
-function shuffle(a: Array<string>): Array<string> {
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function randResources() {
-  let resourcesSequence = ["desert"];
-  for (let i = 0; i < 4; i++) {
-    resourcesSequence = resourcesSequence
-      .concat("wood")
-      .concat("sheep")
-      .concat("wheat");
-  }
-  for (let i = 0; i < 3; i++) {
-    resourcesSequence = resourcesSequence.concat("brick").concat("ore");
-  }
-
-  return shuffle(resourcesSequence);
-}
-
-function randCounters() {
-  let counterSequence = ["2", "12"];
-  for (let i = 0; i < 2; i++) {
-    for (let j = 3; j < 12; j++) {
-      if (j === 7) {
-        continue;
-      } else {
-        counterSequence.push(String(j));
-      }
-    }
-  }
-
-  return shuffle(counterSequence);
-}
+import {
+  ResourceChangePackage,
+  ProposedTradeSocketPackage,
+  AcquireDevCardPackage,
+  DevCardRemovalPackage,
+  ClaimMonopolyPackage,
+  MoveRobberPackage,
+  StealFromPackage,
+} from "../types/SocketPackages";
+import { PlayerNumber } from "../types/Primitives";
 
 // make typeorm connection
 createConnection().then((connection) => {
@@ -119,6 +83,7 @@ createConnection().then((connection) => {
           currentPersonPlaying: g.currentPersonPlaying,
           counters: g.counters,
           resources: g.resources,
+          devCards: g.devCardCodes,
         });
       } else {
         console.log("Game not found. Response not emitted");
@@ -163,56 +128,56 @@ createConnection().then((connection) => {
       }
     );
 
-    client.on(
-      "getSeedState",
-      (listOfTiles: Array<TileModel>): SeedState => {
-        const listOfBuildings = [
-          new Building(0, 0, 0, 1, listOfTiles),
-          new Building(0, 0, 2, 1, listOfTiles),
-          new Building(1, 1, 2, 2, listOfTiles),
-          new Building(2, 0, 5, 2, listOfTiles),
-          new Building(-2, -2, 0, 3, listOfTiles),
-          new Building(-1, -1, 2, 3, listOfTiles),
-          new Building(0, 2, 2, 4, listOfTiles),
-          new Building(0, 0, 4, 4, listOfTiles),
-        ];
+    // client.on(
+    //   "getSeedState",
+    //   (listOfTiles: Array<TileModel>): SeedState => {
+    //     const listOfBuildings = [
+    //       new Building(0, 0, 0, 1, listOfTiles),
+    //       new Building(0, 0, 2, 1, listOfTiles),
+    //       new Building(1, 1, 2, 2, listOfTiles),
+    //       new Building(2, 0, 5, 2, listOfTiles),
+    //       new Building(-2, -2, 0, 3, listOfTiles),
+    //       new Building(-1, -1, 2, 3, listOfTiles),
+    //       new Building(0, 2, 2, 4, listOfTiles),
+    //       new Building(0, 0, 4, 4, listOfTiles),
+    //     ];
 
-        // If someone knows a way around the 'as', please feel free to fix it!
-        let playersArray: Array<Player> = [];
-        for (let i = 1; i <= 4; i++) {
-          const playerToAdd = new Player(i as PlayerNumber);
+    //     // If someone knows a way around the 'as', please feel free to fix it!
+    //     let playersArray: Array<Player> = [];
+    //     for (let i = 1; i <= 4; i++) {
+    //       const playerToAdd = new Player(i as PlayerNumber);
 
-          const b1 = listOfBuildings.pop();
-          const b2 = listOfBuildings.pop();
-          if (b1 !== undefined && b2 !== undefined) {
-            playerToAdd.buildings.push(b1);
-            playerToAdd.buildings.push(b2);
-          }
+    //       const b1 = listOfBuildings.pop();
+    //       const b2 = listOfBuildings.pop();
+    //       if (b1 !== undefined && b2 !== undefined) {
+    //         playerToAdd.buildings.push(b1);
+    //         playerToAdd.buildings.push(b2);
+    //       }
 
-          playersArray.push(playerToAdd);
-        }
+    //       playersArray.push(playerToAdd);
+    //     }
 
-        const currentPersonPlaying: PlayerNumber = 1;
-        const inGamePlayerNumber: PlayerNumber = 1;
+    //     const currentPersonPlaying: PlayerNumber = 1;
+    //     const inGamePlayerNumber: PlayerNumber = 1;
 
-        const retState: SeedState = {
-          currentPersonPlaying,
-          inGamePlayerNumber,
-          hasRolled: false,
-          turnNumber: 3,
-          boardToBePlayed: {
-            listOfTiles,
-            gameID: "1",
-          },
-          playersArray,
-        };
+    //     const retState: SeedState = {
+    //       currentPersonPlaying,
+    //       inGamePlayerNumber,
+    //       hasRolled: false,
+    //       turnNumber: 3,
+    //       boardToBePlayed: {
+    //         listOfTiles,
+    //         gameID: "1",
+    //       },
+    //       playersArray,
+    //     };
 
-        console.log("Sending Seed");
-        io.emit("sendSeed", retState);
+    //     console.log("Sending Seed");
+    //     io.emit("sendSeed", retState);
 
-        return retState;
-      }
-    );
+    //     return retState;
+    //   }
+    // );
 
     client.on("proposedTrade", (pkg: ProposedTradeSocketPackage) => {
       gameManager.proposeTrade(pkg);
@@ -220,6 +185,34 @@ createConnection().then((connection) => {
 
     client.on("resourceChange", (pkg: ResourceChangePackage) => {
       gameManager.changeResources(pkg);
+    });
+
+    client.on(
+      "tradeAccepted",
+      (tradeIndex: number, tradePlayer: PlayerNumber, gameID: string) => {
+        gameManager.acceptTrade(tradeIndex, tradePlayer, gameID);
+      }
+    );
+
+    client.on("acquireDevelopmentCard", (pkg: AcquireDevCardPackage) => {
+      gameManager.acquireDevCard(pkg);
+    });
+
+    client.on("devCardRemoval", (pkg: DevCardRemovalPackage) => {
+      gameManager.removeDevCard(pkg);
+    });
+
+    client.on("claimMonopoly", (pkg: ClaimMonopolyPackage) => {
+      gameManager.claimMonopoly(pkg);
+    });
+
+    client.on("moveRobber", (pkg: MoveRobberPackage) => {
+      gameManager.moveRobber(pkg);
+    });
+
+    client.on("stealFrom", (pkg: StealFromPackage) => {
+      console.log("made it");
+      gameManager.stealFrom(pkg);
     });
   });
 
@@ -229,8 +222,8 @@ createConnection().then((connection) => {
   //Make a new game - returns the board
   app.post("/games", async function (req: Request, res: Response) {
     let boardForGame = new Board();
-    boardForGame.resources = randResources();
-    boardForGame.counters = randCounters();
+    // boardForGame.resources = randResources();
+    // boardForGame.counters = randCounters();
     boardForGame.gameID = -1;
     boardForGame = await boardRepository.save(boardForGame);
 

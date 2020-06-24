@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import { Button, Card } from "semantic-ui-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { colorMap, resMap } from "../../colors";
-import { PlayerNumber } from "../../redux/Actions";
+import { resColorMap, resIconMap } from "../../colors";
+import { PlayerNumber } from "../../../../types/Primitives";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { connect } from "react-redux";
+import { ResourceChangePackage } from "../../../../types/SocketPackages";
 
 type TradeProps = {
   getResources: { [index: string]: number };
@@ -13,12 +14,6 @@ type TradeProps = {
   playerTrading: PlayerNumber;
   tradeIndex: number;
   closeWindowCB: (idx: number) => void;
-};
-
-export type ResourceChangePackage = {
-  playerNumber: PlayerNumber;
-  resourceDeltaMap: { [index: string]: number };
-  gameID: string;
 };
 
 type ExtraProps = {
@@ -52,9 +47,9 @@ class TradeProposed extends Component<TradeProposedProps, {}> {
         <div key={key++}>
           <span className="date">{currAmount + " " + currRes}</span>
           <FontAwesomeIcon
-            icon={resMap[currRes]}
+            icon={resIconMap[currRes]}
             size="2x"
-            color={colorMap[currRes]}
+            color={resColorMap[currRes]}
           />
         </div>
       );
@@ -102,7 +97,12 @@ class TradeProposed extends Component<TradeProposedProps, {}> {
 
     socket.emit("resourceChange", otherGetPkg);
     socket.emit("resourceChange", otherGivePkg);
-    this.props.closeWindowCB(this.props.tradeIndex);
+    socket.emit(
+      "tradeAccepted",
+      this.props.tradeIndex,
+      this.props.playerTrading,
+      "1"
+    );
   }
 
   decline() {

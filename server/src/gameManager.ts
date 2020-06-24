@@ -1,11 +1,20 @@
 import { ServerPlayer } from "./Player";
 import { ServerBuilding } from "./Building";
 import { Road } from "./entity/Road";
-import { ProposedTradeSocketPackage } from "../../front-end/src/components/Trading/ProposeTrade";
-import { ResourceChangePackage } from "../../front-end/src/components/Trading/TradeProposed";
+import { DevCardCode, PlayerNumber } from "../../types/Primitives";
+import {
+  ResourceChangePackage,
+  ProposedTradeSocketPackage,
+  AcquireDevCardPackage,
+  DevCardRemovalPackage,
+  FoASocketPackage,
+  ClaimMonopolyPackage,
+  MoveRobberPackage,
+  StealFromPackage,
+} from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
-function shuffle(a: Array<string>): Array<string> {
+function shuffle<T>(a: Array<T>): Array<T> {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
@@ -43,6 +52,26 @@ function randCounters() {
   return shuffle(counterSequence);
 }
 
+function randDevCards() {
+  let arr: Array<DevCardCode> = [];
+
+  for (let i = 0; i < 14; i++) {
+    arr.push("KNIGHT");
+
+    if (i < 5) {
+      arr.push("VP");
+    }
+
+    if (i < 2) {
+      arr.push("YOP");
+      arr.push("MONOPOLY");
+      arr.push("ROADS");
+    }
+  }
+
+  return shuffle(arr);
+}
+
 export class Game {
   listOfPlayers: Array<ServerPlayer>;
   currentPersonPlaying: number;
@@ -50,6 +79,7 @@ export class Game {
   resources: Array<string>;
   // Number that changes every time all four players have gone
   currentTurnNumber: number;
+  devCardCodes: Array<DevCardCode>;
 
   constructor() {
     this.listOfPlayers = [];
@@ -57,6 +87,7 @@ export class Game {
     this.counters = randCounters();
     this.resources = randResources();
     this.currentTurnNumber = 1;
+    this.devCardCodes = randDevCards();
   }
 
   addPlayer(p: ServerPlayer): boolean {
@@ -65,6 +96,12 @@ export class Game {
     } else {
       this.listOfPlayers = this.listOfPlayers.concat(p);
       return true;
+    }
+  }
+
+  broadcastEvent(eventName: string, pkg: FoASocketPackage) {
+    for (const pl of this.listOfPlayers) {
+      pl.playerSocket.emit(eventName, pkg);
     }
   }
 
@@ -138,8 +175,16 @@ export class Game {
 
   broadcastResourceUpdate(pkg: ResourceChangePackage) {
     this.listOfPlayers.forEach((currPl, idx) => {
-      if (idx + 1 === pkg.playerNumber) {
-        currPl.playerSocket.emit("resourceUpdate", pkg);
+      // if (idx + 1 === pkg.playerNumber) {
+      currPl.playerSocket.emit("resourceUpdate", pkg);
+      // }
+    });
+  }
+
+  broadcastTradeAccepted(tradeIdx: number, tradePlayer: PlayerNumber) {
+    this.listOfPlayers.forEach((currPl, idx) => {
+      if (idx + 1 !== tradePlayer) {
+        currPl.playerSocket.emit("tradeClose", tradeIdx);
       }
     });
   }
@@ -244,14 +289,6 @@ export class GameManager {
     }
   }
 
-  addResources(res: Array<string>, pNum: number, gameID: string) {
-    const getGame = this.mapOfGames.get(gameID);
-
-    if (getGame) {
-      getGame.listOfPlayers[pNum - 1].addResources;
-    }
-  }
-
   proposeTrade(pkg: ProposedTradeSocketPackage) {
     const getGame = this.mapOfGames.get(pkg.gameID);
 
@@ -265,6 +302,54 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastResourceUpdate(pkg);
+    }
+  }
+
+  acceptTrade(tI: number, pl: PlayerNumber, gameID: string) {
+    const getGame = this.mapOfGames.get(gameID);
+
+    if (getGame) {
+      getGame.broadcastTradeAccepted(tI, pl);
+    }
+  }
+
+  acquireDevCard(pkg: AcquireDevCardPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("devCardUpdate", pkg);
+    }
+  }
+
+  removeDevCard(pkg: DevCardRemovalPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("removeDevCardUpdate", pkg);
+    }
+  }
+
+  claimMonopoly(pkg: ClaimMonopolyPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("monopolyClaimed", pkg);
+    }
+  }
+
+  moveRobber(pkg: MoveRobberPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("robberUpdate", pkg);
+    }
+  }
+
+  stealFrom(pkg: StealFromPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("stealUpdate", pkg);
     }
   }
 }

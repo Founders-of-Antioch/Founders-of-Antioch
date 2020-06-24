@@ -1,8 +1,14 @@
 import { RoadModel } from "../entities/RoadModel";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { Building } from "../entities/Building";
-import { SeedState } from "./reducers/reducers";
+import { SeedState, RobberCoordinates } from "./reducers/reducers";
+import {
+  PlayerNumber,
+  ResourceString,
+  DevCardCode,
+} from "../../../types/Primitives";
 import store from "./store";
+import DevCard from "../entities/DevCard";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -18,25 +24,27 @@ export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
 export const EVALUATE_TURN = "EVALUATE_TURN";
-export const BUY_ROAD = "BUY_ROAD";
 // Changes the amount of resource in a player's hand
 export const CHANGE_RESOURCE = "CHANGE_RESOURCE";
+export const DECLARE_DEV_CARDS = "DELCARE_DEV_CARDS";
+// Pops off the state list
+export const TAKE_TOP_DEV_CARD = "TAKE_TOP_DEV_CARD";
+// Puts it into the players hand
+export const GET_TOP_DEV_CARD = "GET_TOP_DEV_CARD";
+// Prevents playing more than one in a turn
+export const HAS_PLAYED_DEV_CARD = "HAS_PLAYED_DEV_CARD";
+// Remove card from player hand
+export const REMOVE_DEV_CARD = "REMOVED_DEV_CARD";
+export const CLAIM_MONOPOLY = "CLAIM_MONOPOLY";
+export const IS_PLACING_ROBBER = "IS_PLACING_ROBBER";
+export const MOVE_ROBBER = "MOVE_ROBBER";
+export const IS_STEALING = "IS_STEALING";
+export const STEAL_FROM = "STEAL_FROM";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
   playerNum: PlayerNumber;
 }
-
-// -1 For when the have not joined yet and are waiting for the backend
-export type PlayerNumber = 1 | 2 | 3 | 4 | -1;
-
-export type ResourceString =
-  | "desert"
-  | "wood"
-  | "brick"
-  | "ore"
-  | "sheep"
-  | "wheat";
 
 // TODO: Migrate to just take in 'Building' instead of 4 params
 interface PlaceSettlementAction {
@@ -52,11 +60,7 @@ interface PlaceRoadAction {
 interface CollectResourcesAction {
   type: typeof COLLECT_RESOURCES;
   diceSum: number;
-}
-
-interface BuyRoadAction {
-  type: typeof BUY_ROAD;
-  playerNumber: PlayerNumber;
+  robber: RobberCoordinates;
 }
 
 interface ChangeResourceAction {
@@ -66,12 +70,40 @@ interface ChangeResourceAction {
   amount: number;
 }
 
+interface GetDevCardAction {
+  type: typeof GET_TOP_DEV_CARD;
+  playerNumber: PlayerNumber;
+  cardCode: DevCardCode;
+}
+
+interface RemoveDevCardAction {
+  type: typeof REMOVE_DEV_CARD;
+  playerNumber: PlayerNumber;
+  handIndex: number;
+}
+
+interface ClaimMonopolyAction {
+  type: typeof CLAIM_MONOPOLY;
+  playerNumber: PlayerNumber;
+  resource: ResourceString;
+}
+
+interface StealFromAction {
+  type: typeof STEAL_FROM;
+  stealee: PlayerNumber;
+  stealer: PlayerNumber;
+  resource: string;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
   | CollectResourcesAction
-  | BuyRoadAction
-  | ChangeResourceAction;
+  | ChangeResourceAction
+  | GetDevCardAction
+  | RemoveDevCardAction
+  | ClaimMonopolyAction
+  | StealFromAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -110,6 +142,7 @@ export interface EvaluateTurnAction {
     turnNumber: number;
     isCurrentlyPlacingRoad: boolean;
     isCurrentlyPlacingSettlement: boolean;
+    isCurrentlyPlacingRobber: boolean;
   };
 }
 
@@ -123,6 +156,39 @@ export interface IsPlacingSettlementAction {
 export interface IsPlacingRoadAction {
   type: typeof IS_PLACING_ROAD;
   isOrIsnt: boolean;
+}
+
+interface DeclareDevCardsAction {
+  type: typeof DECLARE_DEV_CARDS;
+  listOfCards: Array<DevCard>;
+}
+
+interface TakeTopDevCardAction {
+  type: typeof TAKE_TOP_DEV_CARD;
+}
+
+export type DevCardActions = DeclareDevCardsAction | TakeTopDevCardAction;
+
+export interface HasPlayedDevCardAction {
+  type: typeof HAS_PLAYED_DEV_CARD;
+  hasPlayed: boolean;
+}
+
+export interface IsPlacingRobberAction {
+  type: typeof IS_PLACING_ROBBER;
+  isPlacingRobber: boolean;
+}
+
+export interface MoveRobberAction {
+  type: typeof MOVE_ROBBER;
+  boardXPos: number;
+  boardYPos: number;
+}
+
+export interface IsStealingAction {
+  type: typeof IS_STEALING;
+  playerIsStealing: boolean;
+  availableToSteal: Array<PlayerNumber>;
 }
 
 /** Action creators */
@@ -165,7 +231,12 @@ export function nextTurn(turnNumber: number): NextTurnAction {
 // it'll send a mass update to all players,
 // including itself. So don't create double counts!
 export function collectResources(diceSum: number): CollectResourcesAction {
-  return { type: COLLECT_RESOURCES, diceSum };
+  const currState = store.getState();
+  return {
+    type: COLLECT_RESOURCES,
+    diceSum,
+    robber: currState.robberCoordinates,
+  };
 }
 
 export function declareBoard(
@@ -197,6 +268,7 @@ export function evaluateTurn(): EvaluateTurnAction {
       turnNumber: currState.turnNumber,
       isCurrentlyPlacingSettlement: currState.isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad: currState.isCurrentlyPlacingRoad,
+      isCurrentlyPlacingRobber: currState.isCurrentlyPlacingRobber,
     },
   };
 }
@@ -217,13 +289,6 @@ export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
   };
 }
 
-export function buyRoad(playerNumber: PlayerNumber): BuyRoadAction {
-  return {
-    type: BUY_ROAD,
-    playerNumber,
-  };
-}
-
 export function changeResource(
   playerNumber: PlayerNumber,
   resource: ResourceString,
@@ -237,4 +302,111 @@ export function changeResource(
   };
 }
 
-// export type FoActionTypes = ChangePlayerAction | PlaceSettlementAction;
+export function declareDevelopmentCards(
+  listOfCards: Array<DevCard>
+): DeclareDevCardsAction {
+  return {
+    type: DECLARE_DEV_CARDS,
+    listOfCards,
+  };
+}
+
+/**
+ * NOTE: The next two action creators (dev card ones) should only be used
+ * in the action button set when clicking on the dev card button
+ *
+ * This removes it from the state pile
+ */
+export function takeTopDevelopmentCardOff(): TakeTopDevCardAction {
+  return {
+    type: TAKE_TOP_DEV_CARD,
+  };
+}
+
+/** SEE NOTE ^
+ * This puts it in the players hand, should go first
+ */
+export function acquireDevelopmentCard(
+  playerNumber: PlayerNumber,
+  cardCode: DevCardCode
+): GetDevCardAction {
+  return {
+    type: GET_TOP_DEV_CARD,
+    playerNumber,
+    cardCode,
+  };
+}
+
+export function playerHasPlayedDC(hasPlayed: boolean): HasPlayedDevCardAction {
+  return {
+    type: HAS_PLAYED_DEV_CARD,
+    hasPlayed,
+  };
+}
+
+export function removeDevelopmentCardFromHand(
+  playerNumber: PlayerNumber,
+  handIndex: number
+): RemoveDevCardAction {
+  return {
+    type: REMOVE_DEV_CARD,
+    playerNumber,
+    handIndex,
+  };
+}
+
+export function claimMonopolyForPlayer(
+  playerNumber: PlayerNumber,
+  resource: ResourceString
+): ClaimMonopolyAction {
+  return {
+    type: CLAIM_MONOPOLY,
+    playerNumber,
+    resource,
+  };
+}
+
+export function playerIsPlacingRobber(
+  isPlacingRobber: boolean
+): IsPlacingRobberAction {
+  return {
+    type: IS_PLACING_ROBBER,
+    isPlacingRobber,
+  };
+}
+
+export function moveRobberTo(
+  boardXPos: number,
+  boardYPos: number
+): MoveRobberAction {
+  return {
+    type: MOVE_ROBBER,
+    boardXPos,
+    boardYPos,
+  };
+}
+
+export function declareStealingInfo(
+  playerIsStealing: boolean,
+  availableToSteal: Array<PlayerNumber>
+): IsStealingAction {
+  return {
+    type: IS_STEALING,
+    playerIsStealing,
+    availableToSteal,
+  };
+}
+
+export function stealFromPlayer(
+  stealee: PlayerNumber,
+  stealer: PlayerNumber,
+  resource: string
+): StealFromAction {
+  console.log("start stealing");
+  return {
+    type: STEAL_FROM,
+    stealee,
+    stealer,
+    resource,
+  };
+}

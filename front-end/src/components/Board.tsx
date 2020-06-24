@@ -1,9 +1,9 @@
 import React from "react";
 import { Tile } from "./Tile";
 import { Frame } from "./Frame";
-import { Port } from "./Port";
+// import { Port } from "./Port";
 import Robber from "./Robber";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { centerTileX, centerTileY } from "./Settlement";
 import { FoAppState } from "../redux/reducers/reducers";
 import { connect } from "react-redux";

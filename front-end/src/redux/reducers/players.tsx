@@ -1,13 +1,17 @@
 import {
-  PlayerNumber,
   PlayerAction,
   PLACE_SETTLEMENT,
   PLACE_ROAD,
   COLLECT_RESOURCES,
-  BUY_ROAD,
   CHANGE_RESOURCE,
+  GET_TOP_DEV_CARD,
+  REMOVE_DEV_CARD,
+  CLAIM_MONOPOLY,
+  STEAL_FROM,
 } from "../Actions";
 import { Player } from "../../entities/Player";
+import { PlayerNumber } from "../../../../types/Primitives";
+import DevCard from "../../entities/DevCard";
 
 export default function players(
   state: Map<PlayerNumber, Player> = new Map([
@@ -56,7 +60,12 @@ export default function players(
         for (const currBuilding of targetPlayer.buildings) {
           for (const currTile of currBuilding.touchingTiles) {
             if (action.diceSum === currTile.counter) {
-              targetPlayer.addResource(currTile.resource);
+              if (
+                action.robber.boardXPos !== currTile.boardXPos ||
+                action.robber.boardYPos !== currTile.boardYPos
+              ) {
+                targetPlayer.addResource(currTile.resource);
+              }
             }
           }
         }
@@ -65,29 +74,6 @@ export default function players(
       }
 
       return newPlayersMap;
-    case BUY_ROAD:
-      const buyRoadPlayer = new Player(action.playerNumber);
-      const getPlayer = state.get(action.playerNumber);
-      if (getPlayer !== undefined) {
-        buyRoadPlayer.copyFromPlayer(getPlayer);
-
-        const currWood = buyRoadPlayer.resourceHand.get("wood");
-        const currBrick = buyRoadPlayer.resourceHand.get("brick");
-
-        if (currWood !== undefined && currBrick !== undefined) {
-          buyRoadPlayer.resourceHand.set("wood", currWood - 1);
-          buyRoadPlayer.resourceHand.set("brick", currBrick - 1);
-
-          return new Map([...state, [action.playerNumber, buyRoadPlayer]]);
-        } else {
-          console.log(
-            "Something is really wrong! For some reason, the player doesn't have wood or brick"
-          );
-          return state;
-        }
-      } else {
-        return state;
-      }
     case CHANGE_RESOURCE:
       const changeResPlayer = new Player(action.playerNumber);
       const getResPlayer = state.get(action.playerNumber);
@@ -100,6 +86,111 @@ export default function players(
       } else {
         return state;
       }
+    case GET_TOP_DEV_CARD:
+      const getDCardPlayer = state.get(action.playerNumber);
+      const newDevCardPlayer = new Player(action.playerNumber);
+
+      if (getDCardPlayer !== undefined) {
+        newDevCardPlayer.copyFromPlayer(getDCardPlayer);
+
+        newDevCardPlayer.devCardHand.push(new DevCard(action.cardCode));
+
+        return new Map([...state, [action.playerNumber, newDevCardPlayer]]);
+      } else {
+        console.log("Error player not found for dev card");
+        return state;
+      }
+    case REMOVE_DEV_CARD:
+      const getCardPlayer = state.get(action.playerNumber);
+      const newCardPlayer = new Player(action.playerNumber);
+
+      if (getCardPlayer !== undefined) {
+        newCardPlayer.copyFromPlayer(getCardPlayer);
+        newCardPlayer.devCardHand = newCardPlayer.devCardHand.filter(
+          (val, idx) => {
+            return idx !== action.handIndex;
+          }
+        );
+
+        return new Map([...state, [action.playerNumber, newCardPlayer]]);
+      } else {
+        return state;
+      }
+    case CLAIM_MONOPOLY:
+      const listOfPlayerNumbers: Array<PlayerNumber> = [1, 2, 3, 4];
+      // Kinda fell on the TypeScript sword here
+      const resToGain = [...state.keys()].reduce((acc: number, currKey) => {
+        if (currKey !== action.playerNumber) {
+          const currPl = state.get(currKey);
+          if (currPl !== undefined) {
+            const getVal = currPl.resourceHand.get(action.resource);
+            if (getVal !== undefined) {
+              return acc + getVal;
+            } else {
+              return acc;
+            }
+          } else {
+            return acc;
+          }
+        } else {
+          return acc;
+        }
+      }, 0);
+
+      let newMonopolyMap = new Map<PlayerNumber, Player>();
+      for (const currPNum of listOfPlayerNumbers) {
+        const newMonoPlayer = new Player(currPNum);
+        const getMonoPlayer = state.get(currPNum);
+
+        if (getMonoPlayer !== undefined) {
+          newMonoPlayer.copyFromPlayer(getMonoPlayer);
+
+          if (currPNum === action.playerNumber) {
+            const currResVal = newMonoPlayer.resourceHand.get(action.resource);
+            if (currResVal !== undefined) {
+              newMonoPlayer.resourceHand.set(
+                action.resource,
+                currResVal + resToGain
+              );
+            }
+          } else {
+            newMonoPlayer.resourceHand.set(action.resource, 0);
+          }
+        }
+
+        newMonopolyMap.set(currPNum, newMonoPlayer);
+      }
+
+      return newMonopolyMap;
+    case STEAL_FROM:
+      const stealer = state.get(action.stealer);
+      const stealee = state.get(action.stealee);
+
+      if (stealer !== undefined && stealee !== undefined) {
+        const newStealer = new Player(stealer.playerNum);
+        const newStealee = new Player(stealee.playerNum);
+
+        newStealer.copyFromPlayer(stealer);
+        newStealee.copyFromPlayer(stealee);
+
+        if (newStealee.numberOfCardsInHand() !== 0) {
+          newStealee.stealResource(action.resource);
+
+          const currStealVal = newStealer.resourceHand.get(action.resource);
+          if (currStealVal !== undefined) {
+            newStealer.resourceHand.set(action.resource, currStealVal + 1);
+          }
+        }
+
+        return new Map([
+          ...state,
+          [action.stealer, newStealer],
+          [action.stealee, newStealee],
+        ]);
+      } else {
+        return state;
+      }
+
     default:
       return state;
   }

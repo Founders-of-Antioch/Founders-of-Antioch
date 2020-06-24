@@ -1,7 +1,7 @@
 import React from "react";
 import brick from "../icons/brick.svg";
 import { SAND, BRICK, WHEAT, SHEEP, ORE, WOOD } from "../colors";
-import { ResourceString } from "../redux/Actions";
+import { ResourceString } from "../../../types/Primitives";
 // import cloud from "../icons/cloud.svg";
 
 // Tip is the top 'tip' of the resource hexagon tile

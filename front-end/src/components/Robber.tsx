@@ -1,41 +1,63 @@
 import React from "react";
 import { hexRadius } from "./Board";
 import robber from "../icons/robber.svg";
-import { TileModel } from "../entities/TIleModel";
+import { TileModel } from "../entities/TileModel";
 import { centerTileX, centerTileY } from "./Settlement";
-import { FoAppState } from "../redux/reducers/reducers";
-import { connect } from "react-redux";
+import { FoAppState, RobberCoordinates } from "../redux/reducers/reducers";
+import { connect, ConnectedProps } from "react-redux";
+import { bindActionCreators } from "redux";
+import { moveRobberTo } from "../redux/Actions";
+import { Dispatch } from "redux";
 
 type RobberProps = {
   listOfTiles: Array<TileModel>;
+  robberCoordinates: RobberCoordinates;
 };
 
 function mapStateToProps(store: FoAppState): RobberProps {
   return {
     listOfTiles: store.boardToBePlayed.listOfTiles,
+    robberCoordinates: store.robberCoordinates,
   };
 }
 
-class Robber extends React.Component<RobberProps, {}> {
-  constructor(props: RobberProps) {
+function mapDispatchToProps(dispatch: Dispatch) {
+  return bindActionCreators({ moveRobberTo }, dispatch);
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type RobberRedProps = ConnectedProps<typeof connector>;
+
+type UIState = {
+  foundDesert: boolean;
+};
+
+class Robber extends React.Component<RobberRedProps, UIState> {
+  constructor(props: RobberRedProps) {
     super(props);
+    this.state = { foundDesert: false };
     this.findDesertTileCoordinates = this.findDesertTileCoordinates.bind(this);
+  }
+
+  componentDidUpdate() {
+    if (!this.state.foundDesert) {
+      this.findDesertTileCoordinates();
+    }
   }
 
   findDesertTileCoordinates() {
     for (const t of this.props.listOfTiles) {
       if (t.resource === "desert") {
-        return [t.boardXPos, t.boardYPos];
+        this.setState({ foundDesert: true });
+        this.props.moveRobberTo(t.boardXPos, t.boardYPos);
+        return;
       }
     }
-
-    return [0, 0];
   }
 
   render() {
-    const dTiles = this.findDesertTileCoordinates();
-    const boardXPos = dTiles[0];
-    const boardYPos = dTiles[1];
+    const { boardXPos, boardYPos } = this.props.robberCoordinates;
 
     const actX = centerTileX(boardXPos, boardYPos);
     const actY = centerTileY(boardYPos);
@@ -56,4 +78,4 @@ class Robber extends React.Component<RobberProps, {}> {
   }
 }
 
-export default connect(mapStateToProps)(Robber);
+export default connector(Robber);
