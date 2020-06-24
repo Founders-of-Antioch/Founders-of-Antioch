@@ -22,6 +22,7 @@ import {
   isPlacingASettlement,
   isPlacingRoad,
   playerIsPlacingRobber,
+  declareStealingInfo,
 } from "../../redux/Actions";
 import { Player } from "../../entities/Player";
 
@@ -57,6 +58,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       isPlacingASettlement,
       isPlacingRoad,
       playerIsPlacingRobber,
+      declareStealingInfo,
     },
     dispatch
   );
@@ -137,7 +139,12 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   // TODO: Fix GameID
   selectedARobberSpot() {
-    const { boardXPos, boardYPos, playersByID } = this.props;
+    const {
+      boardXPos,
+      boardYPos,
+      playersByID,
+      inGamePlayerNumber,
+    } = this.props;
     const pkg: MoveRobberPackage = {
       gameID: "1",
       boardXPos,
@@ -150,7 +157,9 @@ class HighlightPoint extends Component<HighlightProps, {}> {
         for (const currTile of currBuild.touchingTiles) {
           if (
             currTile.boardXPos === boardXPos &&
-            currTile.boardYPos === boardYPos
+            currTile.boardYPos === boardYPos &&
+            currPlayer.playerNum !== inGamePlayerNumber &&
+            currPlayer.numberOfCardsInHand() !== 0
           ) {
             availablePlayersToStealFrom.push(currPlayer.playerNum);
             continue PlayerLoop;
@@ -159,7 +168,9 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       }
     }
 
-    console.log(availablePlayersToStealFrom);
+    if (availablePlayersToStealFrom.length !== 0) {
+      this.props.declareStealingInfo(true, availablePlayersToStealFrom);
+    }
 
     this.props.playerIsPlacingRobber(false);
     socket.emit("moveRobber", pkg);

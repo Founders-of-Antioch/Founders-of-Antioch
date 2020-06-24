@@ -38,6 +38,8 @@ export const REMOVE_DEV_CARD = "REMOVED_DEV_CARD";
 export const CLAIM_MONOPOLY = "CLAIM_MONOPOLY";
 export const IS_PLACING_ROBBER = "IS_PLACING_ROBBER";
 export const MOVE_ROBBER = "MOVE_ROBBER";
+export const IS_STEALING = "IS_STEALING";
+export const STEAL_FROM = "STEAL_FROM";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -86,6 +88,13 @@ interface ClaimMonopolyAction {
   resource: ResourceString;
 }
 
+interface StealFromAction {
+  type: typeof STEAL_FROM;
+  stealee: PlayerNumber;
+  stealer: PlayerNumber;
+  resource: string;
+}
+
 export type PlayerAction =
   | PlaceSettlementAction
   | PlaceRoadAction
@@ -93,7 +102,8 @@ export type PlayerAction =
   | ChangeResourceAction
   | GetDevCardAction
   | RemoveDevCardAction
-  | ClaimMonopolyAction;
+  | ClaimMonopolyAction
+  | StealFromAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -173,6 +183,12 @@ export interface MoveRobberAction {
   type: typeof MOVE_ROBBER;
   boardXPos: number;
   boardYPos: number;
+}
+
+export interface IsStealingAction {
+  type: typeof IS_STEALING;
+  playerIsStealing: boolean;
+  availableToSteal: Array<PlayerNumber>;
 }
 
 /** Action creators */
@@ -367,5 +383,30 @@ export function moveRobberTo(
     type: MOVE_ROBBER,
     boardXPos,
     boardYPos,
+  };
+}
+
+export function declareStealingInfo(
+  playerIsStealing: boolean,
+  availableToSteal: Array<PlayerNumber>
+): IsStealingAction {
+  return {
+    type: IS_STEALING,
+    playerIsStealing,
+    availableToSteal,
+  };
+}
+
+export function stealFromPlayer(
+  stealee: PlayerNumber,
+  stealer: PlayerNumber,
+  resource: string
+): StealFromAction {
+  console.log("start stealing");
+  return {
+    type: STEAL_FROM,
+    stealee,
+    stealer,
+    resource,
   };
 }

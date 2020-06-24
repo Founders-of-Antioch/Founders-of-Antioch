@@ -19,6 +19,8 @@ export class Player implements PlayerProperties {
   buildings: Array<Building>;
   roads: Array<RoadModel>;
   knights: number;
+  // TODO: Change to resource string
+  // Can't atm because sending this over packages doesn't seem to work
   resourceHand: Map<string, number>;
   devCardHand: Array<DevCard>;
 
@@ -73,6 +75,32 @@ export class Player implements PlayerProperties {
       return stored;
     } else {
       return -1;
+    }
+  }
+
+  // Gets, but does not take, a random resource
+  getRandomResource() {
+    let arrOfRes = [];
+
+    for (const currRes of this.resourceHand.keys()) {
+      const currVal = this.resourceHand.get(currRes);
+      if (currVal !== 0 && currVal !== undefined) {
+        for (let i = 0; i < currVal; i++) {
+          arrOfRes.push(currRes);
+        }
+      }
+    }
+
+    const randomResource =
+      arrOfRes[Math.floor(Math.random() * arrOfRes.length)];
+
+    return randomResource;
+  }
+
+  stealResource(res: string) {
+    const curr = this.resourceHand.get(res);
+    if (curr !== undefined && curr !== 0) {
+      this.resourceHand.set(res, curr - 1);
     }
   }
 }

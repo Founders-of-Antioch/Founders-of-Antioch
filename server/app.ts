@@ -20,6 +20,7 @@ import {
   DevCardRemovalPackage,
   ClaimMonopolyPackage,
   MoveRobberPackage,
+  StealFromPackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -207,6 +208,11 @@ createConnection().then((connection) => {
 
     client.on("moveRobber", (pkg: MoveRobberPackage) => {
       gameManager.moveRobber(pkg);
+    });
+
+    client.on("stealFrom", (pkg: StealFromPackage) => {
+      console.log("made it");
+      gameManager.stealFrom(pkg);
     });
   });
 

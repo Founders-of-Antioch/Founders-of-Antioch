@@ -68,7 +68,6 @@ class Dice extends React.Component<PropsFromRedux, UIState> {
   setupSockets() {
     // Listens for when players roll the dice
     socket.on("diceUpdate", (d1: DiceNumber, d2: DiceNumber) => {
-      console.log("caught");
       // Once the backend tells all the players what someone rolled, then
       // give the appropriate resources
       this.props.collectResources(d1 + d2);

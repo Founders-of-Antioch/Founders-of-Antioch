@@ -37,10 +37,18 @@ export type MoveRobberPackage = {
   boardYPos: number;
 };
 
+export type StealFromPackage = {
+  gameID: string;
+  stealer: PlayerNumber;
+  stealee: PlayerNumber;
+  resource: string;
+};
+
 export type FoASocketPackage =
   | ResourceChangePackage
   | ProposedTradeSocketPackage
   | AcquireDevCardPackage
   | DevCardRemovalPackage
   | ClaimMonopolyPackage
-  | MoveRobberPackage;
+  | MoveRobberPackage
+  | StealFromPackage;

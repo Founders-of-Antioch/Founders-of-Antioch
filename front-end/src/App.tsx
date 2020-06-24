@@ -32,10 +32,12 @@ import {
   DevCardRemovalPackage,
   ClaimMonopolyPackage,
   MoveRobberPackage,
+  StealFromPackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
 import HighlightSet from "./components/Highlighting/HighlightSet";
+import StealingModal from "./components/Robber/StealingModal";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -259,7 +261,6 @@ export default class App extends React.Component<AppProps, UIState> {
     });
 
     socket.on("tradeProposed", (pkg: ProposedTradeSocketPackage) => {
-      console.log(pkg);
       this.setState({
         showTrades: true,
         trades: [...this.state.trades, pkg],
@@ -295,6 +296,10 @@ export default class App extends React.Component<AppProps, UIState> {
 
     socket.on("robberUpdate", (pkg: MoveRobberPackage) => {
       this.props.moveRobberTo(pkg.boardXPos, pkg.boardYPos);
+    });
+
+    socket.on("stealUpdate", (pkg: StealFromPackage) => {
+      this.props.stealFromPlayer(pkg.stealee, pkg.stealer, pkg.resource);
     });
   }
 
@@ -526,7 +531,6 @@ export default class App extends React.Component<AppProps, UIState> {
               <Board />
               <Dice />
               {this.endTurnButton()}
-              {/* {this.highlightNeededSpaces()} */}
               <HighlightSet />
               {this.renderRoads()}
               {this.renderBuildings()}
@@ -543,6 +547,8 @@ export default class App extends React.Component<AppProps, UIState> {
           <DevCardHand />
 
           <VisibleActionButtonSet />
+
+          <StealingModal />
 
           {this.renderTrades()}
 

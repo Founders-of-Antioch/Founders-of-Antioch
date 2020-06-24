@@ -7,6 +7,7 @@ import {
   GET_TOP_DEV_CARD,
   REMOVE_DEV_CARD,
   CLAIM_MONOPOLY,
+  STEAL_FROM,
 } from "../Actions";
 import { Player } from "../../entities/Player";
 import { PlayerNumber } from "../../../../types/Primitives";
@@ -161,6 +162,35 @@ export default function players(
       }
 
       return newMonopolyMap;
+    case STEAL_FROM:
+      const stealer = state.get(action.stealer);
+      const stealee = state.get(action.stealee);
+
+      if (stealer !== undefined && stealee !== undefined) {
+        const newStealer = new Player(stealer.playerNum);
+        const newStealee = new Player(stealee.playerNum);
+
+        newStealer.copyFromPlayer(stealer);
+        newStealee.copyFromPlayer(stealee);
+
+        if (newStealee.numberOfCardsInHand() !== 0) {
+          newStealee.stealResource(action.resource);
+
+          const currStealVal = newStealer.resourceHand.get(action.resource);
+          if (currStealVal !== undefined) {
+            newStealer.resourceHand.set(action.resource, currStealVal + 1);
+          }
+        }
+
+        return new Map([
+          ...state,
+          [action.stealer, newStealer],
+          [action.stealee, newStealee],
+        ]);
+      } else {
+        return state;
+      }
+
     default:
       return state;
   }

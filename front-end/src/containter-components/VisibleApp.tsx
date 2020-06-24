@@ -19,6 +19,7 @@ import {
   removeDevelopmentCardFromHand,
   claimMonopolyForPlayer,
   moveRobberTo,
+  stealFromPlayer,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
@@ -76,6 +77,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         removeDevelopmentCardFromHand,
         claimMonopolyForPlayer,
         moveRobberTo,
+        stealFromPlayer,
       },
       dispatch
     ),
