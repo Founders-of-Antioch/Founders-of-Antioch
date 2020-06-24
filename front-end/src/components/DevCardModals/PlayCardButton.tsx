@@ -13,6 +13,7 @@ function mapStateToProps(store: FoAppState) {
     isPlacingSettlement: store.isCurrentlyPlacingSettlement,
     isPlacingRoad: store.isCurrentlyPlacingRoad,
     isPlacingRobber: store.isCurrentlyPlacingRobber,
+    currentTurnNumber: store.turnNumber,
   };
 }
 
@@ -30,12 +31,16 @@ type PlayButtonProps = ConnectedProps<typeof connector> & {
   openModalFunction?: () => void;
 };
 
+// TODO: Change to not be bad
+let turnOfPurchase = -1;
+
 class PlayCardButton extends Component<PlayButtonProps, {}> {
   constructor(props: PlayButtonProps) {
     super(props);
 
     this.playCard = this.playCard.bind(this);
     this.shouldBeDisabled = this.shouldBeDisabled.bind(this);
+    turnOfPurchase = this.props.currentTurnNumber;
   }
 
   playCard() {
@@ -52,9 +57,11 @@ class PlayCardButton extends Component<PlayButtonProps, {}> {
       isPlacingRoad,
       isPlacingRobber,
       isPlacingSettlement,
+      currentTurnNumber,
     } = this.props;
 
     return (
+      turnOfPurchase === currentTurnNumber ||
       hasPlayedDevCard ||
       !isTurn ||
       isPlacingRoad ||

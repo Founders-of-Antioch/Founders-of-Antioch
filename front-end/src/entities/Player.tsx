@@ -23,6 +23,7 @@ export class Player implements PlayerProperties {
   // Can't atm because sending this over packages doesn't seem to work
   resourceHand: Map<string, number>;
   devCardHand: Array<DevCard>;
+  hasLargestArmy: boolean;
 
   constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
@@ -32,6 +33,7 @@ export class Player implements PlayerProperties {
     this.knights = 0;
     this.resourceHand = new Map();
     this.devCardHand = [];
+    this.hasLargestArmy = false;
 
     for (const res of LIST_OF_RESOURCES) {
       this.resourceHand.set(res, 0);
@@ -46,6 +48,7 @@ export class Player implements PlayerProperties {
     this.knights = p.knights;
     this.resourceHand = new Map([...p.resourceHand]);
     this.devCardHand = [...p.devCardHand];
+    this.hasLargestArmy = p.hasLargestArmy;
   }
 
   addResource(res: ResourceString) {
@@ -102,5 +105,15 @@ export class Player implements PlayerProperties {
     if (curr !== undefined && curr !== 0) {
       this.resourceHand.set(res, curr - 1);
     }
+  }
+
+  takeLargestArmy() {
+    this.hasLargestArmy = true;
+    this.victoryPoints += 2;
+  }
+
+  loseLargestArmy() {
+    this.hasLargestArmy = false;
+    this.victoryPoints -= 2;
   }
 }

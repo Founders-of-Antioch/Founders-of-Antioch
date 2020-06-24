@@ -199,8 +199,49 @@ export default function players(
         newKnightPlayer.copyFromPlayer(getKnightPlayer);
 
         newKnightPlayer.knights++;
+        let newKnightsMap = new Map([
+          ...state,
+          [action.player, newKnightPlayer],
+        ]);
 
-        return new Map([...state, [action.player, newKnightPlayer]]);
+        let LAClaimed = false;
+        for (const currPlayNum of newKnightsMap.keys()) {
+          const currPlayer = newKnightsMap.get(currPlayNum);
+
+          if (currPlayer !== undefined && currPlayer.hasLargestArmy) {
+            LAClaimed = true;
+            break;
+          }
+        }
+
+        if (LAClaimed) {
+          for (const currPlayNum of newKnightsMap.keys()) {
+            const currPlayer = newKnightsMap.get(currPlayNum);
+
+            if (currPlayer !== undefined && currPlayer.hasLargestArmy) {
+              if (newKnightPlayer.knights > currPlayer.knights) {
+                newKnightPlayer.takeLargestArmy();
+                newKnightsMap.set(newKnightPlayer.playerNum, newKnightPlayer);
+
+                const losePlayer = newKnightsMap.get(currPlayer.playerNum);
+                if (losePlayer !== undefined) {
+                  const newLosePlayer = new Player(losePlayer.playerNum);
+                  newLosePlayer.copyFromPlayer(losePlayer);
+                  newLosePlayer.loseLargestArmy();
+                  newKnightsMap.set(losePlayer.playerNum, newLosePlayer);
+                }
+              } else {
+                break;
+              }
+            }
+          }
+        } else if (newKnightPlayer.knights >= 3) {
+          newKnightPlayer.takeLargestArmy();
+
+          newKnightsMap.set(newKnightPlayer.playerNum, newKnightPlayer);
+        }
+
+        return new Map([...newKnightsMap]);
       } else {
         return state;
       }

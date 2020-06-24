@@ -409,7 +409,6 @@ export function stealFromPlayer(
   stealer: PlayerNumber,
   resource: string
 ): StealFromAction {
-  console.log("start stealing");
   return {
     type: STEAL_FROM,
     stealee,
