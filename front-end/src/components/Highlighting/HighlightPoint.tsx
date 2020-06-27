@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { PlayerNumber } from "../../../../types/Primitives";
-import { TileModel } from "../../entities/TileModel";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { bindActionCreators } from "redux";
 import { ConnectedProps, connect } from "react-redux";
@@ -8,6 +7,7 @@ import { socket } from "../../App";
 import {
   ResourceChangePackage,
   MoveRobberPackage,
+  BuildingUpdatePackage,
 } from "../../../../types/SocketPackages";
 import {
   xValofCorner,
@@ -21,12 +21,12 @@ import { Dispatch } from "redux";
 import {
   isPlacingASettlement,
   isPlacingRoad,
+  isPlacingACity,
   playerIsPlacingRobber,
   declareStealingInfo,
 } from "../../redux/Actions";
-import { Player } from "../../entities/Player";
 
-export type HighlightType = "settlement" | "road" | "robber";
+export type HighlightType = "settlement" | "road" | "robber" | "city";
 
 type Props = {
   boardXPos: number;
@@ -36,14 +36,7 @@ type Props = {
   typeOfHighlight: HighlightType;
 };
 
-type HPProps = {
-  tiles: Array<TileModel>;
-  turnNumber: number;
-  inGamePlayerNumber: PlayerNumber;
-  playersByID: Map<PlayerNumber, Player>;
-};
-
-function mapStateToProps(store: FoAppState): HPProps {
+function mapStateToProps(store: FoAppState) {
   return {
     tiles: store.boardToBePlayed.listOfTiles,
     turnNumber: store.turnNumber,
@@ -57,6 +50,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     {
       isPlacingASettlement,
       isPlacingRoad,
+      isPlacingACity,
       playerIsPlacingRobber,
       declareStealingInfo,
     },
@@ -77,7 +71,41 @@ class HighlightPoint extends Component<HighlightProps, {}> {
     this.selectedASettlementSpot = this.selectedASettlementSpot.bind(this);
     this.selectedARoadSpot = this.selectedARoadSpot.bind(this);
     this.selectedARobberSpot = this.selectedARobberSpot.bind(this);
+    this.selectedACitySpot = this.selectedACitySpot.bind(this);
     this.getOnClick = this.getOnClick.bind(this);
+  }
+
+  // TODO: Replace with game ID
+  selectedACitySpot() {
+    const {
+      boardXPos,
+      boardYPos,
+      corner,
+      playerWhoSelected,
+      inGamePlayerNumber,
+    } = this.props;
+
+    const pkg: BuildingUpdatePackage = {
+      gameID: "1",
+      boardXPos,
+      boardYPos,
+      corner,
+      playerNum: playerWhoSelected,
+      typeOfBuilding: "city",
+    };
+
+    // Emit change for broadcast
+    socket.emit("addBuilding", pkg);
+
+    this.props.isPlacingACity(false);
+    // Don't have to purchase roads if it's the snake draft
+    // TODO: Fix Game ID
+    const roadPKG: ResourceChangePackage = {
+      gameID: "1",
+      resourceDeltaMap: { wheat: -2, ore: -3 },
+      playerNumber: inGamePlayerNumber,
+    };
+    socket.emit("resourceChange", roadPKG);
   }
 
   // TODO: Replace with actual gameID
@@ -88,20 +116,33 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       corner,
       playerWhoSelected,
       turnNumber,
+      inGamePlayerNumber,
     } = this.props;
-    // Emit change for broadcast
-    socket.emit(
-      "addBuilding",
-      "1",
+
+    const pkg: BuildingUpdatePackage = {
+      gameID: "1",
       boardXPos,
       boardYPos,
       corner,
-      playerWhoSelected,
-      this.props.tiles
-    );
+      playerNum: playerWhoSelected,
+      typeOfBuilding: "settlement",
+    };
+
+    // Emit change for broadcast
+    socket.emit("addBuilding", pkg);
 
     this.props.isPlacingASettlement(false);
     this.props.isPlacingRoad(turnNumber <= 2);
+    // Don't have to purchase roads if it's the snake draft
+    // TODO: Fix Game ID
+    if (turnNumber > 2) {
+      const pkg: ResourceChangePackage = {
+        gameID: "1",
+        resourceDeltaMap: { brick: -1, wood: -1, sheep: -1, wheat: -1 },
+        playerNumber: inGamePlayerNumber,
+      };
+      socket.emit("resourceChange", pkg);
+    }
   }
 
   selectedARoadSpot(): void {
@@ -184,6 +225,8 @@ class HighlightPoint extends Component<HighlightProps, {}> {
         return this.selectedARoadSpot;
       case "robber":
         return this.selectedARobberSpot;
+      case "city":
+        return this.selectedACitySpot;
       default:
         return () => {
           console.log("On click for highlighted component not found");

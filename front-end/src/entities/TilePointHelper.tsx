@@ -248,7 +248,6 @@ export function areSameRoadValues(
       p2.boardXPos === p1.boardXPos + deltaX &&
       p2.boardYPos === p1.boardYPos + deltaY
     ) {
-      console.log(i);
       return roadEdgeMap[i] === p2.hexEdgeNumber && i === p1.hexEdgeNumber;
     }
   }

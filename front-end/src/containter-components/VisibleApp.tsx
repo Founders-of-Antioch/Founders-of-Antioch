@@ -1,6 +1,6 @@
 import { FoAppState } from "../redux/reducers/reducers";
 import {
-  placeSettlement,
+  placeBuilding,
   placeRoad,
   declareBoard,
   declarePlayerNumber,
@@ -61,7 +61,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     ...bindActionCreators(
       {
-        placeSettlement,
+        placeBuilding,
         placeRoad,
         declareBoard,
         declarePlayerNumber,

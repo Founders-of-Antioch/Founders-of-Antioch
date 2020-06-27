@@ -2,16 +2,31 @@ import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWarehouse } from "@fortawesome/free-solid-svg-icons";
 import { xValofCorner, yValofCorner } from "../Settlement";
-import { resColorMap } from "../../colors";
+import { PLAYER_COLORS } from "../../colors";
 import { widthOfSVG, heightOfSVG } from "../Board";
+import { Building } from "../../entities/Building";
 
-export default class City extends Component {
+type CityProps = {
+  buildModel: Building;
+};
+
+export default class City extends Component<CityProps, {}> {
   render() {
+    const { buildModel } = this.props;
+
+    const x = xValofCorner(
+      buildModel.boardXPos,
+      buildModel.boardYPos,
+      buildModel.corner
+    );
+    const y = yValofCorner(buildModel.boardYPos, buildModel.corner);
+
     return (
       <div
         style={{
-          marginLeft: xValofCorner(0, 0, 4) - widthOfSVG / 2,
-          marginTop: yValofCorner(0, 4) - heightOfSVG / 2,
+          // TODO: Change (widthsvg/100) to half of the width of the icon
+          marginLeft: x - widthOfSVG / 100,
+          marginTop: y - heightOfSVG / 2,
           zIndex: 2,
           position: "absolute",
         }}
@@ -19,7 +34,7 @@ export default class City extends Component {
         <FontAwesomeIcon
           style={{ stroke: "black", strokeWidth: 30 }}
           size="2x"
-          color={resColorMap["wheat"]}
+          color={PLAYER_COLORS.get(buildModel.playerNum)}
           icon={faWarehouse}
         />
       </div>

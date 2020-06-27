@@ -16,6 +16,7 @@ export const LIST_HIGHLIGHT_TYPES: Array<HighlightType> = [
   "settlement",
   "road",
   "robber",
+  "city",
 ];
 
 function mapStateToProps(store: FoAppState) {
@@ -26,6 +27,7 @@ function mapStateToProps(store: FoAppState) {
     isCurrentlyPlacingSettlement: store.isCurrentlyPlacingSettlement,
     isCurrentlyPlacingRoad: store.isCurrentlyPlacingRoad,
     isCurrentlyPlacingRobber: store.isCurrentlyPlacingRobber,
+    isCurrentlyPlacingCity: store.isCurrentlyPlacingCity,
     boardToBePlayed: store.boardToBePlayed,
     robberCoordinates: store.robberCoordinates,
     turnNumber: store.turnNumber,
@@ -48,14 +50,47 @@ class HighlightSet extends Component<RedProps, {}> {
       isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad,
       isCurrentlyPlacingRobber,
+      isCurrentlyPlacingCity,
     } = this.props;
 
     if (isCurrentlyPlacingRoad) {
       return this.makeRoadHighlights();
     } else if (isCurrentlyPlacingSettlement) {
-      return this.makeHighlightSet("settlement");
+      return this.makeHighlightSet();
     } else if (isCurrentlyPlacingRobber) {
       return this.makeRobberHighlights();
+    } else if (isCurrentlyPlacingCity) {
+      return this.makeCityHighlights();
+    } else {
+      return null;
+    }
+  }
+
+  makeCityHighlights() {
+    const { inGamePlayerNumber, playersByID } = this.props;
+
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer !== undefined) {
+      let arr = [];
+      let key = 0;
+
+      for (const build of currPlayer.buildings) {
+        if (build.typeOfBuilding === "settlement") {
+          arr.push(
+            <HighlightPoint
+              key={key++}
+              typeOfHighlight={"city"}
+              boardXPos={build.boardXPos}
+              boardYPos={build.boardYPos}
+              corner={build.corner}
+              playerWhoSelected={inGamePlayerNumber}
+            />
+          );
+        }
+      }
+
+      return arr;
     } else {
       return null;
     }
@@ -101,8 +136,6 @@ class HighlightSet extends Component<RedProps, {}> {
     for (const currPlayer of playersByID.values()) {
       for (const road of currPlayer.roads) {
         if (areSameRoadValues(road, roadPoint)) {
-          console.log(roadPoint);
-          console.log(road);
           return true;
         }
       }
@@ -176,22 +209,18 @@ class HighlightSet extends Component<RedProps, {}> {
     return arr;
   }
 
-  makeHighlightSet(typeOfHighlight: HighlightType) {
+  // TODO: rename for settlements
+  makeHighlightSet() {
     const {
       playersByID,
       currentPersonPlaying,
       inGamePlayerNumber,
       isCurrentlyPlacingSettlement,
-      isCurrentlyPlacingRoad,
     } = this.props;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
-    const placing =
-      typeOfHighlight === "road"
-        ? isCurrentlyPlacingRoad
-        : isCurrentlyPlacingSettlement;
 
-    if (isTurn && placing) {
+    if (isTurn && isCurrentlyPlacingSettlement) {
       const spots = [];
       let keyForHighlights = 0;
 
@@ -206,19 +235,17 @@ class HighlightSet extends Component<RedProps, {}> {
         for (; numRowsDone < numRows; y--) {
           cornerLoop: for (let corner = 0; corner <= 5; corner++) {
             // If there is already a building in the spot, don't highlight it
-            if (typeOfHighlight !== "road") {
-              for (const pl of playersByID.values()) {
-                for (const setl of pl.buildings) {
-                  const p1 = { boardXPos: x, boardYPos: y, corner };
-                  const p2 = {
-                    boardXPos: setl.boardXPos,
-                    boardYPos: setl.boardYPos,
-                    corner: setl.corner,
-                  };
+            for (const pl of playersByID.values()) {
+              for (const setl of pl.buildings) {
+                const p1 = { boardXPos: x, boardYPos: y, corner };
+                const p2 = {
+                  boardXPos: setl.boardXPos,
+                  boardYPos: setl.boardYPos,
+                  corner: setl.corner,
+                };
 
-                  if (areSamePoints(p1, p2) || pointsAreOneApart(p1, p2)) {
-                    continue cornerLoop;
-                  }
+                if (areSamePoints(p1, p2) || pointsAreOneApart(p1, p2)) {
+                  continue cornerLoop;
                 }
               }
             }
@@ -230,7 +257,7 @@ class HighlightSet extends Component<RedProps, {}> {
                 boardYPos={y}
                 corner={corner}
                 playerWhoSelected={inGamePlayerNumber}
-                typeOfHighlight={typeOfHighlight}
+                typeOfHighlight={"settlement"}
               />
             );
           }

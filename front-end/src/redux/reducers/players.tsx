@@ -1,6 +1,6 @@
 import {
   PlayerAction,
-  PLACE_SETTLEMENT,
+  PLACE_BUILDING,
   PLACE_ROAD,
   COLLECT_RESOURCES,
   CHANGE_RESOURCE,
@@ -24,15 +24,31 @@ export default function players(
   action: PlayerAction
 ): Map<PlayerNumber, Player> {
   switch (action.type) {
-    case PLACE_SETTLEMENT:
+    case PLACE_BUILDING:
+      console.log("inside here");
       // TODO: Separate this copying player logic into another method
       const play = new Player(action.buildToAdd.playerNum);
       const playerFromState = state.get(action.buildToAdd.playerNum);
 
       if (playerFromState) {
         play.copyFromPlayer(playerFromState);
-        play.buildings.push(action.buildToAdd);
-        play.victoryPoints++;
+
+        if (action.buildToAdd.typeOfBuilding === "city") {
+          console.log("here");
+          for (const build of play.buildings) {
+            if (build.spacesAreSame(action.buildToAdd)) {
+              // Upgrade from settlement to city
+              console.log("here");
+              build.typeOfBuilding = "city";
+            }
+          }
+        } else {
+          play.buildings.push(action.buildToAdd);
+        }
+
+        // If it's a city of settlement, it will only go up by one
+        // because cities are upgrades
+        play.victoryPoints += 1;
 
         return new Map([...state, [action.buildToAdd.playerNum, play]]);
       } else {
@@ -66,6 +82,10 @@ export default function players(
                 action.robber.boardYPos !== currTile.boardYPos
               ) {
                 targetPlayer.addResource(currTile.resource);
+                if (currBuilding.typeOfBuilding === "city") {
+                  // Twice if it's a city
+                  targetPlayer.addResource(currTile.resource);
+                }
               }
             }
           }

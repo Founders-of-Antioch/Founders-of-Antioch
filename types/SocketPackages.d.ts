@@ -49,6 +49,15 @@ export type KnightUpdatePackage = {
   player: PlayerNumber;
 };
 
+export type BuildingUpdatePackage = {
+  boardXPos: number;
+  boardYPos: number;
+  corner: number;
+  playerNum: PlayerNumber;
+  typeOfBuilding: "settlement" | "city";
+  gameID: string;
+};
+
 export type FoASocketPackage =
   | ResourceChangePackage
   | ProposedTradeSocketPackage
@@ -57,4 +66,5 @@ export type FoASocketPackage =
   | ClaimMonopolyPackage
   | MoveRobberPackage
   | StealFromPackage
-  | KnightUpdatePackage;
+  | KnightUpdatePackage
+  | BuildingUpdatePackage;

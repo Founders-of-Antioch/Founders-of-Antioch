@@ -34,12 +34,13 @@ import {
   MoveRobberPackage,
   StealFromPackage,
   KnightUpdatePackage,
+  BuildingUpdatePackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
 import HighlightSet from "./components/Highlighting/HighlightSet";
 import StealingModal from "./components/Robber/StealingModal";
-import City from "./components/Buildings/City";
+import BuildingSet from "./components/Buildings/BuildingSet";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -187,22 +188,18 @@ export default class App extends React.Component<AppProps, UIState> {
     this.forceUpdate();
   }
 
-  processBuildingUpdate(building: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-    playerNum: PlayerNumber;
-  }) {
+  // TOOD: Make general
+  processBuildingUpdate(pkg: BuildingUpdatePackage) {
     const build = new Building(
-      building.boardXPos,
-      building.boardYPos,
-      building.corner,
-      building.playerNum,
-      this.props.boardToBePlayed.listOfTiles,
-      this.props.turnNumber
+      pkg.boardXPos,
+      pkg.boardYPos,
+      pkg.corner,
+      pkg.playerNum,
+      this.props.turnNumber,
+      pkg.typeOfBuilding
     );
 
-    this.props.placeSettlement(build);
+    this.props.placeBuilding(build);
   }
 
   renderBuildings(): Array<any> {
@@ -211,16 +208,17 @@ export default class App extends React.Component<AppProps, UIState> {
 
     for (const p of this.props.listOfPlayers.values()) {
       for (const i of p.buildings) {
-        buildingArr.push(
-          <Settlement
-            key={key++}
-            boardXPos={i.boardXPos}
-            boardYPos={i.boardYPos}
-            // TODO: Fix garbage
-            playerNum={i.playerNum}
-            corner={i.corner}
-          />
-        );
+        if (i.typeOfBuilding === "settlement") {
+          buildingArr.push(
+            <Settlement
+              key={key++}
+              boardXPos={i.boardXPos}
+              boardYPos={i.boardYPos}
+              playerNum={i.playerNum}
+              corner={i.corner}
+            />
+          );
+        }
       }
     }
 
@@ -556,8 +554,7 @@ export default class App extends React.Component<AppProps, UIState> {
           <VisibleActionButtonSet />
 
           <StealingModal />
-
-          <City />
+          <BuildingSet />
 
           {this.renderTrades()}
 

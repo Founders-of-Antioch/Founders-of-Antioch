@@ -22,6 +22,7 @@ import {
   MoveRobberPackage,
   StealFromPackage,
   KnightUpdatePackage,
+  BuildingUpdatePackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -96,24 +97,9 @@ createConnection().then((connection) => {
       clientManager.removeClient(client);
     });
 
-    client.on(
-      "addBuilding",
-      (
-        gameID: string,
-        boardXPos: number,
-        boardYPos: number,
-        corner: number,
-        playerNum: number
-      ) => {
-        const location = new ServerBuilding(
-          boardXPos,
-          boardYPos,
-          corner,
-          playerNum
-        );
-        gameManager.addBuilding(location, gameID);
-      }
-    );
+    client.on("addBuilding", (pkg: BuildingUpdatePackage) => {
+      gameManager.addBuilding(pkg);
+    });
 
     client.on(
       "addRoad",

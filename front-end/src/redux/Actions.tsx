@@ -12,7 +12,7 @@ import DevCard from "../entities/DevCard";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
-export const PLACE_SETTLEMENT = "PLACE_SETTLEMENT";
+export const PLACE_BUILDING = "PLACE_BUILDING";
 export const PLACE_ROAD = "PLACE_ROAD";
 export const DECLARE_PLAYER_NUM = "DECLARE_PLAYER_NUM";
 export const HAS_ROLLED = "HAS_ROLLED";
@@ -23,6 +23,7 @@ export const SET_SEED = "SET_SEED";
 export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
+export const IS_PLACING_CITY = "IS_PLACING_CITY";
 export const EVALUATE_TURN = "EVALUATE_TURN";
 // Changes the amount of resource in a player's hand
 export const CHANGE_RESOURCE = "CHANGE_RESOURCE";
@@ -47,9 +48,8 @@ export interface ChangePlayerAction {
   playerNum: PlayerNumber;
 }
 
-// TODO: Migrate to just take in 'Building' instead of 4 params
-interface PlaceSettlementAction {
-  type: typeof PLACE_SETTLEMENT;
+interface PlaceBuildingAction {
+  type: typeof PLACE_BUILDING;
   buildToAdd: Building;
 }
 
@@ -102,7 +102,7 @@ interface PlayKnightCardAction {
 }
 
 export type PlayerAction =
-  | PlaceSettlementAction
+  | PlaceBuildingAction
   | PlaceRoadAction
   | CollectResourcesAction
   | ChangeResourceAction
@@ -165,6 +165,11 @@ export interface IsPlacingRoadAction {
   isOrIsnt: boolean;
 }
 
+export interface IsPlacingCityAction {
+  type: typeof IS_PLACING_CITY;
+  isOrIsnt: boolean;
+}
+
 interface DeclareDevCardsAction {
   type: typeof DECLARE_DEV_CARDS;
   listOfCards: Array<DevCard>;
@@ -207,15 +212,15 @@ export function changePlayer(playerNum: PlayerNumber): ChangePlayerAction {
   return { type: CHANGE_PLAYER, playerNum };
 }
 
-// NOTE: ONLY TO BE USED in Socket LISTNERS
+// NOTE: ONLY TO BE USED in Socket LISTENERS
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
-export function placeSettlement(buildToAdd: Building): PlaceSettlementAction {
-  return { type: PLACE_SETTLEMENT, buildToAdd };
+export function placeBuilding(buildToAdd: Building): PlaceBuildingAction {
+  return { type: PLACE_BUILDING, buildToAdd };
 }
 
-// NOTE: ONLY TO BE USED in Socket LISTNERS
+// NOTE: ONLY TO BE USED in Socket LISTENERS
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
@@ -233,7 +238,7 @@ export function nextTurn(turnNumber: number): NextTurnAction {
   return { type: NEXT_TURN, turnNumber };
 }
 
-// NOTE: ONLY TO BE USED in Socket LISTNERS
+// NOTE: ONLY TO BE USED in Socket LISTENERS
 // This is because once the backend knows what someone rolled,
 // it'll send a mass update to all players,
 // including itself. So don't create double counts!
@@ -292,6 +297,13 @@ export function isPlacingASettlement(
 export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
   return {
     type: IS_PLACING_ROAD,
+    isOrIsnt,
+  };
+}
+
+export function isPlacingACity(isOrIsnt: boolean): IsPlacingCityAction {
+  return {
+    type: IS_PLACING_CITY,
     isOrIsnt,
   };
 }

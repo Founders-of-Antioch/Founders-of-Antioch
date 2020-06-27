@@ -17,6 +17,7 @@ import { hasPlayedDevCard } from "./hasPlayedDevCard";
 import isCurrentlyPlacingRobber from "./isCurrentlyPlacingRobber";
 import robberCoordinates from "./robberCoordinates";
 import stealingInfo from "./stealingInfo";
+import isCurrentlyPlacingCity from "./isCurrentlyPlacingCity";
 
 export interface RobberCoordinates {
   boardXPos: number;
@@ -45,6 +46,7 @@ export interface FoAppState {
   isCurrentlyPlacingSettlement: boolean;
   isCurrentlyPlacingRoad: boolean;
   isCurrentlyPlacingRobber: boolean;
+  isCurrentlyPlacingCity: boolean;
   devCards: Array<DevCard>;
   robberCoordinates: RobberCoordinates;
   stealingInfo: StealingInfo;
@@ -79,6 +81,7 @@ export const FoAPP = combineReducers({
   isCurrentlyPlacingSettlement,
   isCurrentlyPlacingRoad,
   isCurrentlyPlacingRobber,
+  isCurrentlyPlacingCity,
   stealingInfo,
   devCards,
   robberCoordinates,

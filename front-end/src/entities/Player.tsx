@@ -41,6 +41,7 @@ export class Player implements PlayerProperties {
   }
 
   // Someone please fix this garbage
+  // But it's just for redux, fyi
   copyFromPlayer(p: Player) {
     this.victoryPoints = p.victoryPoints;
     this.buildings = [...p.buildings];
@@ -82,6 +83,7 @@ export class Player implements PlayerProperties {
   }
 
   // Gets, but does not take, a random resource
+  // Used to read possible resources for stealing
   getRandomResource() {
     let arrOfRes = [];
 
@@ -116,4 +118,26 @@ export class Player implements PlayerProperties {
     this.hasLargestArmy = false;
     this.victoryPoints -= 2;
   }
+
+  // upgrade(b: Building) {
+  //   const arr = [];
+  //   for (const build of this.buildings) {
+  //     if (build.spacesAreSame(b)) {
+  //       arr.push(
+  //         new Building(
+  //           build.boardXPos,
+  //           build.boardYPos,
+  //           build.corner,
+  //           build.playerNum,
+  //           build.turnPlaced,
+  //           "city"
+  //         )
+  //       );
+  //     } else {
+  //       arr.push(build);
+  //     }
+  //   }
+
+  //   this.buildings = arr;
+  // }
 }

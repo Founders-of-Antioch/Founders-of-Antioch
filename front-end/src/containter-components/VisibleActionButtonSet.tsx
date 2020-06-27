@@ -1,5 +1,9 @@
 import { FoAppState } from "../redux/reducers/reducers";
-import { isPlacingRoad } from "../redux/Actions";
+import {
+  isPlacingRoad,
+  isPlacingACity,
+  isPlacingASettlement,
+} from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { connect, ConnectedProps } from "react-redux";
 import ActionButtonSet from "../components/ActionButtonSet";
@@ -39,6 +43,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     ...bindActionCreators(
       {
         isPlacingRoad,
+        isPlacingASettlement,
+        isPlacingACity,
       },
       dispatch
     ),

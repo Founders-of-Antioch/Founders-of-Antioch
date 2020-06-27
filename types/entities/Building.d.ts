@@ -7,4 +7,6 @@ export interface BuildingProperties {
   corner: number;
   playerNum: PlayerNumber;
   touchingTiles: Array<TileProperties>;
+  turnPlaced: number;
+  typeOfBuilding: "settlement" | "city";
 }

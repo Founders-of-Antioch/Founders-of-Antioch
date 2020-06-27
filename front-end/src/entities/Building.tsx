@@ -10,9 +10,10 @@ export class Building implements BuildingProperties {
   playerNum: PlayerNumber;
   touchingTiles: Array<TileModel>;
   turnPlaced: number;
+  typeOfBuilding: "settlement" | "city";
 
   // Returns an array of TileModel representing the resources the building touches
-  private tilesBuildingIsOn(listOfTiles: Array<TileModel>) {
+  private tilesBuildingIsOn() {
     const { boardXPos, boardYPos, corner } = this;
     // return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
     return tilesPointIsOn({ boardXPos, boardYPos, corner });
@@ -23,14 +24,23 @@ export class Building implements BuildingProperties {
     bY: number,
     corn: number,
     playerNum: PlayerNumber,
-    boardTiles: Array<TileModel>,
-    turnPlaced: number
+    turnPlaced: number,
+    typeOfBuilding: "settlement" | "city"
   ) {
     this.boardXPos = bX;
     this.boardYPos = bY;
     this.corner = corn;
     this.playerNum = playerNum;
-    this.touchingTiles = this.tilesBuildingIsOn(boardTiles);
+    this.touchingTiles = this.tilesBuildingIsOn();
     this.turnPlaced = turnPlaced;
+    this.typeOfBuilding = typeOfBuilding;
+  }
+
+  spacesAreSame(b: Building) {
+    return (
+      this.boardXPos === b.boardXPos &&
+      this.boardYPos === b.boardYPos &&
+      this.corner === b.corner
+    );
   }
 }
