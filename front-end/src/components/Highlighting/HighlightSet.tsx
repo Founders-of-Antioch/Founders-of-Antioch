@@ -216,6 +216,7 @@ class HighlightSet extends Component<RedProps, {}> {
       currentPersonPlaying,
       inGamePlayerNumber,
       isCurrentlyPlacingSettlement,
+      boardToBePlayed,
     } = this.props;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
@@ -244,7 +245,10 @@ class HighlightSet extends Component<RedProps, {}> {
                   corner: setl.corner,
                 };
 
-                if (areSamePoints(p1, p2) || pointsAreOneApart(p1, p2)) {
+                if (
+                  areSamePoints(p1, p2, boardToBePlayed.listOfTiles) ||
+                  pointsAreOneApart(p1, p2)
+                ) {
                   continue cornerLoop;
                 }
               }

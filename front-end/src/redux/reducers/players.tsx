@@ -25,7 +25,6 @@ export default function players(
 ): Map<PlayerNumber, Player> {
   switch (action.type) {
     case PLACE_BUILDING:
-      console.log("inside here");
       // TODO: Separate this copying player logic into another method
       const play = new Player(action.buildToAdd.playerNum);
       const playerFromState = state.get(action.buildToAdd.playerNum);
@@ -34,7 +33,6 @@ export default function players(
         play.copyFromPlayer(playerFromState);
 
         if (action.buildToAdd.typeOfBuilding === "city") {
-          console.log("here");
           for (const build of play.buildings) {
             if (build.spacesAreSame(action.buildToAdd)) {
               // Upgrade from settlement to city

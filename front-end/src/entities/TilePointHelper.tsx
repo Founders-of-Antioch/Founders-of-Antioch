@@ -42,7 +42,8 @@ function tilesPointIsOnGeneral(
     boardXPos: number;
     boardYPos: number;
     corner: number;
-  }
+  },
+  includeOB: boolean
 ) {
   let adjTiles: Array<TileModel> = [];
 
@@ -63,21 +64,32 @@ function tilesPointIsOnGeneral(
     const expecX = currDirection[0] + point.boardXPos;
     const expecY = currDirection[1] + point.boardYPos;
 
-    // If it's for out of bounds checking, we don't care about anything
-    // but the coordinates
-    const newTile = new TileModel("desert", -1, expecX, expecY);
-    adjTiles.push(newTile);
+    if (includeOB) {
+      // If it's for out of bounds checking, we don't care about anything
+      // but the coordinates
+      const newTile = new TileModel("desert", -1, expecX, expecY);
+      adjTiles.push(newTile);
+    } else {
+      for (const currTile of listOfTiles) {
+        if (currTile.boardXPos === expecX && currTile.boardYPos === expecY) {
+          adjTiles.push(currTile);
+        }
+      }
+    }
   }
 
   return adjTiles;
 }
 
-export function tilesPointIsOn(point: {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
-}) {
-  const gen = tilesPointIsOnGeneral([], point);
+export function tilesPointIsOn(
+  tiles: Array<TileModel>,
+  point: {
+    boardXPos: number;
+    boardYPos: number;
+    corner: number;
+  }
+) {
+  const gen = tilesPointIsOnGeneral(tiles, point, false);
 
   return gen.filter((currPoint) => {
     return pointIsInBounds({
@@ -94,7 +106,7 @@ function tilesPointIsOnWithOB(point: {
   boardYPos: number;
   corner: number;
 }) {
-  return tilesPointIsOnGeneral([], point);
+  return tilesPointIsOnGeneral([], point, true);
 }
 
 function p2IsLeftOfP1(
@@ -120,10 +132,11 @@ function p2IsLeftOfP1(
 function areSamePointsGeneral(
   p1: { boardXPos: number; boardYPos: number; corner: number },
   p2: { boardXPos: number; boardYPos: number; corner: number },
-  inbounds: boolean
+  inbounds: boolean,
+  tiles: Array<TileModel>
 ) {
   const p1TouchingTiles = inbounds
-    ? tilesPointIsOn(p1)
+    ? tilesPointIsOn(tiles, p1)
     : tilesPointIsOnWithOB(p1);
 
   // Indexing returns the corner that is the equivalent if
@@ -153,16 +166,17 @@ function areSamePointsGeneral(
 
 export function areSamePoints(
   p1: { boardXPos: number; boardYPos: number; corner: number },
-  p2: { boardXPos: number; boardYPos: number; corner: number }
+  p2: { boardXPos: number; boardYPos: number; corner: number },
+  tiles: Array<TileModel>
 ) {
-  return areSamePointsGeneral(p1, p2, true);
+  return areSamePointsGeneral(p1, p2, true, tiles);
 }
 
 export function areSamePointsWithOB(
   p1: { boardXPos: number; boardYPos: number; corner: number },
   p2: { boardXPos: number; boardYPos: number; corner: number }
 ) {
-  return areSamePointsGeneral(p1, p2, false);
+  return areSamePointsGeneral(p1, p2, false, []);
 }
 
 // Points are one away if they share two and only two tiles

@@ -189,13 +189,16 @@ export default class App extends React.Component<AppProps, UIState> {
 
   // TOOD: Make general
   processBuildingUpdate(pkg: BuildingUpdatePackage) {
+    const { boardToBePlayed } = this.props;
+
     const build = new Building(
       pkg.boardXPos,
       pkg.boardYPos,
       pkg.corner,
       pkg.playerNum,
       this.props.turnNumber,
-      pkg.typeOfBuilding
+      pkg.typeOfBuilding,
+      boardToBePlayed.listOfTiles
     );
 
     this.props.placeBuilding(build);

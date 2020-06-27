@@ -13,10 +13,10 @@ export class Building implements BuildingProperties {
   typeOfBuilding: "settlement" | "city";
 
   // Returns an array of TileModel representing the resources the building touches
-  private tilesBuildingIsOn() {
+  private tilesBuildingIsOn(tiles: Array<TileModel>) {
     const { boardXPos, boardYPos, corner } = this;
     // return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
-    return tilesPointIsOn({ boardXPos, boardYPos, corner });
+    return tilesPointIsOn(tiles, { boardXPos, boardYPos, corner });
   }
 
   constructor(
@@ -25,13 +25,14 @@ export class Building implements BuildingProperties {
     corn: number,
     playerNum: PlayerNumber,
     turnPlaced: number,
-    typeOfBuilding: "settlement" | "city"
+    typeOfBuilding: "settlement" | "city",
+    tiles: Array<TileModel>
   ) {
     this.boardXPos = bX;
     this.boardYPos = bY;
     this.corner = corn;
     this.playerNum = playerNum;
-    this.touchingTiles = this.tilesBuildingIsOn();
+    this.touchingTiles = this.tilesBuildingIsOn(tiles);
     this.turnPlaced = turnPlaced;
     this.typeOfBuilding = typeOfBuilding;
   }

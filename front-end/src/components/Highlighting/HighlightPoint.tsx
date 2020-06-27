@@ -25,6 +25,7 @@ import {
   playerIsPlacingRobber,
   declareStealingInfo,
 } from "../../redux/Actions";
+import { tilesPointIsOn } from "../../entities/TilePointHelper";
 
 export type HighlightType = "settlement" | "road" | "robber" | "city";
 
@@ -42,6 +43,7 @@ function mapStateToProps(store: FoAppState) {
     turnNumber: store.turnNumber,
     inGamePlayerNumber: store.inGamePlayerNumber,
     playersByID: store.playersByID,
+    boardToBePlayed: store.boardToBePlayed,
   };
 }
 
@@ -98,7 +100,6 @@ class HighlightPoint extends Component<HighlightProps, {}> {
     socket.emit("addBuilding", pkg);
 
     this.props.isPlacingACity(false);
-    // Don't have to purchase roads if it's the snake draft
     // TODO: Fix Game ID
     const roadPKG: ResourceChangePackage = {
       gameID: "1",
@@ -117,6 +118,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       playerWhoSelected,
       turnNumber,
       inGamePlayerNumber,
+      boardToBePlayed,
     } = this.props;
 
     const pkg: BuildingUpdatePackage = {
@@ -133,7 +135,29 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     this.props.isPlacingASettlement(false);
     this.props.isPlacingRoad(turnNumber <= 2);
-    // Don't have to purchase roads if it's the snake draft
+
+    if (turnNumber === 2) {
+      const touchingTiles = tilesPointIsOn(boardToBePlayed.listOfTiles, {
+        boardXPos,
+        boardYPos,
+        corner,
+      });
+      console.log(touchingTiles);
+      let resMap: { [index: string]: number } = {};
+      for (const tile of touchingTiles) {
+        resMap[tile.resource] = 1;
+      }
+
+      const pkg: ResourceChangePackage = {
+        gameID: "1",
+        resourceDeltaMap: resMap,
+        playerNumber: inGamePlayerNumber,
+      };
+      console.log(pkg);
+      socket.emit("resourceChange", pkg);
+    }
+
+    // Don't have to purchase settlements if it's the snake draft
     // TODO: Fix Game ID
     if (turnNumber > 2) {
       const pkg: ResourceChangePackage = {
