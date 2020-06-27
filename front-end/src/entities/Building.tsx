@@ -9,11 +9,13 @@ export class Building implements BuildingProperties {
   corner: number;
   playerNum: PlayerNumber;
   touchingTiles: Array<TileModel>;
+  turnPlaced: number;
 
   // Returns an array of TileModel representing the resources the building touches
   private tilesBuildingIsOn(listOfTiles: Array<TileModel>) {
     const { boardXPos, boardYPos, corner } = this;
-    return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
+    // return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
+    return tilesPointIsOn({ boardXPos, boardYPos, corner });
   }
 
   constructor(
@@ -21,12 +23,14 @@ export class Building implements BuildingProperties {
     bY: number,
     corn: number,
     playerNum: PlayerNumber,
-    boardTiles: Array<TileModel>
+    boardTiles: Array<TileModel>,
+    turnPlaced: number
   ) {
     this.boardXPos = bX;
     this.boardYPos = bY;
     this.corner = corn;
     this.playerNum = playerNum;
     this.touchingTiles = this.tilesBuildingIsOn(boardTiles);
+    this.turnPlaced = turnPlaced;
   }
 }

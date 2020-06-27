@@ -185,7 +185,6 @@ class InHandDevCard extends Component<TotalProps, {}> {
             </p>
 
             <FontAwesomeIcon
-              style={{ stroke: "black", strokeWidth: 0 }}
               size="6x"
               color={colorMap[code]}
               icon={this.icon()}

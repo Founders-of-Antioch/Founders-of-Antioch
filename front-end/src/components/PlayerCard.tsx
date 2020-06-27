@@ -61,6 +61,7 @@ class PlayerCard extends React.Component<PlayerCardProps, {}> {
             border: `.5em solid ${PLAYER_COLORS.get(
               this.props.playerModel.playerNum
             )}`,
+            height: "10%",
           }}
           className="ui card"
         >
@@ -68,7 +69,7 @@ class PlayerCard extends React.Component<PlayerCardProps, {}> {
             <p style={{ color: "#bebebe" }} className="header">
               Player {playerModel.playerNum}
             </p>
-            <div style={{ textAlign: "center" }} className="ui large labels">
+            <div style={{ textAlign: "center" }} className="ui tiny labels">
               <div style={labelStyle} className={labelClass}>
                 <i className="green trophy icon"></i>{" "}
                 {playerModel.victoryPoints}

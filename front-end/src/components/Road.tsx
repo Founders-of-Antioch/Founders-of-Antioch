@@ -43,6 +43,7 @@ export default class Road extends Component<RoadProps, {}> {
     return (
       <g>
         <rect
+          id={`${boardXPos}-${boardYPos}-${hexEdgeNumber}`}
           // Put it in the middle of the two tiles
           x={adjX - width / 2}
           y={adjY}

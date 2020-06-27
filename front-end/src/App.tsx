@@ -39,6 +39,7 @@ import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
 import HighlightSet from "./components/Highlighting/HighlightSet";
 import StealingModal from "./components/Robber/StealingModal";
+import City from "./components/Buildings/City";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -197,7 +198,8 @@ export default class App extends React.Component<AppProps, UIState> {
       building.boardYPos,
       building.corner,
       building.playerNum,
-      this.props.boardToBePlayed.listOfTiles
+      this.props.boardToBePlayed.listOfTiles,
+      this.props.turnNumber
     );
 
     this.props.placeSettlement(build);
@@ -554,6 +556,8 @@ export default class App extends React.Component<AppProps, UIState> {
           <VisibleActionButtonSet />
 
           <StealingModal />
+
+          <City />
 
           {this.renderTrades()}
 

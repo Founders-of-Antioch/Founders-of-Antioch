@@ -224,7 +224,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     return (
       <circle
-        id="doughy"
+        id={`${boardXPos}:${boardYPos}:${corner}`}
         cx={x}
         cy={y}
         r={widthOfSVG / 100}

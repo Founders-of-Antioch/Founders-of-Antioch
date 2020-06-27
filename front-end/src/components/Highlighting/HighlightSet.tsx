@@ -2,12 +2,13 @@ import React, { Component } from "react";
 import {
   areSamePoints,
   pointsAreOneApart,
+  getEquivPoints,
+  areSameRoadValues,
+  getOneAwayRoadSpots,
+  pointIsInBounds,
 } from "../../entities/TilePointHelper";
 import HighlightPoint, { HighlightType } from "./HighlightPoint";
-import { PlayerNumber } from "../../../../types/Primitives";
-import { TileModel } from "../../entities/TileModel";
-import { Player } from "../../entities/Player";
-import { FoAppState, RobberCoordinates } from "../../redux/reducers/reducers";
+import { FoAppState } from "../../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import store from "../../redux/store";
 
@@ -17,18 +18,7 @@ export const LIST_HIGHLIGHT_TYPES: Array<HighlightType> = [
   "robber",
 ];
 
-type SetProps = {
-  playersByID: Map<PlayerNumber, Player>;
-  currentPersonPlaying: PlayerNumber;
-  inGamePlayerNumber: PlayerNumber;
-  isCurrentlyPlacingSettlement: boolean;
-  isCurrentlyPlacingRoad: boolean;
-  isCurrentlyPlacingRobber: boolean;
-  boardToBePlayed: { listOfTiles: Array<TileModel>; gameID: string };
-  robberCoordinates: RobberCoordinates;
-};
-
-function mapStateToProps(store: FoAppState): SetProps {
+function mapStateToProps(store: FoAppState) {
   return {
     playersByID: store.playersByID,
     currentPersonPlaying: store.currentPersonPlaying,
@@ -38,6 +28,7 @@ function mapStateToProps(store: FoAppState): SetProps {
     isCurrentlyPlacingRobber: store.isCurrentlyPlacingRobber,
     boardToBePlayed: store.boardToBePlayed,
     robberCoordinates: store.robberCoordinates,
+    turnNumber: store.turnNumber,
   };
 }
 
@@ -60,7 +51,7 @@ class HighlightSet extends Component<RedProps, {}> {
     } = this.props;
 
     if (isCurrentlyPlacingRoad) {
-      return this.makeHighlightSet("road");
+      return this.makeRoadHighlights();
     } else if (isCurrentlyPlacingSettlement) {
       return this.makeHighlightSet("settlement");
     } else if (isCurrentlyPlacingRobber) {
@@ -100,6 +91,91 @@ class HighlightSet extends Component<RedProps, {}> {
     return arr;
   }
 
+  roadSpaceIsOccupied(roadPoint: {
+    boardXPos: number;
+    boardYPos: number;
+    hexEdgeNumber: number;
+  }) {
+    const { playersByID } = this.props;
+
+    for (const currPlayer of playersByID.values()) {
+      for (const road of currPlayer.roads) {
+        if (areSameRoadValues(road, roadPoint)) {
+          console.log(roadPoint);
+          console.log(road);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  makeRoadHighlights() {
+    const { playersByID, inGamePlayerNumber, turnNumber } = this.props;
+
+    let arr = [];
+    let key = 0;
+
+    // Can only place roads near your settlements
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer !== undefined) {
+      for (const build of currPlayer.buildings) {
+        if (turnNumber === 2 && build.turnPlaced !== 2) {
+          continue;
+        }
+
+        const equiv = getEquivPoints(build);
+        for (const currPoint of equiv) {
+          const pointAsRoad = {
+            boardXPos: currPoint.boardXPos,
+            boardYPos: currPoint.boardYPos,
+            hexEdgeNumber: currPoint.corner,
+          };
+
+          if (!this.roadSpaceIsOccupied(pointAsRoad)) {
+            arr.push(
+              <HighlightPoint
+                key={key++}
+                boardXPos={currPoint.boardXPos}
+                boardYPos={currPoint.boardYPos}
+                corner={currPoint.corner}
+                playerWhoSelected={inGamePlayerNumber}
+                typeOfHighlight={"road"}
+              />
+            );
+          }
+        }
+      }
+
+      if (turnNumber > 2) {
+        for (const currRoad of currPlayer.roads) {
+          const closeSpots = getOneAwayRoadSpots(currRoad);
+          for (const currSpot of closeSpots) {
+            if (
+              !this.roadSpaceIsOccupied(currSpot) &&
+              pointIsInBounds(currSpot)
+            ) {
+              arr.push(
+                <HighlightPoint
+                  key={key++}
+                  boardXPos={currSpot.boardXPos}
+                  boardYPos={currSpot.boardYPos}
+                  corner={currSpot.hexEdgeNumber}
+                  playerWhoSelected={inGamePlayerNumber}
+                  typeOfHighlight={"road"}
+                />
+              );
+            }
+          }
+        }
+      }
+    }
+
+    return arr;
+  }
+
   makeHighlightSet(typeOfHighlight: HighlightType) {
     const {
       playersByID,
@@ -107,10 +183,7 @@ class HighlightSet extends Component<RedProps, {}> {
       inGamePlayerNumber,
       isCurrentlyPlacingSettlement,
       isCurrentlyPlacingRoad,
-      boardToBePlayed,
     } = this.props;
-
-    const { listOfTiles } = boardToBePlayed;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
     const placing =
@@ -143,16 +216,11 @@ class HighlightSet extends Component<RedProps, {}> {
                     corner: setl.corner,
                   };
 
-                  if (
-                    areSamePoints(listOfTiles, p1, p2) ||
-                    pointsAreOneApart(p1, p2)
-                  ) {
+                  if (areSamePoints(p1, p2) || pointsAreOneApart(p1, p2)) {
                     continue cornerLoop;
                   }
                 }
               }
-            } else {
-              // Roads
             }
 
             spots.push(
