@@ -7,7 +7,6 @@ import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import { Building } from "./entities/Building";
-import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { LIST_OF_RESOURCES } from "./entities/Player";
@@ -200,29 +199,6 @@ export default class App extends React.Component<AppProps, UIState> {
     );
 
     this.props.placeBuilding(build);
-  }
-
-  renderBuildings(): Array<any> {
-    let buildingArr = [];
-    let key = 0;
-
-    for (const p of this.props.listOfPlayers.values()) {
-      for (const i of p.buildings) {
-        if (i.typeOfBuilding === "settlement") {
-          buildingArr.push(
-            <Settlement
-              key={key++}
-              boardXPos={i.boardXPos}
-              boardYPos={i.boardYPos}
-              playerNum={i.playerNum}
-              corner={i.corner}
-            />
-          );
-        }
-      }
-    }
-
-    return buildingArr;
   }
 
   // Sets up basic socket listeners and initalizers
@@ -538,7 +514,6 @@ export default class App extends React.Component<AppProps, UIState> {
               {this.endTurnButton()}
               <HighlightSet />
               {this.renderRoads()}
-              {this.renderBuildings()}
             </svg>
           </div>
 
@@ -554,6 +529,7 @@ export default class App extends React.Component<AppProps, UIState> {
           <VisibleActionButtonSet />
 
           <StealingModal />
+
           <BuildingSet />
 
           {this.renderTrades()}

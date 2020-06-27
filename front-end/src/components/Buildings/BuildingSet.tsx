@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import City from "./City";
+import { Settlement } from "../Settlement";
 
 function mapStateToProps(store: FoAppState) {
   return {
@@ -24,15 +25,15 @@ class CitySet extends Component<CitySetProps, {}> {
     for (const currPlayer of playersByID.values()) {
       for (const currBuild of currPlayer.buildings) {
         if (currBuild.typeOfBuilding === "settlement") {
-          // arr.push(
-          // <Settlement
-          // key={key++}
-          // boardXPos={currBuild.boardXPos}
-          // boardYPos={currBuild.boardYPos}
-          // playerNum={currBuild.playerNum}
-          // corner={currBuild.corner}
-          // />
-          // );
+          arr.push(
+            <Settlement
+              key={key++}
+              boardXPos={currBuild.boardXPos}
+              boardYPos={currBuild.boardYPos}
+              playerNum={currBuild.playerNum}
+              corner={currBuild.corner}
+            />
+          );
         } else {
           arr.push(<City key={key++} buildModel={currBuild} />);
         }
