@@ -182,28 +182,28 @@ class HighlightSet extends Component<RedProps, {}> {
         }
       }
 
-      if (turnNumber > 2) {
-        for (const currRoad of currPlayer.roads) {
-          const closeSpots = getOneAwayRoadSpots(currRoad);
-          for (const currSpot of closeSpots) {
-            if (
-              !this.roadSpaceIsOccupied(currSpot) &&
-              pointIsInBounds(currSpot)
-            ) {
-              arr.push(
-                <HighlightPoint
-                  key={key++}
-                  boardXPos={currSpot.boardXPos}
-                  boardYPos={currSpot.boardYPos}
-                  corner={currSpot.hexEdgeNumber}
-                  playerWhoSelected={inGamePlayerNumber}
-                  typeOfHighlight={"road"}
-                />
-              );
-            }
+      // if (turnNumber > 2) {
+      for (const currRoad of currPlayer.roads) {
+        const closeSpots = getOneAwayRoadSpots(currRoad);
+        for (const currSpot of closeSpots) {
+          if (
+            !this.roadSpaceIsOccupied(currSpot) &&
+            pointIsInBounds(currSpot)
+          ) {
+            arr.push(
+              <HighlightPoint
+                key={key++}
+                boardXPos={currSpot.boardXPos}
+                boardYPos={currSpot.boardYPos}
+                corner={currSpot.hexEdgeNumber}
+                playerWhoSelected={inGamePlayerNumber}
+                typeOfHighlight={"road"}
+              />
+            );
           }
         }
       }
+      // }
     }
 
     return arr;

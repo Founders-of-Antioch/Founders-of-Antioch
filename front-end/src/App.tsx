@@ -42,7 +42,8 @@ import StealingModal from "./components/Robber/StealingModal";
 import BuildingSet from "./components/Buildings/BuildingSet";
 
 // const unsubscribe =
-store.subscribe(() => console.log(store.getState()));
+// store.subscribe(() => console.log(store.getState()));
+store.subscribe(() => {});
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 

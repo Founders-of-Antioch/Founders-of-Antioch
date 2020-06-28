@@ -142,10 +142,13 @@ class HighlightPoint extends Component<HighlightProps, {}> {
         boardYPos,
         corner,
       });
-      console.log(touchingTiles);
       let resMap: { [index: string]: number } = {};
       for (const tile of touchingTiles) {
-        resMap[tile.resource] = 1;
+        if (tile.resource in resMap) {
+          resMap[tile.resource] += 1;
+        } else {
+          resMap[tile.resource] = 1;
+        }
       }
 
       const pkg: ResourceChangePackage = {
@@ -153,7 +156,6 @@ class HighlightPoint extends Component<HighlightProps, {}> {
         resourceDeltaMap: resMap,
         playerNumber: inGamePlayerNumber,
       };
-      console.log(pkg);
       socket.emit("resourceChange", pkg);
     }
 

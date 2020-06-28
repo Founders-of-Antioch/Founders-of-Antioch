@@ -3,6 +3,7 @@ import { RoadModel } from "./RoadModel";
 import { ResourceString, PlayerNumber } from "../../../types/Primitives";
 import { PlayerProperties } from "../../../types/entities/Player";
 import DevCard from "./DevCard";
+import { getOneAwayRoadSpots, areSameRoadValues } from "./TilePointHelper";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -24,6 +25,7 @@ export class Player implements PlayerProperties {
   resourceHand: Map<string, number>;
   devCardHand: Array<DevCard>;
   hasLargestArmy: boolean;
+  hasLongestRoad: boolean;
 
   constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
@@ -34,6 +36,7 @@ export class Player implements PlayerProperties {
     this.resourceHand = new Map();
     this.devCardHand = [];
     this.hasLargestArmy = false;
+    this.hasLongestRoad = false;
 
     for (const res of LIST_OF_RESOURCES) {
       this.resourceHand.set(res, 0);
@@ -50,6 +53,7 @@ export class Player implements PlayerProperties {
     this.resourceHand = new Map([...p.resourceHand]);
     this.devCardHand = [...p.devCardHand];
     this.hasLargestArmy = p.hasLargestArmy;
+    this.hasLongestRoad = p.hasLongestRoad;
   }
 
   addResource(res: ResourceString) {
@@ -119,25 +123,71 @@ export class Player implements PlayerProperties {
     this.victoryPoints -= 2;
   }
 
-  // upgrade(b: Building) {
-  //   const arr = [];
-  //   for (const build of this.buildings) {
-  //     if (build.spacesAreSame(b)) {
-  //       arr.push(
-  //         new Building(
-  //           build.boardXPos,
-  //           build.boardYPos,
-  //           build.corner,
-  //           build.playerNum,
-  //           build.turnPlaced,
-  //           "city"
-  //         )
-  //       );
-  //     } else {
-  //       arr.push(build);
-  //     }
-  //   }
+  takeLongestRoad() {
+    this.hasLongestRoad = true;
+    this.victoryPoints += 2;
+  }
 
-  //   this.buildings = arr;
-  // }
+  loseLongestRoad() {
+    this.hasLongestRoad = false;
+    this.victoryPoints -= 2;
+  }
+
+  getAdjacentRoads(r: {
+    boardXPos: number;
+    boardYPos: number;
+    hexEdgeNumber: number;
+  }) {
+    let arr = [];
+
+    const oneAways = getOneAwayRoadSpots(r);
+    for (const adjRoad of oneAways) {
+      for (const currRoad of this.roads) {
+        if (areSameRoadValues(currRoad, adjRoad)) {
+          arr.push(adjRoad);
+        }
+      }
+    }
+
+    return arr;
+  }
+
+  pathLength(
+    r: { boardXPos: number; boardYPos: number; hexEdgeNumber: number },
+    visited: Array<{
+      boardXPos: number;
+      boardYPos: number;
+      hexEdgeNumber: number;
+    }>,
+    length: number
+  ): number {
+    console.log(length);
+    const adjRoads = this.getAdjacentRoads(r);
+    console.log(r);
+    console.log(adjRoads);
+    outer: for (const adj of adjRoads) {
+      for (const visit of visited) {
+        if (areSameRoadValues(adj, visit)) {
+          continue outer;
+        }
+      }
+      console.log("12");
+      return this.pathLength(adj, visited.concat(r), length + 1);
+    }
+
+    return length;
+  }
+
+  contiguousRoads() {
+    let max = 0;
+    for (const currRoad of this.roads) {
+      const currLen = this.pathLength(currRoad, [currRoad], 1);
+      console.log(currLen);
+      if (currLen > max) {
+        max = currLen;
+      }
+    }
+
+    return max;
+  }
 }
