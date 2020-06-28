@@ -1,7 +1,7 @@
 import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TileModel";
 import { Building } from "../entities/Building";
-import { SeedState, RobberCoordinates } from "./reducers/reducers";
+import { SeedState } from "./reducers/reducers";
 import {
   PlayerNumber,
   ResourceString,
@@ -9,6 +9,7 @@ import {
 } from "../../../types/Primitives";
 import store from "./store";
 import DevCard from "../entities/DevCard";
+import BoardPoint from "../entities/Points/BoardPoint";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -61,7 +62,7 @@ interface PlaceRoadAction {
 interface CollectResourcesAction {
   type: typeof COLLECT_RESOURCES;
   diceSum: number;
-  robber: RobberCoordinates;
+  robber: BoardPoint;
 }
 
 interface ChangeResourceAction {
@@ -193,8 +194,7 @@ export interface IsPlacingRobberAction {
 
 export interface MoveRobberAction {
   type: typeof MOVE_ROBBER;
-  boardXPos: number;
-  boardYPos: number;
+  point: BoardPoint;
 }
 
 export interface IsStealingAction {
@@ -394,14 +394,10 @@ export function playerIsPlacingRobber(
   };
 }
 
-export function moveRobberTo(
-  boardXPos: number,
-  boardYPos: number
-): MoveRobberAction {
+export function moveRobberTo(point: BoardPoint): MoveRobberAction {
   return {
     type: MOVE_ROBBER,
-    boardXPos,
-    boardYPos,
+    point,
   };
 }
 

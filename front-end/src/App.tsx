@@ -40,6 +40,7 @@ import DevCardHand from "./components/GameCards/DevCardHand";
 import HighlightSet from "./components/Highlighting/HighlightSet";
 import StealingModal from "./components/Robber/StealingModal";
 import BuildingSet from "./components/Buildings/BuildingSet";
+import BoardPoint from "./entities/Points/BoardPoint";
 
 // const unsubscribe =
 // store.subscribe(() => console.log(store.getState()));
@@ -276,7 +277,7 @@ export default class App extends React.Component<AppProps, UIState> {
     });
 
     socket.on("robberUpdate", (pkg: MoveRobberPackage) => {
-      this.props.moveRobberTo(pkg.boardXPos, pkg.boardYPos);
+      this.props.moveRobberTo(new BoardPoint(pkg.boardXPos, pkg.boardYPos));
     });
 
     socket.on("stealUpdate", (pkg: StealFromPackage) => {

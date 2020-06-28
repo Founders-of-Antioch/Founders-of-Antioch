@@ -18,11 +18,7 @@ import isCurrentlyPlacingRobber from "./isCurrentlyPlacingRobber";
 import robberCoordinates from "./robberCoordinates";
 import stealingInfo from "./stealingInfo";
 import isCurrentlyPlacingCity from "./isCurrentlyPlacingCity";
-
-export interface RobberCoordinates {
-  boardXPos: number;
-  boardYPos: number;
-}
+import BoardPoint from "../../entities/Points/BoardPoint";
 
 export interface StealingInfo {
   isStealing: boolean;
@@ -48,7 +44,7 @@ export interface FoAppState {
   isCurrentlyPlacingRobber: boolean;
   isCurrentlyPlacingCity: boolean;
   devCards: Array<DevCard>;
-  robberCoordinates: RobberCoordinates;
+  robberCoordinates: BoardPoint;
   stealingInfo: StealingInfo;
 }
 

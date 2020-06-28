@@ -78,8 +78,8 @@ export default function players(
           for (const currTile of currBuilding.touchingTiles) {
             if (action.diceSum === currTile.counter) {
               if (
-                action.robber.boardXPos !== currTile.boardXPos ||
-                action.robber.boardYPos !== currTile.boardYPos
+                action.robber.boardXPos !== currTile.point.boardXPos ||
+                action.robber.boardYPos !== currTile.point.boardYPos
               ) {
                 targetPlayer.addResource(currTile.resource);
                 if (currBuilding.typeOfBuilding === "city") {

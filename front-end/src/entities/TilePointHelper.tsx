@@ -1,6 +1,7 @@
 import { TileModel } from "./TileModel";
 import { PlayerNumber } from "../../../types/Primitives";
 import { Player } from "./Player";
+import BoardPoint from "./Points/BoardPoint";
 
 // https://www.redblobgames.com/grids/hexagons/#neighbors
 const NEIGHBOR_DIRECTIONS = [
@@ -13,10 +14,7 @@ const NEIGHBOR_DIRECTIONS = [
 ];
 
 // TODO: refactor some of the garbo
-export function pointIsInBounds(currPoint: {
-  boardXPos: number;
-  boardYPos: number;
-}) {
+export function pointIsInBounds(currPoint: BoardPoint) {
   if (currPoint.boardXPos === 0) {
     return !(Math.abs(currPoint.boardYPos) > 2);
   } else if (Math.abs(currPoint.boardXPos) === 2) {
@@ -65,6 +63,7 @@ function tilesPointIsOnGeneral(
   for (const currDirection of directions) {
     const expecX = currDirection[0] + point.boardXPos;
     const expecY = currDirection[1] + point.boardYPos;
+    const expecPoint = new BoardPoint(expecX, expecY);
 
     if (includeOB) {
       // If it's for out of bounds checking, we don't care about anything
@@ -73,7 +72,7 @@ function tilesPointIsOnGeneral(
       adjTiles.push(newTile);
     } else {
       for (const currTile of listOfTiles) {
-        if (currTile.boardXPos === expecX && currTile.boardYPos === expecY) {
+        if (currTile.point.equals(expecPoint)) {
           adjTiles.push(currTile);
         }
       }
@@ -93,11 +92,8 @@ export function tilesPointIsOn(
 ) {
   const gen = tilesPointIsOnGeneral(tiles, point, false);
 
-  return gen.filter((currPoint) => {
-    return pointIsInBounds({
-      boardXPos: currPoint.boardXPos,
-      boardYPos: currPoint.boardYPos,
-    });
+  return gen.filter((currTile) => {
+    return pointIsInBounds(currTile.point);
   });
 }
 
@@ -148,8 +144,8 @@ function areSamePointsGeneral(
 
   for (const currTile of p1TouchingTiles) {
     if (
-      currTile.boardXPos === p2.boardXPos &&
-      currTile.boardYPos === p2.boardYPos
+      currTile.point.boardXPos === p2.boardXPos &&
+      currTile.point.boardYPos === p2.boardYPos
     ) {
       if (p2.boardXPos === p1.boardXPos && p2.boardYPos === p1.boardYPos) {
         return p2.corner === p1.corner;
@@ -194,8 +190,8 @@ export function pointsAreOneApart(
   for (const currP1 of p1Tiles) {
     for (const currP2 of p2Tiles) {
       if (
-        currP2.boardXPos === currP1.boardXPos &&
-        currP2.boardYPos === currP1.boardYPos
+        currP2.point.boardXPos === currP1.point.boardXPos &&
+        currP2.point.boardYPos === currP1.point.boardYPos
       ) {
         alike++;
       }
@@ -217,7 +213,7 @@ export function getEquivPoints(p1: {
 
   let numOutBoundTiles = 0;
   for (const tile of obTiles) {
-    if (!pointIsInBounds(tile)) {
+    if (!pointIsInBounds(tile.point)) {
       numOutBoundTiles++;
     }
   }
@@ -225,14 +221,17 @@ export function getEquivPoints(p1: {
   for (const currTile of obTiles) {
     for (let i = 0; i < 6; i++) {
       const p2 = {
-        boardXPos: currTile.boardXPos,
-        boardYPos: currTile.boardYPos,
+        boardXPos: currTile.point.boardXPos,
+        boardYPos: currTile.point.boardYPos,
         corner: i,
       };
       if (areSamePointsWithOB(p1, p2)) {
         if (numOutBoundTiles < 2) {
           arr.push(p2);
-        } else if (pointIsInBounds(p2) || i !== edgeOutOfBoundsMap[p1.corner]) {
+        } else if (
+          pointIsInBounds(new BoardPoint(p2.boardXPos, p2.boardYPos)) ||
+          i !== edgeOutOfBoundsMap[p1.corner]
+        ) {
           arr.push(p2);
         }
       }

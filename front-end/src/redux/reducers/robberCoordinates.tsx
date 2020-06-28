@@ -1,13 +1,13 @@
-import { RobberCoordinates } from "./reducers";
 import { MoveRobberAction, MOVE_ROBBER } from "../Actions";
+import BoardPoint from "../../entities/Points/BoardPoint";
 
 export default function robberCoordinates(
-  state: RobberCoordinates = { boardXPos: 0, boardYPos: 0 },
+  state: BoardPoint = new BoardPoint(0, 0),
   action: MoveRobberAction
-): RobberCoordinates {
+): BoardPoint {
   switch (action.type) {
     case MOVE_ROBBER:
-      return { boardXPos: action.boardXPos, boardYPos: action.boardYPos };
+      return new BoardPoint(action.point.boardXPos, action.point.boardYPos);
     default:
       return state;
   }

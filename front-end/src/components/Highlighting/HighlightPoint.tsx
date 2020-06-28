@@ -26,6 +26,7 @@ import {
   declareStealingInfo,
 } from "../../redux/Actions";
 import { tilesPointIsOn } from "../../entities/TilePointHelper";
+import BoardPoint from "../../entities/Points/BoardPoint";
 
 export type HighlightType = "settlement" | "road" | "robber" | "city";
 
@@ -223,8 +224,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       for (const currBuild of currPlayer.buildings) {
         for (const currTile of currBuild.touchingTiles) {
           if (
-            currTile.boardXPos === boardXPos &&
-            currTile.boardYPos === boardYPos &&
+            currTile.point.equals(new BoardPoint(boardXPos, boardYPos)) &&
             currPlayer.playerNum !== inGamePlayerNumber &&
             currPlayer.numberOfCardsInHand() !== 0
           ) {

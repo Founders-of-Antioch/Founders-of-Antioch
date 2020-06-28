@@ -13,6 +13,7 @@ import HighlightPoint, { HighlightType } from "./HighlightPoint";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import store from "../../redux/store";
+import BoardPoint from "../../entities/Points/BoardPoint";
 
 export const LIST_HIGHLIGHT_TYPES: Array<HighlightType> = [
   "settlement",
@@ -104,20 +105,21 @@ class HighlightSet extends Component<RedProps, {}> {
       inGamePlayerNumber,
       robberCoordinates,
     } = this.props;
+    // return [];
 
     let key = 0;
     let arr = [];
     for (const currTile of boardToBePlayed.listOfTiles) {
       if (
-        currTile.boardXPos !== robberCoordinates.boardXPos ||
-        currTile.boardYPos !== robberCoordinates.boardYPos
+        currTile.point.boardXPos !== robberCoordinates.boardXPos ||
+        currTile.point.boardYPos !== robberCoordinates.boardYPos
       ) {
         arr.push(
           <HighlightPoint
             key={key++}
             typeOfHighlight={"robber"}
-            boardXPos={currTile.boardXPos}
-            boardYPos={currTile.boardYPos}
+            boardXPos={currTile.point.boardXPos}
+            boardYPos={currTile.point.boardYPos}
             corner={-1}
             playerWhoSelected={inGamePlayerNumber}
           />
@@ -172,7 +174,9 @@ class HighlightSet extends Component<RedProps, {}> {
           for (const currSpot of closeSpots) {
             if (
               !roadSpaceIsOccupied(currSpot, playersByID) &&
-              pointIsInBounds(currSpot)
+              pointIsInBounds(
+                new BoardPoint(currSpot.boardXPos, currSpot.boardYPos)
+              )
             ) {
               arr.push(
                 <HighlightPoint
