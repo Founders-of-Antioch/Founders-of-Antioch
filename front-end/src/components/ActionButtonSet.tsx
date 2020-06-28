@@ -2,6 +2,10 @@ import React, { Component } from "react";
 import { Button } from "semantic-ui-react";
 import { ABSProps } from "../containter-components/VisibleActionButtonSet";
 import ProposeTrade from "./Trading/ProposeTrade";
+import {
+  roadPointToTouchingBuildingPoints,
+  canPutBuildingOn,
+} from "../entities/TilePointHelper";
 
 type UIState = {
   showProposeTrade: boolean;
@@ -19,6 +23,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     this.purchaseDevCard = this.purchaseDevCard.bind(this);
     this.settlementClick = this.settlementClick.bind(this);
     this.cityClick = this.cityClick.bind(this);
+    this.hasPlacesToSettle = this.hasPlacesToSettle.bind(this);
   }
 
   settlementClick() {
@@ -108,6 +113,29 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     return inGamePlayerNumber === currentPersonPlaying;
   }
 
+  hasPlacesToSettle() {
+    const { playersByID, inGamePlayerNumber, boardToBePlayed } = this.props;
+
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+    if (currPlayer !== undefined) {
+      for (const road of currPlayer.roads) {
+        const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(road);
+        for (const buildingSpot of nearbyBuildingSpots) {
+          if (
+            canPutBuildingOn(
+              buildingSpot,
+              playersByID,
+              boardToBePlayed.listOfTiles
+            )
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   canTrade() {
     return (
       !this.props.isPlacingRobber &&
@@ -119,6 +147,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuySettlement() {
     return (
+      this.hasPlacesToSettle() &&
       !(this.getNumberOfSettlements() > 5) &&
       !this.props.isPlacingRobber &&
       this.props.hasRolled &&

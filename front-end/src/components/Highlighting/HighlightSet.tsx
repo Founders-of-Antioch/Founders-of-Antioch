@@ -3,9 +3,11 @@ import {
   areSamePoints,
   pointsAreOneApart,
   getEquivPoints,
-  areSameRoadValues,
   getOneAwayRoadSpots,
   pointIsInBounds,
+  roadPointToTouchingBuildingPoints,
+  canPutBuildingOn,
+  roadSpaceIsOccupied,
 } from "../../entities/TilePointHelper";
 import HighlightPoint, { HighlightType } from "./HighlightPoint";
 import { FoAppState } from "../../redux/reducers/reducers";
@@ -126,24 +128,6 @@ class HighlightSet extends Component<RedProps, {}> {
     return arr;
   }
 
-  roadSpaceIsOccupied(roadPoint: {
-    boardXPos: number;
-    boardYPos: number;
-    hexEdgeNumber: number;
-  }) {
-    const { playersByID } = this.props;
-
-    for (const currPlayer of playersByID.values()) {
-      for (const road of currPlayer.roads) {
-        if (areSameRoadValues(road, roadPoint)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
   makeRoadHighlights() {
     const { playersByID, inGamePlayerNumber, turnNumber } = this.props;
 
@@ -167,7 +151,7 @@ class HighlightSet extends Component<RedProps, {}> {
             hexEdgeNumber: currPoint.corner,
           };
 
-          if (!this.roadSpaceIsOccupied(pointAsRoad)) {
+          if (!roadSpaceIsOccupied(pointAsRoad, playersByID)) {
             arr.push(
               <HighlightPoint
                 key={key++}
@@ -182,28 +166,28 @@ class HighlightSet extends Component<RedProps, {}> {
         }
       }
 
-      // if (turnNumber > 2) {
-      for (const currRoad of currPlayer.roads) {
-        const closeSpots = getOneAwayRoadSpots(currRoad);
-        for (const currSpot of closeSpots) {
-          if (
-            !this.roadSpaceIsOccupied(currSpot) &&
-            pointIsInBounds(currSpot)
-          ) {
-            arr.push(
-              <HighlightPoint
-                key={key++}
-                boardXPos={currSpot.boardXPos}
-                boardYPos={currSpot.boardYPos}
-                corner={currSpot.hexEdgeNumber}
-                playerWhoSelected={inGamePlayerNumber}
-                typeOfHighlight={"road"}
-              />
-            );
+      if (turnNumber > 2) {
+        for (const currRoad of currPlayer.roads) {
+          const closeSpots = getOneAwayRoadSpots(currRoad);
+          for (const currSpot of closeSpots) {
+            if (
+              !roadSpaceIsOccupied(currSpot, playersByID) &&
+              pointIsInBounds(currSpot)
+            ) {
+              arr.push(
+                <HighlightPoint
+                  key={key++}
+                  boardXPos={currSpot.boardXPos}
+                  boardYPos={currSpot.boardYPos}
+                  corner={currSpot.hexEdgeNumber}
+                  playerWhoSelected={inGamePlayerNumber}
+                  typeOfHighlight={"road"}
+                />
+              );
+            }
           }
         }
       }
-      // }
     }
 
     return arr;
@@ -217,6 +201,7 @@ class HighlightSet extends Component<RedProps, {}> {
       inGamePlayerNumber,
       isCurrentlyPlacingSettlement,
       boardToBePlayed,
+      turnNumber,
     } = this.props;
 
     const isTurn = currentPersonPlaying === inGamePlayerNumber;
@@ -224,49 +209,79 @@ class HighlightSet extends Component<RedProps, {}> {
     if (isTurn && isCurrentlyPlacingSettlement) {
       const spots = [];
       let keyForHighlights = 0;
-
-      for (let x = 2; x >= -2; x--) {
-        const numRows = 5 - Math.abs(x);
-        let y = 2;
-        if (x < 0) {
-          y -= Math.abs(x);
-        }
-
-        let numRowsDone = 0;
-        for (; numRowsDone < numRows; y--) {
-          cornerLoop: for (let corner = 0; corner <= 5; corner++) {
-            // If there is already a building in the spot, don't highlight it
-            for (const pl of playersByID.values()) {
-              for (const setl of pl.buildings) {
-                const p1 = { boardXPos: x, boardYPos: y, corner };
-                const p2 = {
-                  boardXPos: setl.boardXPos,
-                  boardYPos: setl.boardYPos,
-                  corner: setl.corner,
-                };
-
-                if (
-                  areSamePoints(p1, p2, boardToBePlayed.listOfTiles) ||
-                  pointsAreOneApart(p1, p2)
-                ) {
-                  continue cornerLoop;
-                }
-              }
-            }
-
-            spots.push(
-              <HighlightPoint
-                key={keyForHighlights++}
-                boardXPos={x}
-                boardYPos={y}
-                corner={corner}
-                playerWhoSelected={inGamePlayerNumber}
-                typeOfHighlight={"settlement"}
-              />
-            );
+      if (turnNumber <= 2) {
+        for (let x = 2; x >= -2; x--) {
+          const numRows = 5 - Math.abs(x);
+          let y = 2;
+          if (x < 0) {
+            y -= Math.abs(x);
           }
 
-          numRowsDone++;
+          let numRowsDone = 0;
+          for (; numRowsDone < numRows; y--) {
+            cornerLoop: for (let corner = 0; corner <= 5; corner++) {
+              // If there is already a building in the spot, don't highlight it
+              for (const pl of playersByID.values()) {
+                for (const setl of pl.buildings) {
+                  const p1 = { boardXPos: x, boardYPos: y, corner };
+                  const p2 = {
+                    boardXPos: setl.boardXPos,
+                    boardYPos: setl.boardYPos,
+                    corner: setl.corner,
+                  };
+
+                  if (
+                    areSamePoints(p1, p2, boardToBePlayed.listOfTiles) ||
+                    pointsAreOneApart(p1, p2)
+                  ) {
+                    continue cornerLoop;
+                  }
+                }
+              }
+
+              spots.push(
+                <HighlightPoint
+                  key={keyForHighlights++}
+                  boardXPos={x}
+                  boardYPos={y}
+                  corner={corner}
+                  playerWhoSelected={inGamePlayerNumber}
+                  typeOfHighlight={"settlement"}
+                />
+              );
+            }
+
+            numRowsDone++;
+          }
+        }
+      } else {
+        const currPlayer = playersByID.get(inGamePlayerNumber);
+        if (currPlayer !== undefined) {
+          for (const road of currPlayer.roads) {
+            const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(road);
+            console.log(nearbyBuildingSpots);
+            for (const buildingSpot of nearbyBuildingSpots) {
+              if (
+                canPutBuildingOn(
+                  buildingSpot,
+                  playersByID,
+                  boardToBePlayed.listOfTiles
+                )
+              ) {
+                console.log(buildingSpot);
+                spots.push(
+                  <HighlightPoint
+                    key={keyForHighlights++}
+                    boardXPos={buildingSpot.boardXPos}
+                    boardYPos={buildingSpot.boardYPos}
+                    corner={buildingSpot.corner}
+                    playerWhoSelected={inGamePlayerNumber}
+                    typeOfHighlight={"settlement"}
+                  />
+                );
+              }
+            }
+          }
         }
       }
       return spots;

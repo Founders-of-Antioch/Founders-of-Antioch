@@ -161,17 +161,13 @@ export class Player implements PlayerProperties {
     }>,
     length: number
   ): number {
-    console.log(length);
     const adjRoads = this.getAdjacentRoads(r);
-    console.log(r);
-    console.log(adjRoads);
     outer: for (const adj of adjRoads) {
       for (const visit of visited) {
         if (areSameRoadValues(adj, visit)) {
           continue outer;
         }
       }
-      console.log("12");
       return this.pathLength(adj, visited.concat(r), length + 1);
     }
 
@@ -182,7 +178,6 @@ export class Player implements PlayerProperties {
     let max = 0;
     for (const currRoad of this.roads) {
       const currLen = this.pathLength(currRoad, [currRoad], 1);
-      console.log(currLen);
       if (currLen > max) {
         max = currLen;
       }

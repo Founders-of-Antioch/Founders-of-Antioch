@@ -1,4 +1,6 @@
 import { TileModel } from "./TileModel";
+import { PlayerNumber } from "../../../types/Primitives";
+import { Player } from "./Player";
 
 // https://www.redblobgames.com/grids/hexagons/#neighbors
 const NEIGHBOR_DIRECTIONS = [
@@ -308,4 +310,93 @@ export function getOneAwayRoadSpots(p1: {
   const r2 = { ...oppositeTile, hexEdgeNumber: oppRight };
 
   return [l1, r1, l2, r2];
+}
+
+export function roadPointToTouchingBuildingPoints(r: {
+  boardXPos: number;
+  boardYPos: number;
+  hexEdgeNumber: number;
+}) {
+  if (r.hexEdgeNumber === 5) {
+    return [
+      {
+        boardXPos: r.boardXPos,
+        boardYPos: r.boardYPos,
+        corner: r.hexEdgeNumber,
+      },
+      { boardXPos: r.boardXPos, boardYPos: r.boardYPos, corner: 0 },
+    ];
+  } else {
+    return [
+      {
+        boardXPos: r.boardXPos,
+        boardYPos: r.boardYPos,
+        corner: r.hexEdgeNumber,
+      },
+      {
+        boardXPos: r.boardXPos,
+        boardYPos: r.boardYPos,
+        corner: r.hexEdgeNumber + 1,
+      },
+    ];
+  }
+}
+
+export function roadSpaceIsOccupied(
+  roadPoint: {
+    boardXPos: number;
+    boardYPos: number;
+    hexEdgeNumber: number;
+  },
+  playersByID: Map<PlayerNumber, Player>
+) {
+  for (const currPlayer of playersByID.values()) {
+    for (const road of currPlayer.roads) {
+      if (areSameRoadValues(road, roadPoint)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function buildingSpaceIsOccupied(
+  buildPoint: {
+    boardXPos: number;
+    boardYPos: number;
+    corner: number;
+  },
+  playersByID: Map<PlayerNumber, Player>,
+  listOfTiles: Array<TileModel>
+) {
+  for (const currPlayer of playersByID.values()) {
+    for (const build of currPlayer.buildings) {
+      if (areSamePoints(build, buildPoint, listOfTiles)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+export function canPutBuildingOn(
+  buildPoint: {
+    boardXPos: number;
+    boardYPos: number;
+    corner: number;
+  },
+  playersByID: Map<PlayerNumber, Player>,
+  listOfTiles: Array<TileModel>
+) {
+  for (const currPlayer of playersByID.values()) {
+    for (const build of currPlayer.buildings) {
+      if (pointsAreOneApart(build, buildPoint)) {
+        return false;
+      }
+    }
+  }
+
+  return !buildingSpaceIsOccupied(buildPoint, playersByID, listOfTiles);
 }
