@@ -14,6 +14,9 @@ import { FoAppState } from "../../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import store from "../../redux/store";
 import BoardPoint from "../../entities/Points/BoardPoint";
+import BuildingPoint from "../../entities/Points/BuildingPoint";
+import RoadPoint from "../../entities/Points/RoadPoint";
+import TilePoint from "../../entities/Points/TilePoint";
 
 export const LIST_HIGHLIGHT_TYPES: Array<HighlightType> = [
   "settlement",
@@ -84,9 +87,7 @@ class HighlightSet extends Component<RedProps, {}> {
             <HighlightPoint
               key={key++}
               typeOfHighlight={"city"}
-              boardXPos={build.boardXPos}
-              boardYPos={build.boardYPos}
-              corner={build.corner}
+              point={build.point}
               playerWhoSelected={inGamePlayerNumber}
             />
           );
@@ -118,9 +119,7 @@ class HighlightSet extends Component<RedProps, {}> {
           <HighlightPoint
             key={key++}
             typeOfHighlight={"robber"}
-            boardXPos={currTile.point.boardXPos}
-            boardYPos={currTile.point.boardYPos}
-            corner={-1}
+            point={new TilePoint(currTile.point, -1)}
             playerWhoSelected={inGamePlayerNumber}
           />
         );
@@ -145,21 +144,18 @@ class HighlightSet extends Component<RedProps, {}> {
           continue;
         }
 
-        const equiv = getEquivPoints(build);
+        const equiv = getEquivPoints(build.point);
         for (const currPoint of equiv) {
-          const pointAsRoad = {
-            boardXPos: currPoint.boardXPos,
-            boardYPos: currPoint.boardYPos,
-            hexEdgeNumber: currPoint.corner,
-          };
-
-          if (!roadSpaceIsOccupied(pointAsRoad, playersByID)) {
+          if (
+            !roadSpaceIsOccupied(
+              new RoadPoint(currPoint.boardPoint, currPoint.positionOnTile),
+              playersByID
+            )
+          ) {
             arr.push(
               <HighlightPoint
                 key={key++}
-                boardXPos={currPoint.boardXPos}
-                boardYPos={currPoint.boardYPos}
-                corner={currPoint.corner}
+                point={currPoint}
                 playerWhoSelected={inGamePlayerNumber}
                 typeOfHighlight={"road"}
               />
@@ -167,23 +163,18 @@ class HighlightSet extends Component<RedProps, {}> {
           }
         }
       }
-
       if (turnNumber > 2) {
         for (const currRoad of currPlayer.roads) {
-          const closeSpots = getOneAwayRoadSpots(currRoad);
+          const closeSpots = getOneAwayRoadSpots(currRoad.point);
           for (const currSpot of closeSpots) {
             if (
               !roadSpaceIsOccupied(currSpot, playersByID) &&
-              pointIsInBounds(
-                new BoardPoint(currSpot.boardXPos, currSpot.boardYPos)
-              )
+              pointIsInBounds(currSpot.boardPoint)
             ) {
               arr.push(
                 <HighlightPoint
                   key={key++}
-                  boardXPos={currSpot.boardXPos}
-                  boardYPos={currSpot.boardYPos}
-                  corner={currSpot.hexEdgeNumber}
+                  point={currSpot}
                   playerWhoSelected={inGamePlayerNumber}
                   typeOfHighlight={"road"}
                 />
@@ -193,7 +184,6 @@ class HighlightSet extends Component<RedProps, {}> {
         }
       }
     }
-
     return arr;
   }
 
@@ -227,16 +217,14 @@ class HighlightSet extends Component<RedProps, {}> {
               // If there is already a building in the spot, don't highlight it
               for (const pl of playersByID.values()) {
                 for (const setl of pl.buildings) {
-                  const p1 = { boardXPos: x, boardYPos: y, corner };
-                  const p2 = {
-                    boardXPos: setl.boardXPos,
-                    boardYPos: setl.boardYPos,
-                    corner: setl.corner,
-                  };
-
+                  const p1 = new BuildingPoint(new BoardPoint(x, y), corner);
                   if (
-                    areSamePoints(p1, p2, boardToBePlayed.listOfTiles) ||
-                    pointsAreOneApart(p1, p2)
+                    areSamePoints(
+                      p1,
+                      setl.point,
+                      boardToBePlayed.listOfTiles
+                    ) ||
+                    pointsAreOneApart(p1, setl.point)
                   ) {
                     continue cornerLoop;
                   }
@@ -246,9 +234,7 @@ class HighlightSet extends Component<RedProps, {}> {
               spots.push(
                 <HighlightPoint
                   key={keyForHighlights++}
-                  boardXPos={x}
-                  boardYPos={y}
-                  corner={corner}
+                  point={new BuildingPoint(new BoardPoint(x, y), corner)}
                   playerWhoSelected={inGamePlayerNumber}
                   typeOfHighlight={"settlement"}
                 />
@@ -262,8 +248,9 @@ class HighlightSet extends Component<RedProps, {}> {
         const currPlayer = playersByID.get(inGamePlayerNumber);
         if (currPlayer !== undefined) {
           for (const road of currPlayer.roads) {
-            const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(road);
-            console.log(nearbyBuildingSpots);
+            const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(
+              road.point
+            );
             for (const buildingSpot of nearbyBuildingSpots) {
               if (
                 canPutBuildingOn(
@@ -272,13 +259,10 @@ class HighlightSet extends Component<RedProps, {}> {
                   boardToBePlayed.listOfTiles
                 )
               ) {
-                console.log(buildingSpot);
                 spots.push(
                   <HighlightPoint
                     key={keyForHighlights++}
-                    boardXPos={buildingSpot.boardXPos}
-                    boardYPos={buildingSpot.boardYPos}
-                    corner={buildingSpot.corner}
+                    point={buildingSpot}
                     playerWhoSelected={inGamePlayerNumber}
                     typeOfHighlight={"settlement"}
                   />

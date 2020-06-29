@@ -2,11 +2,12 @@ import { TileModel } from "./TileModel";
 import { PlayerNumber } from "../../../types/Primitives";
 import { BuildingProperties } from "../../../types/entities/Building";
 import { tilesPointIsOn } from "./TilePointHelper";
+import TilePoint from "./Points/TilePoint";
+import BoardPoint from "./Points/BoardPoint";
+import BuildingPoint from "./Points/BuildingPoint";
 
 export class Building implements BuildingProperties {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
+  point: TilePoint;
   playerNum: PlayerNumber;
   touchingTiles: Array<TileModel>;
   turnPlaced: number;
@@ -14,23 +15,18 @@ export class Building implements BuildingProperties {
 
   // Returns an array of TileModel representing the resources the building touches
   private tilesBuildingIsOn(tiles: Array<TileModel>) {
-    const { boardXPos, boardYPos, corner } = this;
-    // return tilesPointIsOn(listOfTiles, { boardXPos, boardYPos, corner });
-    return tilesPointIsOn(tiles, { boardXPos, boardYPos, corner });
+    return tilesPointIsOn(tiles, this.point);
   }
 
   constructor(
-    bX: number,
-    bY: number,
+    boardPoint: BoardPoint,
     corn: number,
     playerNum: PlayerNumber,
     turnPlaced: number,
     typeOfBuilding: "settlement" | "city",
     tiles: Array<TileModel>
   ) {
-    this.boardXPos = bX;
-    this.boardYPos = bY;
-    this.corner = corn;
+    this.point = new BuildingPoint(boardPoint, corn);
     this.playerNum = playerNum;
     this.touchingTiles = this.tilesBuildingIsOn(tiles);
     this.turnPlaced = turnPlaced;
@@ -39,9 +35,8 @@ export class Building implements BuildingProperties {
 
   spacesAreSame(b: Building) {
     return (
-      this.boardXPos === b.boardXPos &&
-      this.boardYPos === b.boardYPos &&
-      this.corner === b.corner
+      this.point.boardPoint.equals(b.point.boardPoint) &&
+      this.point.positionOnTile === b.point.positionOnTile
     );
   }
 }

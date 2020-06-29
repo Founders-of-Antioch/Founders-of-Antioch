@@ -3,7 +3,8 @@ import { RoadModel } from "./RoadModel";
 import { ResourceString, PlayerNumber } from "../../../types/Primitives";
 import { PlayerProperties } from "../../../types/entities/Player";
 import DevCard from "./DevCard";
-import { getOneAwayRoadSpots, areSameRoadValues } from "./TilePointHelper";
+import { getOneAwayRoadSpots } from "./TilePointHelper";
+import RoadPoint from "./Points/RoadPoint";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -133,17 +134,13 @@ export class Player implements PlayerProperties {
     this.victoryPoints -= 2;
   }
 
-  getAdjacentRoads(r: {
-    boardXPos: number;
-    boardYPos: number;
-    hexEdgeNumber: number;
-  }) {
+  getAdjacentRoads(r: RoadPoint) {
     let arr = [];
 
     const oneAways = getOneAwayRoadSpots(r);
     for (const adjRoad of oneAways) {
       for (const currRoad of this.roads) {
-        if (areSameRoadValues(currRoad, adjRoad)) {
+        if (currRoad.point.equals(adjRoad)) {
           arr.push(adjRoad);
         }
       }
@@ -152,19 +149,11 @@ export class Player implements PlayerProperties {
     return arr;
   }
 
-  pathLength(
-    r: { boardXPos: number; boardYPos: number; hexEdgeNumber: number },
-    visited: Array<{
-      boardXPos: number;
-      boardYPos: number;
-      hexEdgeNumber: number;
-    }>,
-    length: number
-  ): number {
+  pathLength(r: RoadPoint, visited: Array<RoadPoint>, length: number): number {
     const adjRoads = this.getAdjacentRoads(r);
     outer: for (const adj of adjRoads) {
       for (const visit of visited) {
-        if (areSameRoadValues(adj, visit)) {
+        if (adj.equals(visit)) {
           continue outer;
         }
       }
@@ -177,7 +166,7 @@ export class Player implements PlayerProperties {
   contiguousRoads() {
     let max = 0;
     for (const currRoad of this.roads) {
-      const currLen = this.pathLength(currRoad, [currRoad], 1);
+      const currLen = this.pathLength(currRoad.point, [], 1);
       if (currLen > max) {
         max = currLen;
       }

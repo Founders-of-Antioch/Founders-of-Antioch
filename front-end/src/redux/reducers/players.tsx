@@ -61,7 +61,7 @@ export default function players(
         newPl.copyFromPlayer(pFromState);
         newPl.roads.push(action.road);
 
-        console.log(newPl.contiguousRoads());
+        // console.log(newPl.contiguousRoads());
 
         return new Map([...state, [action.road.playerNum, newPl]]);
       } else {

@@ -23,6 +23,7 @@ import {
   StealFromPackage,
   KnightUpdatePackage,
   BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -101,19 +102,9 @@ createConnection().then((connection) => {
       gameManager.addBuilding(pkg);
     });
 
-    client.on(
-      "addRoad",
-      (
-        gameID: string,
-        boardXPos: number,
-        boardYPos: number,
-        hexEdgeNumber: number,
-        playerNum: number
-      ) => {
-        const r = new Road(boardXPos, boardYPos, playerNum, hexEdgeNumber);
-        gameManager.addRoad(r, gameID);
-      }
-    );
+    client.on("addRoad", (pkg: AddRoadPackage) => {
+      gameManager.addRoad(pkg);
+    });
 
     // client.on(
     //   "getSeedState",

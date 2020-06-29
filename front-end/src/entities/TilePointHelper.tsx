@@ -2,9 +2,12 @@ import { TileModel } from "./TileModel";
 import { PlayerNumber } from "../../../types/Primitives";
 import { Player } from "./Player";
 import BoardPoint from "./Points/BoardPoint";
+import TilePoint from "./Points/TilePoint";
+import RoadPoint from "./Points/RoadPoint";
+import BuildingPoint from "./Points/BuildingPoint";
 
 // https://www.redblobgames.com/grids/hexagons/#neighbors
-const NEIGHBOR_DIRECTIONS = [
+export const NEIGHBOR_DIRECTIONS = [
   [1, 1],
   [1, 0],
   [0, -1],
@@ -38,18 +41,14 @@ export function pointIsInBounds(currPoint: BoardPoint) {
 // Include OB is for out of bounds
 function tilesPointIsOnGeneral(
   listOfTiles: Array<TileModel>,
-  point: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-  },
+  point: TilePoint,
   includeOB: boolean
 ) {
   let adjTiles: Array<TileModel> = [];
 
   // This filters out checking for any tiles that are not touching the building
   const directions = [...NEIGHBOR_DIRECTIONS].filter((el, idx) => {
-    const checkOne = point.corner;
+    const checkOne = point.positionOnTile;
     let checkTwo = checkOne - 1;
     if (checkTwo === -1) {
       checkTwo = 5;
@@ -61,8 +60,8 @@ function tilesPointIsOnGeneral(
   directions.push([0, 0]);
 
   for (const currDirection of directions) {
-    const expecX = currDirection[0] + point.boardXPos;
-    const expecY = currDirection[1] + point.boardYPos;
+    const expecX = currDirection[0] + point.boardPoint.boardXPos;
+    const expecY = currDirection[1] + point.boardPoint.boardYPos;
     const expecPoint = new BoardPoint(expecX, expecY);
 
     if (includeOB) {
@@ -82,14 +81,7 @@ function tilesPointIsOnGeneral(
   return adjTiles;
 }
 
-export function tilesPointIsOn(
-  tiles: Array<TileModel>,
-  point: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-  }
-) {
+export function tilesPointIsOn(tiles: Array<TileModel>, point: TilePoint) {
   const gen = tilesPointIsOnGeneral(tiles, point, false);
 
   return gen.filter((currTile) => {
@@ -99,20 +91,13 @@ export function tilesPointIsOn(
 
 // Like tilesPointIsOn, but includes tiles that are out of bounds
 // Really only used in this file in checking if points are one away
-function tilesPointIsOnWithOB(point: {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
-}) {
+function tilesPointIsOnWithOB(point: TilePoint) {
   return tilesPointIsOnGeneral([], point, true);
 }
 
-function p2IsLeftOfP1(
-  p1: { boardXPos: number; boardYPos: number; corner: number },
-  p2: { boardXPos: number; boardYPos: number; corner: number }
-) {
-  const deltaX = p2.boardXPos - p1.boardXPos;
-  const deltaY = p2.boardYPos - p1.boardYPos;
+function p2IsLeftOfP1(p1: TilePoint, p2: TilePoint) {
+  const deltaX = p2.boardPoint.boardXPos - p1.boardPoint.boardXPos;
+  const deltaY = p2.boardPoint.boardYPos - p1.boardPoint.boardYPos;
 
   const leftDeltaArr = [
     [0, 1],
@@ -123,13 +108,13 @@ function p2IsLeftOfP1(
     [-1, 0],
   ];
 
-  const delt = leftDeltaArr[p1.corner];
+  const delt = leftDeltaArr[p1.positionOnTile];
   return deltaX === delt[0] && deltaY === delt[1];
 }
 
 function areSamePointsGeneral(
-  p1: { boardXPos: number; boardYPos: number; corner: number },
-  p2: { boardXPos: number; boardYPos: number; corner: number },
+  p1: TilePoint,
+  p2: TilePoint,
   inbounds: boolean,
   tiles: Array<TileModel>
 ) {
@@ -143,17 +128,14 @@ function areSamePointsGeneral(
   const rightMap = [4, 5, 0, 1, 2, 3];
 
   for (const currTile of p1TouchingTiles) {
-    if (
-      currTile.point.boardXPos === p2.boardXPos &&
-      currTile.point.boardYPos === p2.boardYPos
-    ) {
-      if (p2.boardXPos === p1.boardXPos && p2.boardYPos === p1.boardYPos) {
-        return p2.corner === p1.corner;
+    if (currTile.point.equals(p2.boardPoint)) {
+      if (p2.boardPoint.equals(p1.boardPoint)) {
+        return p2.positionOnTile === p1.positionOnTile;
       } else {
         if (p2IsLeftOfP1(p1, p2)) {
-          return p2.corner === leftMap[p1.corner];
+          return p2.positionOnTile === leftMap[p1.positionOnTile];
         } else {
-          return p2.corner === rightMap[p1.corner];
+          return p2.positionOnTile === rightMap[p1.positionOnTile];
         }
       }
     }
@@ -163,26 +145,20 @@ function areSamePointsGeneral(
 }
 
 export function areSamePoints(
-  p1: { boardXPos: number; boardYPos: number; corner: number },
-  p2: { boardXPos: number; boardYPos: number; corner: number },
+  p1: TilePoint,
+  p2: TilePoint,
   tiles: Array<TileModel>
 ) {
   return areSamePointsGeneral(p1, p2, true, tiles);
 }
 
-export function areSamePointsWithOB(
-  p1: { boardXPos: number; boardYPos: number; corner: number },
-  p2: { boardXPos: number; boardYPos: number; corner: number }
-) {
+export function areSamePointsWithOB(p1: TilePoint, p2: TilePoint) {
   return areSamePointsGeneral(p1, p2, false, []);
 }
 
 // Points are one away if they share two and only two tiles
 // Have to include out of bound tiles for this property to work though
-export function pointsAreOneApart(
-  p1: { boardXPos: number; boardYPos: number; corner: number },
-  p2: { boardXPos: number; boardYPos: number; corner: number }
-) {
+export function pointsAreOneApart(p1: TilePoint, p2: TilePoint) {
   const p1Tiles = tilesPointIsOnWithOB(p1);
   const p2Tiles = tilesPointIsOnWithOB(p2);
 
@@ -201,11 +177,7 @@ export function pointsAreOneApart(
   return alike === 2;
 }
 
-export function getEquivPoints(p1: {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
-}) {
+export function getEquivPoints(p1: TilePoint) {
   const edgeOutOfBoundsMap = [4, 5, 0, 1, 2, 3];
 
   let arr = [];
@@ -220,17 +192,13 @@ export function getEquivPoints(p1: {
 
   for (const currTile of obTiles) {
     for (let i = 0; i < 6; i++) {
-      const p2 = {
-        boardXPos: currTile.point.boardXPos,
-        boardYPos: currTile.point.boardYPos,
-        corner: i,
-      };
+      const p2 = new TilePoint(currTile.point, i);
       if (areSamePointsWithOB(p1, p2)) {
         if (numOutBoundTiles < 2) {
           arr.push(p2);
         } else if (
-          pointIsInBounds(new BoardPoint(p2.boardXPos, p2.boardYPos)) ||
-          i !== edgeOutOfBoundsMap[p1.corner]
+          pointIsInBounds(p2.boardPoint) ||
+          i !== edgeOutOfBoundsMap[p1.positionOnTile]
         ) {
           arr.push(p2);
         }
@@ -243,40 +211,9 @@ export function getEquivPoints(p1: {
 
 const roadEdgeMap = [3, 4, 5, 0, 1, 2];
 
-export function areSameRoadValues(
-  p1: { boardXPos: number; boardYPos: number; hexEdgeNumber: number },
-  p2: { boardXPos: number; boardYPos: number; hexEdgeNumber: number }
-) {
-  if (
-    p2.boardXPos === p1.boardXPos &&
-    p2.boardYPos === p1.boardYPos &&
-    p2.hexEdgeNumber === p1.hexEdgeNumber
-  ) {
-    return true;
-  }
-
-  for (let i = 0; i < NEIGHBOR_DIRECTIONS.length; i++) {
-    const currDirection = NEIGHBOR_DIRECTIONS[i];
-    const deltaX = currDirection[0];
-    const deltaY = currDirection[1];
-    if (
-      p2.boardXPos === p1.boardXPos + deltaX &&
-      p2.boardYPos === p1.boardYPos + deltaY
-    ) {
-      return roadEdgeMap[i] === p2.hexEdgeNumber && i === p1.hexEdgeNumber;
-    }
-  }
-
-  return false;
-}
-
-export function getOneAwayRoadSpots(p1: {
-  boardXPos: number;
-  boardYPos: number;
-  hexEdgeNumber: number;
-}) {
-  let leftSameTile = p1.hexEdgeNumber - 1;
-  let rightSameTile = p1.hexEdgeNumber + 1;
+export function getOneAwayRoadSpots(p1: RoadPoint) {
+  let leftSameTile = p1.positionOnTile - 1;
+  let rightSameTile = p1.positionOnTile + 1;
 
   if (leftSameTile < 0) {
     leftSameTile = 5;
@@ -285,15 +222,15 @@ export function getOneAwayRoadSpots(p1: {
     rightSameTile = 0;
   }
 
-  const l1 = { ...p1, hexEdgeNumber: leftSameTile };
-  const r1 = { ...p1, hexEdgeNumber: rightSameTile };
+  const l1 = new RoadPoint(p1.boardPoint, leftSameTile);
+  const r1 = new RoadPoint(p1.boardPoint, rightSameTile);
 
-  const oppositeDirection = NEIGHBOR_DIRECTIONS[p1.hexEdgeNumber];
-  const oppositeTile = {
-    boardXPos: p1.boardXPos + oppositeDirection[0],
-    boardYPos: p1.boardYPos + oppositeDirection[1],
-  };
-  const oppositeEdge = roadEdgeMap[p1.hexEdgeNumber];
+  const oppositeDirection = NEIGHBOR_DIRECTIONS[p1.positionOnTile];
+  const oppositeTile = new BoardPoint(
+    p1.boardPoint.boardXPos + oppositeDirection[0],
+    p1.boardPoint.boardYPos + oppositeDirection[1]
+  );
+  const oppositeEdge = roadEdgeMap[p1.positionOnTile];
 
   let oppLeft = oppositeEdge - 1;
   let oppRight = oppositeEdge + 1;
@@ -305,53 +242,33 @@ export function getOneAwayRoadSpots(p1: {
     oppRight = 0;
   }
 
-  const l2 = { ...oppositeTile, hexEdgeNumber: oppLeft };
-  const r2 = { ...oppositeTile, hexEdgeNumber: oppRight };
+  const l2 = new RoadPoint(oppositeTile, oppLeft);
+  const r2 = new RoadPoint(oppositeTile, oppRight);
 
   return [l1, r1, l2, r2];
 }
 
-export function roadPointToTouchingBuildingPoints(r: {
-  boardXPos: number;
-  boardYPos: number;
-  hexEdgeNumber: number;
-}) {
-  if (r.hexEdgeNumber === 5) {
+export function roadPointToTouchingBuildingPoints(r: RoadPoint) {
+  if (r.positionOnTile === 5) {
     return [
-      {
-        boardXPos: r.boardXPos,
-        boardYPos: r.boardYPos,
-        corner: r.hexEdgeNumber,
-      },
-      { boardXPos: r.boardXPos, boardYPos: r.boardYPos, corner: 0 },
+      new BuildingPoint(r.boardPoint, r.positionOnTile),
+      new BuildingPoint(r.boardPoint, 0),
     ];
   } else {
     return [
-      {
-        boardXPos: r.boardXPos,
-        boardYPos: r.boardYPos,
-        corner: r.hexEdgeNumber,
-      },
-      {
-        boardXPos: r.boardXPos,
-        boardYPos: r.boardYPos,
-        corner: r.hexEdgeNumber + 1,
-      },
+      new BuildingPoint(r.boardPoint, r.positionOnTile),
+      new BuildingPoint(r.boardPoint, r.positionOnTile + 1),
     ];
   }
 }
 
 export function roadSpaceIsOccupied(
-  roadPoint: {
-    boardXPos: number;
-    boardYPos: number;
-    hexEdgeNumber: number;
-  },
+  roadPoint: RoadPoint,
   playersByID: Map<PlayerNumber, Player>
 ) {
   for (const currPlayer of playersByID.values()) {
     for (const road of currPlayer.roads) {
-      if (areSameRoadValues(road, roadPoint)) {
+      if (road.point.equals(roadPoint)) {
         return true;
       }
     }
@@ -361,17 +278,13 @@ export function roadSpaceIsOccupied(
 }
 
 function buildingSpaceIsOccupied(
-  buildPoint: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-  },
+  buildPoint: BuildingPoint,
   playersByID: Map<PlayerNumber, Player>,
   listOfTiles: Array<TileModel>
 ) {
   for (const currPlayer of playersByID.values()) {
     for (const build of currPlayer.buildings) {
-      if (areSamePoints(build, buildPoint, listOfTiles)) {
+      if (areSamePoints(build.point, buildPoint, listOfTiles)) {
         return true;
       }
     }
@@ -381,17 +294,13 @@ function buildingSpaceIsOccupied(
 }
 
 export function canPutBuildingOn(
-  buildPoint: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-  },
+  buildPoint: TilePoint,
   playersByID: Map<PlayerNumber, Player>,
   listOfTiles: Array<TileModel>
 ) {
   for (const currPlayer of playersByID.values()) {
     for (const build of currPlayer.buildings) {
-      if (pointsAreOneApart(build, buildPoint)) {
+      if (pointsAreOneApart(build.point, buildPoint)) {
         return false;
       }
     }

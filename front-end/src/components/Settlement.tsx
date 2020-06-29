@@ -4,14 +4,12 @@ import { PLAYER_COLORS } from "../colors";
 import { PlayerNumber } from "../../../types/Primitives";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
+import BuildingPoint from "../entities/Points/BuildingPoint";
 
 export interface SettlementProps {
   playerNum: PlayerNumber;
   // Like Robber coordinates
-  boardXPos: number;
-  boardYPos: number;
-  // Corner 0 is top tip going clockwise until corner 5
-  corner: number;
+  point: BuildingPoint;
 }
 
 // Stolen from Robber comp
@@ -62,7 +60,9 @@ export function yValofCorner(boardYPos: number, corner: number) {
 
 export class Settlement extends React.Component<SettlementProps, {}> {
   render() {
-    const { boardXPos, boardYPos, corner, playerNum } = this.props;
+    const { playerNum, point } = this.props;
+    const { boardPoint, positionOnTile: corner } = point;
+    const { boardXPos, boardYPos } = boardPoint;
 
     const startX = xValofCorner(boardXPos, boardYPos, corner);
     const startY = yValofCorner(boardYPos, corner);

@@ -1,8 +1,7 @@
 import { PlayerNumber } from "../Primitives";
+import RoadPoint from "../../front-end/src/entities/Points/RoadPoint";
 
 export interface RoadModelProperties {
-  boardXPos: number;
-  boardYPos: number;
   playerNum: PlayerNumber;
-  hexEdgeNumber: number;
+  point: RoadPoint;
 }

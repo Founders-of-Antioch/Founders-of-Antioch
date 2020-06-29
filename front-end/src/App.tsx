@@ -34,6 +34,7 @@ import {
   StealFromPackage,
   KnightUpdatePackage,
   BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
@@ -43,8 +44,8 @@ import BuildingSet from "./components/Buildings/BuildingSet";
 import BoardPoint from "./entities/Points/BoardPoint";
 
 // const unsubscribe =
-// store.subscribe(() => console.log(store.getState()));
-store.subscribe(() => {});
+store.subscribe(() => console.log(store.getState()));
+// store.subscribe(() => {});
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -194,9 +195,8 @@ export default class App extends React.Component<AppProps, UIState> {
     const { boardToBePlayed } = this.props;
 
     const build = new Building(
-      pkg.boardXPos,
-      pkg.boardYPos,
-      pkg.corner,
+      new BoardPoint(pkg.boardXPos, pkg.boardYPos),
+      pkg.positionOnTile,
       pkg.playerNum,
       this.props.turnNumber,
       pkg.typeOfBuilding,
@@ -231,8 +231,14 @@ export default class App extends React.Component<AppProps, UIState> {
     // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
     // Backend sends an event when someone places a new road
-    socket.on("roadUpdate", (r: RoadModel) => {
-      this.props.placeRoad(r);
+    socket.on("roadUpdate", (pkg: AddRoadPackage) => {
+      this.props.placeRoad(
+        new RoadModel(
+          new BoardPoint(pkg.boardXPos, pkg.boardYPos),
+          pkg.playerNum,
+          pkg.positionOnTile
+        )
+      );
     });
 
     socket.on("giveGame", this.processGetGame);
@@ -371,6 +377,7 @@ export default class App extends React.Component<AppProps, UIState> {
 
     for (const p of listOfPlayers.values()) {
       for (const r of p.roads) {
+        console.log(r);
         roadArr.push(<Road key={key++} model={r} />);
       }
     }

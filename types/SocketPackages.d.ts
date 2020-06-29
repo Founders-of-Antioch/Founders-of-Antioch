@@ -49,14 +49,19 @@ export type KnightUpdatePackage = {
   player: PlayerNumber;
 };
 
-export type BuildingUpdatePackage = {
+type PiecePackage = {
   boardXPos: number;
   boardYPos: number;
-  corner: number;
+  positionOnTile: number;
   playerNum: PlayerNumber;
-  typeOfBuilding: "settlement" | "city";
   gameID: string;
 };
+
+export type BuildingUpdatePackage = PiecePackage & {
+  typeOfBuilding: "settlement" | "city";
+};
+
+export type AddRoadPackage = PiecePackage;
 
 export type FoASocketPackage =
   | ResourceChangePackage
@@ -67,4 +72,5 @@ export type FoASocketPackage =
   | MoveRobberPackage
   | StealFromPackage
   | KnightUpdatePackage
-  | BuildingUpdatePackage;
+  | BuildingUpdatePackage
+  | AddRoadPackage;

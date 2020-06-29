@@ -8,6 +8,7 @@ import {
   ResourceChangePackage,
   MoveRobberPackage,
   BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../../../../types/SocketPackages";
 import {
   xValofCorner,
@@ -27,13 +28,12 @@ import {
 } from "../../redux/Actions";
 import { tilesPointIsOn } from "../../entities/TilePointHelper";
 import BoardPoint from "../../entities/Points/BoardPoint";
+import TilePoint from "../../entities/Points/TilePoint";
 
 export type HighlightType = "settlement" | "road" | "robber" | "city";
 
 type Props = {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
+  point: TilePoint;
   playerWhoSelected: PlayerNumber;
   typeOfHighlight: HighlightType;
 };
@@ -80,19 +80,16 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   // TODO: Replace with game ID
   selectedACitySpot() {
-    const {
-      boardXPos,
-      boardYPos,
-      corner,
-      playerWhoSelected,
-      inGamePlayerNumber,
-    } = this.props;
+    const { playerWhoSelected, inGamePlayerNumber, point } = this.props;
+
+    const { boardPoint, positionOnTile } = point;
+    const { boardXPos, boardYPos } = boardPoint;
 
     const pkg: BuildingUpdatePackage = {
       gameID: "1",
       boardXPos,
       boardYPos,
-      corner,
+      positionOnTile,
       playerNum: playerWhoSelected,
       typeOfBuilding: "city",
     };
@@ -113,20 +110,21 @@ class HighlightPoint extends Component<HighlightProps, {}> {
   // TODO: Replace with actual gameID
   selectedASettlementSpot(): void {
     const {
-      boardXPos,
-      boardYPos,
-      corner,
+      point,
       playerWhoSelected,
       turnNumber,
       inGamePlayerNumber,
       boardToBePlayed,
     } = this.props;
 
+    const { boardPoint, positionOnTile } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
     const pkg: BuildingUpdatePackage = {
       gameID: "1",
       boardXPos,
       boardYPos,
-      corner,
+      positionOnTile,
       playerNum: playerWhoSelected,
       typeOfBuilding: "settlement",
     };
@@ -138,11 +136,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
     this.props.isPlacingRoad(turnNumber <= 2);
 
     if (turnNumber === 2) {
-      const touchingTiles = tilesPointIsOn(boardToBePlayed.listOfTiles, {
-        boardXPos,
-        boardYPos,
-        corner,
-      });
+      const touchingTiles = tilesPointIsOn(boardToBePlayed.listOfTiles, point);
       let resMap: { [index: string]: number } = {};
       for (const tile of touchingTiles) {
         if (tile.resource in resMap) {
@@ -174,23 +168,26 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   selectedARoadSpot(): void {
     const {
-      boardXPos,
-      boardYPos,
+      point,
       playerWhoSelected,
-      corner,
       inGamePlayerNumber,
       turnNumber,
     } = this.props;
 
-    // TODO: Replace with actual gameID
-    socket.emit(
-      "addRoad",
-      "1",
+    const { boardPoint, positionOnTile } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
+    const pkg: AddRoadPackage = {
       boardXPos,
       boardYPos,
-      corner,
-      playerWhoSelected
-    );
+      positionOnTile,
+      gameID: "1",
+      playerNum: playerWhoSelected,
+    };
+
+    // TODO: Replace with actual gameID
+    socket.emit("addRoad", pkg);
+    console.log("emitted");
 
     this.props.isPlacingRoad(false);
     // Don't have to purchase roads if it's the snake draft
@@ -207,12 +204,10 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   // TODO: Fix GameID
   selectedARobberSpot() {
-    const {
-      boardXPos,
-      boardYPos,
-      playersByID,
-      inGamePlayerNumber,
-    } = this.props;
+    const { point, playersByID, inGamePlayerNumber } = this.props;
+    const { boardPoint } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
     const pkg: MoveRobberPackage = {
       gameID: "1",
       boardXPos,
@@ -261,7 +256,9 @@ class HighlightPoint extends Component<HighlightProps, {}> {
   }
 
   render() {
-    const { boardXPos, boardYPos, corner, typeOfHighlight } = this.props;
+    const { point, typeOfHighlight } = this.props;
+    const { boardPoint, positionOnTile: corner } = point;
+    const { boardXPos, boardYPos } = boardPoint;
 
     const isRoad = typeOfHighlight === "road";
     const isRobber = typeOfHighlight === "robber";

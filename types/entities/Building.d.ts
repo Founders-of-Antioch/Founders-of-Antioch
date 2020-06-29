@@ -2,9 +2,7 @@ import { PlayerNumber } from "../Primitives";
 import { TileProperties } from "./TileModel";
 
 export interface BuildingProperties {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
+  point: TilePoint;
   playerNum: PlayerNumber;
   touchingTiles: Array<TileProperties>;
   turnPlaced: number;

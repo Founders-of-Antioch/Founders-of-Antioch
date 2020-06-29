@@ -28,10 +28,8 @@ class CitySet extends Component<CitySetProps, {}> {
           arr.push(
             <Settlement
               key={key++}
-              boardXPos={currBuild.boardXPos}
-              boardYPos={currBuild.boardYPos}
+              point={currBuild.point}
               playerNum={currBuild.playerNum}
-              corner={currBuild.corner}
             />
           );
         } else {

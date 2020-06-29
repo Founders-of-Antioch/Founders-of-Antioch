@@ -119,7 +119,9 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     const currPlayer = playersByID.get(inGamePlayerNumber);
     if (currPlayer !== undefined) {
       for (const road of currPlayer.roads) {
-        const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(road);
+        const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(
+          road.point
+        );
         for (const buildingSpot of nearbyBuildingSpots) {
           if (
             canPutBuildingOn(
