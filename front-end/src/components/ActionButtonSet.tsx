@@ -6,6 +6,7 @@ import {
   roadPointToTouchingBuildingPoints,
   canPutBuildingOn,
 } from "../entities/TilePointHelper";
+import BankTrade from "./Trading/BankTrade";
 
 type UIState = {
   showProposeTrade: boolean;
@@ -262,7 +263,8 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
               onClick={this.toggleTradeMenu}
               disabled={!this.canTrade()}
             />
-            <Button color="yellow" icon="info circle" />
+            <BankTrade />
+            <Button color="red" icon="info circle" />
           </Button.Group>
         </div>
       </div>
