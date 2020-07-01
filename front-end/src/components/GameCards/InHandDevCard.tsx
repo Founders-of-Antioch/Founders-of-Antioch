@@ -21,7 +21,10 @@ import { socket } from "../../App";
 import MonopolySelection from "../DevCardModals/MonopolySelection";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { Dispatch, bindActionCreators } from "redux";
-import { playerIsPlacingRobber } from "../../redux/Actions";
+import {
+  playerIsPlacingRobber,
+  playerIsPlayingRoadDevCard,
+} from "../../redux/Actions";
 import { ConnectedProps, connect } from "react-redux";
 import PlayCardButton from "../DevCardModals/PlayCardButton";
 
@@ -48,7 +51,10 @@ function mapStateToProps(store: FoAppState) {
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
-  return bindActionCreators({ playerIsPlacingRobber }, dispatch);
+  return bindActionCreators(
+    { playerIsPlacingRobber, playerIsPlayingRoadDevCard },
+    dispatch
+  );
 }
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -61,6 +67,7 @@ class InHandDevCard extends Component<TotalProps, {}> {
 
     this.selfDestructSequence = this.selfDestructSequence.bind(this);
     this.playKnightCard = this.playKnightCard.bind(this);
+    this.playRoadsCard = this.playRoadsCard.bind(this);
   }
 
   playKnightCard() {
@@ -115,6 +122,10 @@ class InHandDevCard extends Component<TotalProps, {}> {
     }
   }
 
+  playRoadsCard() {
+    this.props.playerIsPlayingRoadDevCard(true);
+  }
+
   bottomOfCard() {
     const { code } = this.props;
 
@@ -122,6 +133,7 @@ class InHandDevCard extends Component<TotalProps, {}> {
       case "YOP":
         return <YOPSelection discardDevCard={this.selfDestructSequence} />;
       case "MONOPOLY":
+        // TODO: Refactor into PCB
         return (
           <MonopolySelection
             discardDevCard={this.selfDestructSequence}
@@ -130,8 +142,12 @@ class InHandDevCard extends Component<TotalProps, {}> {
         );
       case "VP":
         return <Button disabled>+1 VP</Button>;
-      default:
+      case "KNIGHT":
         return <PlayCardButton openModalFunction={this.playKnightCard} />;
+      case "ROADS":
+        return <PlayCardButton openModalFunction={this.playRoadsCard} />;
+      default:
+        return <Button>Play</Button>;
     }
   }
 

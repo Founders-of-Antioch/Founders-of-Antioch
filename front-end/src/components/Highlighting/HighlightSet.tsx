@@ -17,6 +17,12 @@ import BoardPoint from "../../entities/Points/BoardPoint";
 import BuildingPoint from "../../entities/Points/BuildingPoint";
 import RoadPoint from "../../entities/Points/RoadPoint";
 import TilePoint from "../../entities/Points/TilePoint";
+import { Dispatch, bindActionCreators } from "redux";
+import {
+  playerIsPlayingRoadDevCard,
+  playExtraRoadForPlayer,
+  stopExtraRoadForPlayer,
+} from "../../redux/Actions";
 
 export const LIST_HIGHLIGHT_TYPES: Array<HighlightType> = [
   "settlement",
@@ -37,10 +43,23 @@ function mapStateToProps(store: FoAppState) {
     boardToBePlayed: store.boardToBePlayed,
     robberCoordinates: store.robberCoordinates,
     turnNumber: store.turnNumber,
+    isPlayingRoadDevCard: store.isPlayingRoadDevCard,
+    extraRoadsPlaced: store.extraRoadsPlayed,
   };
 }
 
-const connector = connect(mapStateToProps);
+function mapDispatchToProps(dispatch: Dispatch) {
+  return bindActionCreators(
+    {
+      playerIsPlayingRoadDevCard,
+      playExtraRoadForPlayer,
+      stopExtraRoadForPlayer,
+    },
+    dispatch
+  );
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
 type RedProps = ConnectedProps<typeof connector>;
 
 class HighlightSet extends Component<RedProps, {}> {
@@ -49,6 +68,7 @@ class HighlightSet extends Component<RedProps, {}> {
 
     this.highlightNeededSpaces = this.highlightNeededSpaces.bind(this);
     store.subscribe(this.highlightNeededSpaces);
+    // store.subscribe(() => {});
   }
 
   highlightNeededSpaces() {
@@ -57,9 +77,10 @@ class HighlightSet extends Component<RedProps, {}> {
       isCurrentlyPlacingRoad,
       isCurrentlyPlacingRobber,
       isCurrentlyPlacingCity,
+      isPlayingRoadDevCard,
     } = this.props;
 
-    if (isCurrentlyPlacingRoad) {
+    if (isCurrentlyPlacingRoad || isPlayingRoadDevCard) {
       return this.makeRoadHighlights();
     } else if (isCurrentlyPlacingSettlement) {
       return this.makeHighlightSet();

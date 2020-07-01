@@ -42,6 +42,7 @@ import HighlightSet from "./components/Highlighting/HighlightSet";
 import StealingModal from "./components/Robber/StealingModal";
 import BuildingSet from "./components/Buildings/BuildingSet";
 import BoardPoint from "./entities/Points/BoardPoint";
+import InHandDevCard from "./components/GameCards/InHandDevCard";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -377,7 +378,6 @@ export default class App extends React.Component<AppProps, UIState> {
 
     for (const p of listOfPlayers.values()) {
       for (const r of p.roads) {
-        console.log(r);
         roadArr.push(<Road key={key++} model={r} />);
       }
     }
@@ -531,11 +531,7 @@ export default class App extends React.Component<AppProps, UIState> {
 
           {this.generateAllPlayerCards()}
 
-          {/* <InHandDevCard
-            inGamePNum={this.props.inGamePlayerNumber}
-            code={"MONOPOLY"}
-            positionIndex={0}
-          /> */}
+          {/* <InHandDevCard code={"ROADS"} positionIndex={0} /> */}
           <DevCardHand />
 
           <VisibleActionButtonSet />

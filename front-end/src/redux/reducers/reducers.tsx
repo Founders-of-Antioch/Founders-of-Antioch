@@ -19,6 +19,8 @@ import robberCoordinates from "./robberCoordinates";
 import stealingInfo from "./stealingInfo";
 import isCurrentlyPlacingCity from "./isCurrentlyPlacingCity";
 import BoardPoint from "../../entities/Points/BoardPoint";
+import isPlayingRoadDevCard from "./isPlayingRoadDevCard";
+import extraRoadsPlayed from "./extraRoadsPlayed";
 
 export interface StealingInfo {
   isStealing: boolean;
@@ -46,6 +48,8 @@ export interface FoAppState {
   devCards: Array<DevCard>;
   robberCoordinates: BoardPoint;
   stealingInfo: StealingInfo;
+  isPlayingRoadDevCard: boolean;
+  extraRoadsPlayed: number;
 }
 
 // Unfortunately `Map`'s are not serializable for JSON's, so seed state has to be slightly different
@@ -81,4 +85,6 @@ export const FoAPP = combineReducers({
   stealingInfo,
   devCards,
   robberCoordinates,
+  isPlayingRoadDevCard,
+  extraRoadsPlayed,
 });

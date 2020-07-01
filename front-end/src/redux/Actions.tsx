@@ -43,6 +43,9 @@ export const MOVE_ROBBER = "MOVE_ROBBER";
 export const IS_STEALING = "IS_STEALING";
 export const STEAL_FROM = "STEAL_FROM";
 export const PLAY_KNIGHT_CARD = "PLAY_KNIGHT_CARD";
+export const IS_PLAYING_ROAD_DEV_CARD = "IS_PLAYING_ROAD_DEV_CARD";
+export const PLAY_EXTRA_ROAD = "PLAY_EXTRA_ROAD";
+export const STOP_EXTRA_ROADS = "STOP_EXTRA_ROADS";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -202,6 +205,21 @@ export interface IsStealingAction {
   playerIsStealing: boolean;
   availableToSteal: Array<PlayerNumber>;
 }
+
+export interface IsPlayingRoadDevCardAction {
+  type: typeof IS_PLAYING_ROAD_DEV_CARD;
+  isOrIsnt: boolean;
+}
+
+interface PlayExtraRoadAction {
+  type: typeof PLAY_EXTRA_ROAD;
+}
+
+interface StopExtraRoadsAction {
+  type: typeof STOP_EXTRA_ROADS;
+}
+
+export type ExtraRoadActions = PlayExtraRoadAction | StopExtraRoadsAction;
 
 /** Action creators */
 export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
@@ -430,4 +448,21 @@ export function playAKnightDevCard(player: PlayerNumber): PlayKnightCardAction {
     type: PLAY_KNIGHT_CARD,
     player,
   };
+}
+
+export function playerIsPlayingRoadDevCard(
+  isOrIsnt: boolean
+): IsPlayingRoadDevCardAction {
+  return {
+    type: IS_PLAYING_ROAD_DEV_CARD,
+    isOrIsnt,
+  };
+}
+
+export function playExtraRoadForPlayer(): PlayExtraRoadAction {
+  return { type: PLAY_EXTRA_ROAD };
+}
+
+export function stopExtraRoadForPlayer(): StopExtraRoadsAction {
+  return { type: STOP_EXTRA_ROADS };
 }

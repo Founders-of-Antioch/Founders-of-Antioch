@@ -25,6 +25,8 @@ import {
   isPlacingACity,
   playerIsPlacingRobber,
   declareStealingInfo,
+  playerIsPlayingRoadDevCard,
+  playExtraRoadForPlayer,
 } from "../../redux/Actions";
 import { tilesPointIsOn } from "../../entities/TilePointHelper";
 import BoardPoint from "../../entities/Points/BoardPoint";
@@ -45,6 +47,8 @@ function mapStateToProps(store: FoAppState) {
     inGamePlayerNumber: store.inGamePlayerNumber,
     playersByID: store.playersByID,
     boardToBePlayed: store.boardToBePlayed,
+    isPlayingRoadDevCard: store.isPlayingRoadDevCard,
+    numberExtraRoads: store.extraRoadsPlayed,
   };
 }
 
@@ -56,6 +60,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       isPlacingACity,
       playerIsPlacingRobber,
       declareStealingInfo,
+      playerIsPlayingRoadDevCard,
+      playExtraRoadForPlayer,
     },
     dispatch
   );
@@ -172,7 +178,17 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       playerWhoSelected,
       inGamePlayerNumber,
       turnNumber,
+      isPlayingRoadDevCard,
+      numberExtraRoads,
     } = this.props;
+
+    if (isPlayingRoadDevCard) {
+      if (numberExtraRoads + 1 < 2) {
+        this.props.playExtraRoadForPlayer();
+      } else {
+        this.props.playerIsPlayingRoadDevCard(false);
+      }
+    }
 
     const { boardPoint, positionOnTile } = point;
     const { boardXPos, boardYPos } = boardPoint;
@@ -187,7 +203,6 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     // TODO: Replace with actual gameID
     socket.emit("addRoad", pkg);
-    console.log("emitted");
 
     this.props.isPlacingRoad(false);
     // Don't have to purchase roads if it's the snake draft
