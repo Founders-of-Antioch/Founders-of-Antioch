@@ -21,6 +21,9 @@ import {
   ClaimMonopolyPackage,
   MoveRobberPackage,
   StealFromPackage,
+  KnightUpdatePackage,
+  BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../types/SocketPackages";
 import { PlayerNumber } from "../types/Primitives";
 
@@ -95,38 +98,13 @@ createConnection().then((connection) => {
       clientManager.removeClient(client);
     });
 
-    client.on(
-      "addBuilding",
-      (
-        gameID: string,
-        boardXPos: number,
-        boardYPos: number,
-        corner: number,
-        playerNum: number
-      ) => {
-        const location = new ServerBuilding(
-          boardXPos,
-          boardYPos,
-          corner,
-          playerNum
-        );
-        gameManager.addBuilding(location, gameID);
-      }
-    );
+    client.on("addBuilding", (pkg: BuildingUpdatePackage) => {
+      gameManager.addBuilding(pkg);
+    });
 
-    client.on(
-      "addRoad",
-      (
-        gameID: string,
-        boardXPos: number,
-        boardYPos: number,
-        hexEdgeNumber: number,
-        playerNum: number
-      ) => {
-        const r = new Road(boardXPos, boardYPos, playerNum, hexEdgeNumber);
-        gameManager.addRoad(r, gameID);
-      }
-    );
+    client.on("addRoad", (pkg: AddRoadPackage) => {
+      gameManager.addRoad(pkg);
+    });
 
     // client.on(
     //   "getSeedState",
@@ -211,8 +189,11 @@ createConnection().then((connection) => {
     });
 
     client.on("stealFrom", (pkg: StealFromPackage) => {
-      console.log("made it");
       gameManager.stealFrom(pkg);
+    });
+
+    client.on("knightUpdate", (pkg: KnightUpdatePackage) => {
+      gameManager.updateKnights(pkg);
     });
   });
 

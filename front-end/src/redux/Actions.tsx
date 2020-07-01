@@ -1,7 +1,7 @@
 import { RoadModel } from "../entities/RoadModel";
 import { TileModel } from "../entities/TileModel";
 import { Building } from "../entities/Building";
-import { SeedState, RobberCoordinates } from "./reducers/reducers";
+import { SeedState } from "./reducers/reducers";
 import {
   PlayerNumber,
   ResourceString,
@@ -9,10 +9,11 @@ import {
 } from "../../../types/Primitives";
 import store from "./store";
 import DevCard from "../entities/DevCard";
+import BoardPoint from "../entities/Points/BoardPoint";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
-export const PLACE_SETTLEMENT = "PLACE_SETTLEMENT";
+export const PLACE_BUILDING = "PLACE_BUILDING";
 export const PLACE_ROAD = "PLACE_ROAD";
 export const DECLARE_PLAYER_NUM = "DECLARE_PLAYER_NUM";
 export const HAS_ROLLED = "HAS_ROLLED";
@@ -23,6 +24,7 @@ export const SET_SEED = "SET_SEED";
 export const CAN_END_TURN = "CAN_END_TURN";
 export const IS_PLACING_SETTLEMENT = "IS_PLACING_SETTLEMENT";
 export const IS_PLACING_ROAD = "IS_PLACING_ROAD";
+export const IS_PLACING_CITY = "IS_PLACING_CITY";
 export const EVALUATE_TURN = "EVALUATE_TURN";
 // Changes the amount of resource in a player's hand
 export const CHANGE_RESOURCE = "CHANGE_RESOURCE";
@@ -40,15 +42,18 @@ export const IS_PLACING_ROBBER = "IS_PLACING_ROBBER";
 export const MOVE_ROBBER = "MOVE_ROBBER";
 export const IS_STEALING = "IS_STEALING";
 export const STEAL_FROM = "STEAL_FROM";
+export const PLAY_KNIGHT_CARD = "PLAY_KNIGHT_CARD";
+export const IS_PLAYING_ROAD_DEV_CARD = "IS_PLAYING_ROAD_DEV_CARD";
+export const PLAY_EXTRA_ROAD = "PLAY_EXTRA_ROAD";
+export const STOP_EXTRA_ROADS = "STOP_EXTRA_ROADS";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
   playerNum: PlayerNumber;
 }
 
-// TODO: Migrate to just take in 'Building' instead of 4 params
-interface PlaceSettlementAction {
-  type: typeof PLACE_SETTLEMENT;
+interface PlaceBuildingAction {
+  type: typeof PLACE_BUILDING;
   buildToAdd: Building;
 }
 
@@ -60,7 +65,7 @@ interface PlaceRoadAction {
 interface CollectResourcesAction {
   type: typeof COLLECT_RESOURCES;
   diceSum: number;
-  robber: RobberCoordinates;
+  robber: BoardPoint;
 }
 
 interface ChangeResourceAction {
@@ -95,15 +100,21 @@ interface StealFromAction {
   resource: string;
 }
 
+interface PlayKnightCardAction {
+  type: typeof PLAY_KNIGHT_CARD;
+  player: PlayerNumber;
+}
+
 export type PlayerAction =
-  | PlaceSettlementAction
+  | PlaceBuildingAction
   | PlaceRoadAction
   | CollectResourcesAction
   | ChangeResourceAction
   | GetDevCardAction
   | RemoveDevCardAction
   | ClaimMonopolyAction
-  | StealFromAction;
+  | StealFromAction
+  | PlayKnightCardAction;
 
 export interface DeclarePlayerNumAction {
   type: typeof DECLARE_PLAYER_NUM;
@@ -158,6 +169,11 @@ export interface IsPlacingRoadAction {
   isOrIsnt: boolean;
 }
 
+export interface IsPlacingCityAction {
+  type: typeof IS_PLACING_CITY;
+  isOrIsnt: boolean;
+}
+
 interface DeclareDevCardsAction {
   type: typeof DECLARE_DEV_CARDS;
   listOfCards: Array<DevCard>;
@@ -181,8 +197,7 @@ export interface IsPlacingRobberAction {
 
 export interface MoveRobberAction {
   type: typeof MOVE_ROBBER;
-  boardXPos: number;
-  boardYPos: number;
+  point: BoardPoint;
 }
 
 export interface IsStealingAction {
@@ -190,6 +205,21 @@ export interface IsStealingAction {
   playerIsStealing: boolean;
   availableToSteal: Array<PlayerNumber>;
 }
+
+export interface IsPlayingRoadDevCardAction {
+  type: typeof IS_PLAYING_ROAD_DEV_CARD;
+  isOrIsnt: boolean;
+}
+
+interface PlayExtraRoadAction {
+  type: typeof PLAY_EXTRA_ROAD;
+}
+
+interface StopExtraRoadsAction {
+  type: typeof STOP_EXTRA_ROADS;
+}
+
+export type ExtraRoadActions = PlayExtraRoadAction | StopExtraRoadsAction;
 
 /** Action creators */
 export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
@@ -200,15 +230,15 @@ export function changePlayer(playerNum: PlayerNumber): ChangePlayerAction {
   return { type: CHANGE_PLAYER, playerNum };
 }
 
-// NOTE: ONLY TO BE USED in Socket LISTNERS
+// NOTE: ONLY TO BE USED in Socket LISTENERS
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
-export function placeSettlement(buildToAdd: Building): PlaceSettlementAction {
-  return { type: PLACE_SETTLEMENT, buildToAdd };
+export function placeBuilding(buildToAdd: Building): PlaceBuildingAction {
+  return { type: PLACE_BUILDING, buildToAdd };
 }
 
-// NOTE: ONLY TO BE USED in Socket LISTNERS
+// NOTE: ONLY TO BE USED in Socket LISTENERS
 // This is because once the backend knows there is a new
 // building, it'll send a mass update to all players,
 // including itself. So don't create double counts!
@@ -226,7 +256,7 @@ export function nextTurn(turnNumber: number): NextTurnAction {
   return { type: NEXT_TURN, turnNumber };
 }
 
-// NOTE: ONLY TO BE USED in Socket LISTNERS
+// NOTE: ONLY TO BE USED in Socket LISTENERS
 // This is because once the backend knows what someone rolled,
 // it'll send a mass update to all players,
 // including itself. So don't create double counts!
@@ -285,6 +315,13 @@ export function isPlacingASettlement(
 export function isPlacingRoad(isOrIsnt: boolean): IsPlacingRoadAction {
   return {
     type: IS_PLACING_ROAD,
+    isOrIsnt,
+  };
+}
+
+export function isPlacingACity(isOrIsnt: boolean): IsPlacingCityAction {
+  return {
+    type: IS_PLACING_CITY,
     isOrIsnt,
   };
 }
@@ -375,14 +412,10 @@ export function playerIsPlacingRobber(
   };
 }
 
-export function moveRobberTo(
-  boardXPos: number,
-  boardYPos: number
-): MoveRobberAction {
+export function moveRobberTo(point: BoardPoint): MoveRobberAction {
   return {
     type: MOVE_ROBBER,
-    boardXPos,
-    boardYPos,
+    point,
   };
 }
 
@@ -402,11 +435,34 @@ export function stealFromPlayer(
   stealer: PlayerNumber,
   resource: string
 ): StealFromAction {
-  console.log("start stealing");
   return {
     type: STEAL_FROM,
     stealee,
     stealer,
     resource,
   };
+}
+
+export function playAKnightDevCard(player: PlayerNumber): PlayKnightCardAction {
+  return {
+    type: PLAY_KNIGHT_CARD,
+    player,
+  };
+}
+
+export function playerIsPlayingRoadDevCard(
+  isOrIsnt: boolean
+): IsPlayingRoadDevCardAction {
+  return {
+    type: IS_PLAYING_ROAD_DEV_CARD,
+    isOrIsnt,
+  };
+}
+
+export function playExtraRoadForPlayer(): PlayExtraRoadAction {
+  return { type: PLAY_EXTRA_ROAD };
+}
+
+export function stopExtraRoadForPlayer(): StopExtraRoadsAction {
+  return { type: STOP_EXTRA_ROADS };
 }

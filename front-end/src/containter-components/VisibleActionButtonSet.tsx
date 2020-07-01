@@ -1,28 +1,20 @@
 import { FoAppState } from "../redux/reducers/reducers";
-import { isPlacingRoad } from "../redux/Actions";
-import { Player } from "../entities/Player";
+import {
+  isPlacingRoad,
+  isPlacingACity,
+  isPlacingASettlement,
+} from "../redux/Actions";
 import { connect, ConnectedProps } from "react-redux";
 import ActionButtonSet from "../components/ActionButtonSet";
 import { Dispatch, bindActionCreators } from "redux";
 import { PlayerNumber, DevCardCode } from "../../../types/Primitives";
-import DevCard from "../entities/DevCard";
 import {
   ResourceChangePackage,
   AcquireDevCardPackage,
 } from "../../../types/SocketPackages";
 import { socket } from "../App";
 
-type ActionButtonSetProps = {
-  playersByID: Map<PlayerNumber, Player>;
-  inGamePlayerNumber: PlayerNumber;
-  currentPersonPlaying: PlayerNumber;
-  hasRolled: boolean;
-  turnNumber: number;
-  devCardPile: Array<DevCard>;
-  isPlacingRobber: boolean;
-};
-
-function mapStateToProps(store: FoAppState): ActionButtonSetProps {
+function mapStateToProps(store: FoAppState) {
   return {
     playersByID: store.playersByID,
     inGamePlayerNumber: store.inGamePlayerNumber,
@@ -31,6 +23,7 @@ function mapStateToProps(store: FoAppState): ActionButtonSetProps {
     turnNumber: store.turnNumber,
     devCardPile: store.devCards,
     isPlacingRobber: store.isCurrentlyPlacingRobber,
+    boardToBePlayed: store.boardToBePlayed,
   };
 }
 
@@ -39,6 +32,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     ...bindActionCreators(
       {
         isPlacingRoad,
+        isPlacingASettlement,
+        isPlacingACity,
       },
       dispatch
     ),

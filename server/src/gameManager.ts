@@ -11,6 +11,9 @@ import {
   ClaimMonopolyPackage,
   MoveRobberPackage,
   StealFromPackage,
+  KnightUpdatePackage,
+  BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../../types/SocketPackages";
 
 // Stolen from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -152,19 +155,6 @@ export class Game {
     }
   }
 
-  // Tells all of the players someone built something
-  broadcastBuildingUpdate(b: ServerBuilding): void {
-    for (const i of this.listOfPlayers) {
-      i.playerSocket.emit("buildingUpdate", b);
-    }
-  }
-
-  broadcastRoadUpdate(r: Road): void {
-    for (const i of this.listOfPlayers) {
-      i.playerSocket.emit("roadUpdate", r);
-    }
-  }
-
   broadcastTradeUpdate(pkg: ProposedTradeSocketPackage) {
     this.listOfPlayers.forEach((currPl, idx) => {
       if (idx + 1 !== pkg.playerNumber) {
@@ -265,27 +255,18 @@ export class GameManager {
     }
   }
 
-  addBuilding(build: ServerBuilding, gameID: string): boolean {
-    const getGame = this.mapOfGames.get(gameID);
+  addBuilding(pkg: BuildingUpdatePackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
     if (getGame) {
-      // Player numbers are 1 to 4, -1 is for indexing
-      getGame.listOfPlayers[build.playerNum - 1].addSettlement(build);
-      getGame.broadcastBuildingUpdate(build);
-      return true;
-    } else {
-      return false;
+      getGame.broadcastEvent("buildingUpdate", pkg);
     }
   }
 
-  addRoad(road: Road, gameID: string) {
-    const getGame = this.mapOfGames.get(gameID);
-
+  addRoad(pkg: AddRoadPackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
     if (getGame) {
-      getGame.listOfPlayers[road.playerNum - 1].addRoad(road);
-      getGame.broadcastRoadUpdate(road);
-      return true;
-    } else {
-      return false;
+      getGame.broadcastEvent("roadUpdate", pkg);
     }
   }
 
@@ -350,6 +331,14 @@ export class GameManager {
 
     if (getGame) {
       getGame.broadcastEvent("stealUpdate", pkg);
+    }
+  }
+
+  updateKnights(pkg: KnightUpdatePackage) {
+    const getGame = this.mapOfGames.get(pkg.gameID);
+
+    if (getGame) {
+      getGame.broadcastEvent("newKnight", pkg);
     }
   }
 }

@@ -33,10 +33,10 @@ class Board extends React.Component<BoardProps, {}> {
 
     for (const tileToRender of listOfTiles) {
       const centerX = centerTileX(
-        tileToRender.boardXPos,
-        tileToRender.boardYPos
+        tileToRender.point.boardXPos,
+        tileToRender.point.boardYPos
       );
-      const centerY = centerTileY(tileToRender.boardYPos);
+      const centerY = centerTileY(tileToRender.point.boardYPos);
 
       tileCompoonentList.push(
         <Tile

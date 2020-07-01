@@ -10,7 +10,9 @@ type RoadProps = {
 
 export default class Road extends Component<RoadProps, {}> {
   render() {
-    const { boardXPos, boardYPos, hexEdgeNumber, playerNum } = this.props.model;
+    const { point, playerNum } = this.props.model;
+    const { boardPoint, positionOnTile: hexEdgeNumber } = point;
+    const { boardXPos, boardYPos } = boardPoint;
 
     let adjX = centerTileX(boardXPos, boardYPos);
     let adjY = centerTileY(boardYPos) - hexRadius / 2;
@@ -43,6 +45,7 @@ export default class Road extends Component<RoadProps, {}> {
     return (
       <g>
         <rect
+          id={`${boardXPos}-${boardYPos}-${hexEdgeNumber}`}
           // Put it in the middle of the two tiles
           x={adjX - width / 2}
           y={adjY}

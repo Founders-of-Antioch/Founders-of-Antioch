@@ -2,6 +2,11 @@ import React, { Component } from "react";
 import { Button } from "semantic-ui-react";
 import { ABSProps } from "../containter-components/VisibleActionButtonSet";
 import ProposeTrade from "./Trading/ProposeTrade";
+import {
+  roadPointToTouchingBuildingPoints,
+  canPutBuildingOn,
+} from "../entities/TilePointHelper";
+import BankTrade from "./Trading/BankTrade";
 
 type UIState = {
   showProposeTrade: boolean;
@@ -17,6 +22,17 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     this.toggleTradeMenu = this.toggleTradeMenu.bind(this);
     this.closeMenu = this.closeMenu.bind(this);
     this.purchaseDevCard = this.purchaseDevCard.bind(this);
+    this.settlementClick = this.settlementClick.bind(this);
+    this.cityClick = this.cityClick.bind(this);
+    this.hasPlacesToSettle = this.hasPlacesToSettle.bind(this);
+  }
+
+  settlementClick() {
+    this.props.isPlacingASettlement(true);
+  }
+
+  cityClick() {
+    this.props.isPlacingACity(true);
   }
 
   closeMenu() {
@@ -47,6 +63,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     }
   }
 
+  // TOOD: Make the getters inside the player class
   getNumberOfRoads() {
     const { playersByID, inGamePlayerNumber } = this.props;
     const currPlayer = playersByID.get(inGamePlayerNumber);
@@ -58,13 +75,35 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     }
   }
 
+  getNumberOfCities() {
+    const { playersByID, inGamePlayerNumber } = this.props;
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+
+    if (currPlayer) {
+      let count = 0;
+      for (const build of currPlayer.buildings) {
+        if (build.typeOfBuilding === "city") {
+          count++;
+        }
+      }
+      return count;
+    } else {
+      return -1;
+    }
+  }
+
   getNumberOfSettlements() {
     const { playersByID, inGamePlayerNumber } = this.props;
     const currPlayer = playersByID.get(inGamePlayerNumber);
 
     if (currPlayer) {
-      // Will have to change with cities added
-      return currPlayer.buildings.length;
+      let count = 0;
+      for (const build of currPlayer.buildings) {
+        if (build.typeOfBuilding === "settlement") {
+          count++;
+        }
+      }
+      return count;
     } else {
       return -1;
     }
@@ -73,6 +112,31 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   isTurn() {
     const { inGamePlayerNumber, currentPersonPlaying } = this.props;
     return inGamePlayerNumber === currentPersonPlaying;
+  }
+
+  hasPlacesToSettle() {
+    const { playersByID, inGamePlayerNumber, boardToBePlayed } = this.props;
+
+    const currPlayer = playersByID.get(inGamePlayerNumber);
+    if (currPlayer !== undefined) {
+      for (const road of currPlayer.roads) {
+        const nearbyBuildingSpots = roadPointToTouchingBuildingPoints(
+          road.point
+        );
+        for (const buildingSpot of nearbyBuildingSpots) {
+          if (
+            canPutBuildingOn(
+              buildingSpot,
+              playersByID,
+              boardToBePlayed.listOfTiles
+            )
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   canTrade() {
@@ -86,6 +150,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
 
   canBuySettlement() {
     return (
+      this.hasPlacesToSettle() &&
       !(this.getNumberOfSettlements() > 5) &&
       !this.props.isPlacingRobber &&
       this.props.hasRolled &&
@@ -97,6 +162,8 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
     );
   }
 
+  // TODO: Add a get number of cities and check if > 4 here
+  // And check for > 0 settlements
   canBuyCity() {
     return (
       !this.props.isPlacingRobber &&
@@ -169,11 +236,13 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
             <Button
               color="red"
               icon="home"
+              onClick={this.settlementClick}
               disabled={!this.canBuySettlement()}
             />
             <Button
               color="yellow"
               icon="building"
+              onClick={this.cityClick}
               disabled={!this.canBuyCity()}
             />
             <Button
@@ -194,7 +263,8 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
               onClick={this.toggleTradeMenu}
               disabled={!this.canTrade()}
             />
-            <Button color="yellow" icon="info circle" />
+            <BankTrade />
+            <Button color="red" icon="info circle" />
           </Button.Group>
         </div>
       </div>

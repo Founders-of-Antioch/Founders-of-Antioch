@@ -3,6 +3,8 @@ import { RoadModel } from "./RoadModel";
 import { ResourceString, PlayerNumber } from "../../../types/Primitives";
 import { PlayerProperties } from "../../../types/entities/Player";
 import DevCard from "./DevCard";
+import { getOneAwayRoadSpots } from "./TilePointHelper";
+import RoadPoint from "./Points/RoadPoint";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -23,6 +25,8 @@ export class Player implements PlayerProperties {
   // Can't atm because sending this over packages doesn't seem to work
   resourceHand: Map<string, number>;
   devCardHand: Array<DevCard>;
+  hasLargestArmy: boolean;
+  hasLongestRoad: boolean;
 
   constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
@@ -32,6 +36,8 @@ export class Player implements PlayerProperties {
     this.knights = 0;
     this.resourceHand = new Map();
     this.devCardHand = [];
+    this.hasLargestArmy = false;
+    this.hasLongestRoad = false;
 
     for (const res of LIST_OF_RESOURCES) {
       this.resourceHand.set(res, 0);
@@ -39,6 +45,7 @@ export class Player implements PlayerProperties {
   }
 
   // Someone please fix this garbage
+  // But it's just for redux, fyi
   copyFromPlayer(p: Player) {
     this.victoryPoints = p.victoryPoints;
     this.buildings = [...p.buildings];
@@ -46,6 +53,8 @@ export class Player implements PlayerProperties {
     this.knights = p.knights;
     this.resourceHand = new Map([...p.resourceHand]);
     this.devCardHand = [...p.devCardHand];
+    this.hasLargestArmy = p.hasLargestArmy;
+    this.hasLongestRoad = p.hasLongestRoad;
   }
 
   addResource(res: ResourceString) {
@@ -79,6 +88,7 @@ export class Player implements PlayerProperties {
   }
 
   // Gets, but does not take, a random resource
+  // Used to read possible resources for stealing
   getRandomResource() {
     let arrOfRes = [];
 
@@ -102,5 +112,66 @@ export class Player implements PlayerProperties {
     if (curr !== undefined && curr !== 0) {
       this.resourceHand.set(res, curr - 1);
     }
+  }
+
+  takeLargestArmy() {
+    this.hasLargestArmy = true;
+    this.victoryPoints += 2;
+  }
+
+  loseLargestArmy() {
+    this.hasLargestArmy = false;
+    this.victoryPoints -= 2;
+  }
+
+  takeLongestRoad() {
+    this.hasLongestRoad = true;
+    this.victoryPoints += 2;
+  }
+
+  loseLongestRoad() {
+    this.hasLongestRoad = false;
+    this.victoryPoints -= 2;
+  }
+
+  getAdjacentRoads(r: RoadPoint) {
+    let arr = [];
+
+    const oneAways = getOneAwayRoadSpots(r);
+    for (const adjRoad of oneAways) {
+      for (const currRoad of this.roads) {
+        if (currRoad.point.equals(adjRoad)) {
+          arr.push(adjRoad);
+        }
+      }
+    }
+
+    return arr;
+  }
+
+  pathLength(r: RoadPoint, visited: Array<RoadPoint>, length: number): number {
+    const adjRoads = this.getAdjacentRoads(r);
+    outer: for (const adj of adjRoads) {
+      for (const visit of visited) {
+        if (adj.equals(visit)) {
+          continue outer;
+        }
+      }
+      return this.pathLength(adj, visited.concat(r), length + 1);
+    }
+
+    return length;
+  }
+
+  contiguousRoads() {
+    let max = 0;
+    for (const currRoad of this.roads) {
+      const currLen = this.pathLength(currRoad.point, [], 1);
+      if (currLen > max) {
+        max = currLen;
+      }
+    }
+
+    return max;
   }
 }

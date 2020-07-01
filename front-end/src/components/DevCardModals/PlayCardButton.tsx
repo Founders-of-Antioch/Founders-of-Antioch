@@ -6,15 +6,14 @@ import { ConnectedProps, connect } from "react-redux";
 import { Dispatch } from "redux";
 import { playerHasPlayedDC } from "../../redux/Actions";
 
-type RedProps = {
-  hasPlayedDevCard: boolean;
-  isTurn: boolean;
-};
-
-function mapStateToProps(store: FoAppState): RedProps {
+function mapStateToProps(store: FoAppState) {
   return {
     hasPlayedDevCard: store.hasPlayedDevCard,
     isTurn: store.currentPersonPlaying === store.inGamePlayerNumber,
+    isPlacingSettlement: store.isCurrentlyPlacingSettlement,
+    isPlacingRoad: store.isCurrentlyPlacingRoad,
+    isPlacingRobber: store.isCurrentlyPlacingRobber,
+    currentTurnNumber: store.turnNumber,
   };
 }
 
@@ -32,11 +31,16 @@ type PlayButtonProps = ConnectedProps<typeof connector> & {
   openModalFunction?: () => void;
 };
 
+// TODO: Change to not be bad
+let turnOfPurchase = -1;
+
 class PlayCardButton extends Component<PlayButtonProps, {}> {
   constructor(props: PlayButtonProps) {
     super(props);
 
     this.playCard = this.playCard.bind(this);
+    this.shouldBeDisabled = this.shouldBeDisabled.bind(this);
+    turnOfPurchase = this.props.currentTurnNumber;
   }
 
   playCard() {
@@ -46,12 +50,32 @@ class PlayCardButton extends Component<PlayButtonProps, {}> {
     this.props.playerHasPlayedDC(true);
   }
 
+  shouldBeDisabled() {
+    const {
+      hasPlayedDevCard,
+      isTurn,
+      isPlacingRoad,
+      isPlacingRobber,
+      isPlacingSettlement,
+      currentTurnNumber,
+    } = this.props;
+
+    return (
+      turnOfPurchase === currentTurnNumber ||
+      hasPlayedDevCard ||
+      !isTurn ||
+      isPlacingRoad ||
+      isPlacingRobber ||
+      isPlacingSettlement
+    );
+  }
+
   render() {
     return (
       <Button
         positive
         onClick={this.playCard}
-        disabled={this.props.hasPlayedDevCard || !this.props.isTurn}
+        disabled={this.shouldBeDisabled()}
       >
         Play
       </Button>

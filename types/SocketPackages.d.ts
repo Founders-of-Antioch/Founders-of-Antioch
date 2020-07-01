@@ -44,6 +44,25 @@ export type StealFromPackage = {
   resource: string;
 };
 
+export type KnightUpdatePackage = {
+  gameID: string;
+  player: PlayerNumber;
+};
+
+type PiecePackage = {
+  boardXPos: number;
+  boardYPos: number;
+  positionOnTile: number;
+  playerNum: PlayerNumber;
+  gameID: string;
+};
+
+export type BuildingUpdatePackage = PiecePackage & {
+  typeOfBuilding: "settlement" | "city";
+};
+
+export type AddRoadPackage = PiecePackage;
+
 export type FoASocketPackage =
   | ResourceChangePackage
   | ProposedTradeSocketPackage
@@ -51,4 +70,7 @@ export type FoASocketPackage =
   | DevCardRemovalPackage
   | ClaimMonopolyPackage
   | MoveRobberPackage
-  | StealFromPackage;
+  | StealFromPackage
+  | KnightUpdatePackage
+  | BuildingUpdatePackage
+  | AddRoadPackage;

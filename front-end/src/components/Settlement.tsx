@@ -2,18 +2,17 @@ import React from "react";
 import { heightOfSVG, hexRadius, widthOfSVG } from "./Board";
 import { PLAYER_COLORS } from "../colors";
 import { PlayerNumber } from "../../../types/Primitives";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
+import BuildingPoint from "../entities/Points/BuildingPoint";
 
 export interface SettlementProps {
   playerNum: PlayerNumber;
   // Like Robber coordinates
-  boardXPos: number;
-  boardYPos: number;
-  // Corner 0 is top tip going clockwise until corner 5
-  corner: number;
+  point: BuildingPoint;
 }
 
 // Stolen from Robber comp
-// TODO: Adjust function in robber component to just use this
 export function centerTileX(boardXPos: number, boardYPos: number) {
   let adjustXPos = boardXPos;
 
@@ -61,37 +60,31 @@ export function yValofCorner(boardYPos: number, corner: number) {
 
 export class Settlement extends React.Component<SettlementProps, {}> {
   render() {
-    const { boardXPos, boardYPos, corner } = this.props;
+    const { playerNum, point } = this.props;
+    const { boardPoint, positionOnTile: corner } = point;
+    const { boardXPos, boardYPos } = boardPoint;
 
-    // TODO: Change to be dynamic
-    const settlementWidth = 22.5;
-    const startX =
-      xValofCorner(boardXPos, boardYPos, corner) - settlementWidth / 2;
-    const startY = yValofCorner(boardYPos, corner) - settlementWidth / 2;
+    const startX = xValofCorner(boardXPos, boardYPos, corner);
+    const startY = yValofCorner(boardYPos, corner);
 
-    // TODO: Dynamic
-    const stroke = 2;
-
+    // TODO: make stroke/style dynamic
     return (
-      <g>
-        <rect
-          x={startX}
-          y={startY}
-          width={settlementWidth}
-          height={settlementWidth}
-          fill={PLAYER_COLORS.get(this.props.playerNum)}
-          stroke="black"
-          strokeWidth={stroke}
+      <div
+        style={{
+          // TODO: Change (widthsvg/115) to half of the width of the icon
+          marginLeft: startX - widthOfSVG / 115,
+          marginTop: startY - heightOfSVG / 2,
+          zIndex: 2,
+          position: "absolute",
+        }}
+      >
+        <FontAwesomeIcon
+          icon={faHome}
+          style={{ stroke: "black", strokeWidth: 30 }}
+          size="2x"
+          color={PLAYER_COLORS.get(playerNum)}
         />
-        <polygon
-          points={`${startX},${startY} ${startX + settlementWidth / 2},${
-            startY - settlementWidth / 2
-          } ${startX + settlementWidth},${startY}`}
-          fill={PLAYER_COLORS.get(this.props.playerNum)}
-          stroke="black"
-          strokeWidth={stroke}
-        />
-      </g>
+      </div>
     );
   }
 }

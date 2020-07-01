@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { PlayerNumber } from "../../../../types/Primitives";
-import { TileModel } from "../../entities/TileModel";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { bindActionCreators } from "redux";
 import { ConnectedProps, connect } from "react-redux";
@@ -8,6 +7,8 @@ import { socket } from "../../App";
 import {
   ResourceChangePackage,
   MoveRobberPackage,
+  BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../../../../types/SocketPackages";
 import {
   xValofCorner,
@@ -21,34 +22,33 @@ import { Dispatch } from "redux";
 import {
   isPlacingASettlement,
   isPlacingRoad,
+  isPlacingACity,
   playerIsPlacingRobber,
   declareStealingInfo,
+  playerIsPlayingRoadDevCard,
+  playExtraRoadForPlayer,
 } from "../../redux/Actions";
-import { Player } from "../../entities/Player";
+import { tilesPointIsOn } from "../../entities/TilePointHelper";
+import BoardPoint from "../../entities/Points/BoardPoint";
+import TilePoint from "../../entities/Points/TilePoint";
 
-export type HighlightType = "settlement" | "road" | "robber";
+export type HighlightType = "settlement" | "road" | "robber" | "city";
 
 type Props = {
-  boardXPos: number;
-  boardYPos: number;
-  corner: number;
+  point: TilePoint;
   playerWhoSelected: PlayerNumber;
   typeOfHighlight: HighlightType;
 };
 
-type HPProps = {
-  tiles: Array<TileModel>;
-  turnNumber: number;
-  inGamePlayerNumber: PlayerNumber;
-  playersByID: Map<PlayerNumber, Player>;
-};
-
-function mapStateToProps(store: FoAppState): HPProps {
+function mapStateToProps(store: FoAppState) {
   return {
     tiles: store.boardToBePlayed.listOfTiles,
     turnNumber: store.turnNumber,
     inGamePlayerNumber: store.inGamePlayerNumber,
     playersByID: store.playersByID,
+    boardToBePlayed: store.boardToBePlayed,
+    isPlayingRoadDevCard: store.isPlayingRoadDevCard,
+    numberExtraRoads: store.extraRoadsPlayed,
   };
 }
 
@@ -57,8 +57,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
     {
       isPlacingASettlement,
       isPlacingRoad,
+      isPlacingACity,
       playerIsPlacingRobber,
       declareStealingInfo,
+      playerIsPlayingRoadDevCard,
+      playExtraRoadForPlayer,
     },
     dispatch
   );
@@ -77,52 +80,129 @@ class HighlightPoint extends Component<HighlightProps, {}> {
     this.selectedASettlementSpot = this.selectedASettlementSpot.bind(this);
     this.selectedARoadSpot = this.selectedARoadSpot.bind(this);
     this.selectedARobberSpot = this.selectedARobberSpot.bind(this);
+    this.selectedACitySpot = this.selectedACitySpot.bind(this);
     this.getOnClick = this.getOnClick.bind(this);
+  }
+
+  // TODO: Replace with game ID
+  selectedACitySpot() {
+    const { playerWhoSelected, inGamePlayerNumber, point } = this.props;
+
+    const { boardPoint, positionOnTile } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
+    const pkg: BuildingUpdatePackage = {
+      gameID: "1",
+      boardXPos,
+      boardYPos,
+      positionOnTile,
+      playerNum: playerWhoSelected,
+      typeOfBuilding: "city",
+    };
+
+    // Emit change for broadcast
+    socket.emit("addBuilding", pkg);
+
+    this.props.isPlacingACity(false);
+    // TODO: Fix Game ID
+    const roadPKG: ResourceChangePackage = {
+      gameID: "1",
+      resourceDeltaMap: { wheat: -2, ore: -3 },
+      playerNumber: inGamePlayerNumber,
+    };
+    socket.emit("resourceChange", roadPKG);
   }
 
   // TODO: Replace with actual gameID
   selectedASettlementSpot(): void {
     const {
-      boardXPos,
-      boardYPos,
-      corner,
+      point,
       playerWhoSelected,
       turnNumber,
+      inGamePlayerNumber,
+      boardToBePlayed,
     } = this.props;
-    // Emit change for broadcast
-    socket.emit(
-      "addBuilding",
-      "1",
+
+    const { boardPoint, positionOnTile } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
+    const pkg: BuildingUpdatePackage = {
+      gameID: "1",
       boardXPos,
       boardYPos,
-      corner,
-      playerWhoSelected,
-      this.props.tiles
-    );
+      positionOnTile,
+      playerNum: playerWhoSelected,
+      typeOfBuilding: "settlement",
+    };
+
+    // Emit change for broadcast
+    socket.emit("addBuilding", pkg);
 
     this.props.isPlacingASettlement(false);
     this.props.isPlacingRoad(turnNumber <= 2);
+
+    if (turnNumber === 2) {
+      const touchingTiles = tilesPointIsOn(boardToBePlayed.listOfTiles, point);
+      let resMap: { [index: string]: number } = {};
+      for (const tile of touchingTiles) {
+        if (tile.resource in resMap) {
+          resMap[tile.resource] += 1;
+        } else {
+          resMap[tile.resource] = 1;
+        }
+      }
+
+      const pkg: ResourceChangePackage = {
+        gameID: "1",
+        resourceDeltaMap: resMap,
+        playerNumber: inGamePlayerNumber,
+      };
+      socket.emit("resourceChange", pkg);
+    }
+
+    // Don't have to purchase settlements if it's the snake draft
+    // TODO: Fix Game ID
+    if (turnNumber > 2) {
+      const pkg: ResourceChangePackage = {
+        gameID: "1",
+        resourceDeltaMap: { brick: -1, wood: -1, sheep: -1, wheat: -1 },
+        playerNumber: inGamePlayerNumber,
+      };
+      socket.emit("resourceChange", pkg);
+    }
   }
 
   selectedARoadSpot(): void {
     const {
-      boardXPos,
-      boardYPos,
+      point,
       playerWhoSelected,
-      corner,
       inGamePlayerNumber,
       turnNumber,
+      isPlayingRoadDevCard,
+      numberExtraRoads,
     } = this.props;
 
-    // TODO: Replace with actual gameID
-    socket.emit(
-      "addRoad",
-      "1",
+    if (isPlayingRoadDevCard) {
+      if (numberExtraRoads + 1 < 2) {
+        this.props.playExtraRoadForPlayer();
+      } else {
+        this.props.playerIsPlayingRoadDevCard(false);
+      }
+    }
+
+    const { boardPoint, positionOnTile } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
+    const pkg: AddRoadPackage = {
       boardXPos,
       boardYPos,
-      corner,
-      playerWhoSelected
-    );
+      positionOnTile,
+      gameID: "1",
+      playerNum: playerWhoSelected,
+    };
+
+    // TODO: Replace with actual gameID
+    socket.emit("addRoad", pkg);
 
     this.props.isPlacingRoad(false);
     // Don't have to purchase roads if it's the snake draft
@@ -139,12 +219,10 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   // TODO: Fix GameID
   selectedARobberSpot() {
-    const {
-      boardXPos,
-      boardYPos,
-      playersByID,
-      inGamePlayerNumber,
-    } = this.props;
+    const { point, playersByID, inGamePlayerNumber } = this.props;
+    const { boardPoint } = point;
+    const { boardXPos, boardYPos } = boardPoint;
+
     const pkg: MoveRobberPackage = {
       gameID: "1",
       boardXPos,
@@ -156,8 +234,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       for (const currBuild of currPlayer.buildings) {
         for (const currTile of currBuild.touchingTiles) {
           if (
-            currTile.boardXPos === boardXPos &&
-            currTile.boardYPos === boardYPos &&
+            currTile.point.equals(new BoardPoint(boardXPos, boardYPos)) &&
             currPlayer.playerNum !== inGamePlayerNumber &&
             currPlayer.numberOfCardsInHand() !== 0
           ) {
@@ -184,6 +261,8 @@ class HighlightPoint extends Component<HighlightProps, {}> {
         return this.selectedARoadSpot;
       case "robber":
         return this.selectedARobberSpot;
+      case "city":
+        return this.selectedACitySpot;
       default:
         return () => {
           console.log("On click for highlighted component not found");
@@ -192,7 +271,9 @@ class HighlightPoint extends Component<HighlightProps, {}> {
   }
 
   render() {
-    const { boardXPos, boardYPos, corner, typeOfHighlight } = this.props;
+    const { point, typeOfHighlight } = this.props;
+    const { boardPoint, positionOnTile: corner } = point;
+    const { boardXPos, boardYPos } = boardPoint;
 
     const isRoad = typeOfHighlight === "road";
     const isRobber = typeOfHighlight === "robber";
@@ -224,7 +305,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
     return (
       <circle
-        id="doughy"
+        id={`${boardXPos}:${boardYPos}:${corner}`}
         cx={x}
         cy={y}
         r={widthOfSVG / 100}

@@ -7,7 +7,6 @@ import PlayerCard, { playerCardWidth } from "./components/PlayerCard";
 import { FoAButton } from "./components/FoAButton";
 import socketIOClient from "socket.io-client";
 import { Building } from "./entities/Building";
-import { Settlement } from "./components/Settlement";
 import Road from "./components/Road";
 import { RoadModel } from "./entities/RoadModel";
 import { LIST_OF_RESOURCES } from "./entities/Player";
@@ -33,14 +32,21 @@ import {
   ClaimMonopolyPackage,
   MoveRobberPackage,
   StealFromPackage,
+  KnightUpdatePackage,
+  BuildingUpdatePackage,
+  AddRoadPackage,
 } from "../../types/SocketPackages";
 import DevCard from "./entities/DevCard";
 import DevCardHand from "./components/GameCards/DevCardHand";
 import HighlightSet from "./components/Highlighting/HighlightSet";
 import StealingModal from "./components/Robber/StealingModal";
+import BuildingSet from "./components/Buildings/BuildingSet";
+import BoardPoint from "./entities/Points/BoardPoint";
+import InHandDevCard from "./components/GameCards/InHandDevCard";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
+// store.subscribe(() => {});
 
 export const socket = socketIOClient.connect("http://localhost:3001");
 
@@ -185,43 +191,20 @@ export default class App extends React.Component<AppProps, UIState> {
     this.forceUpdate();
   }
 
-  processBuildingUpdate(building: {
-    boardXPos: number;
-    boardYPos: number;
-    corner: number;
-    playerNum: PlayerNumber;
-  }) {
+  // TOOD: Make general
+  processBuildingUpdate(pkg: BuildingUpdatePackage) {
+    const { boardToBePlayed } = this.props;
+
     const build = new Building(
-      building.boardXPos,
-      building.boardYPos,
-      building.corner,
-      building.playerNum,
-      this.props.boardToBePlayed.listOfTiles
+      new BoardPoint(pkg.boardXPos, pkg.boardYPos),
+      pkg.positionOnTile,
+      pkg.playerNum,
+      this.props.turnNumber,
+      pkg.typeOfBuilding,
+      boardToBePlayed.listOfTiles
     );
 
-    this.props.placeSettlement(build);
-  }
-
-  renderBuildings(): Array<any> {
-    let buildingArr = [];
-    let key = 0;
-
-    for (const p of this.props.listOfPlayers.values()) {
-      for (const i of p.buildings) {
-        buildingArr.push(
-          <Settlement
-            key={key++}
-            boardXPos={i.boardXPos}
-            boardYPos={i.boardYPos}
-            // TODO: Fix garbage
-            playerNum={i.playerNum}
-            corner={i.corner}
-          />
-        );
-      }
-    }
-
-    return buildingArr;
+    this.props.placeBuilding(build);
   }
 
   // Sets up basic socket listeners and initalizers
@@ -249,8 +232,14 @@ export default class App extends React.Component<AppProps, UIState> {
     // Backend sends an event when someone places a new building
     socket.on("buildingUpdate", this.processBuildingUpdate);
     // Backend sends an event when someone places a new road
-    socket.on("roadUpdate", (r: RoadModel) => {
-      this.props.placeRoad(r);
+    socket.on("roadUpdate", (pkg: AddRoadPackage) => {
+      this.props.placeRoad(
+        new RoadModel(
+          new BoardPoint(pkg.boardXPos, pkg.boardYPos),
+          pkg.playerNum,
+          pkg.positionOnTile
+        )
+      );
     });
 
     socket.on("giveGame", this.processGetGame);
@@ -295,11 +284,15 @@ export default class App extends React.Component<AppProps, UIState> {
     });
 
     socket.on("robberUpdate", (pkg: MoveRobberPackage) => {
-      this.props.moveRobberTo(pkg.boardXPos, pkg.boardYPos);
+      this.props.moveRobberTo(new BoardPoint(pkg.boardXPos, pkg.boardYPos));
     });
 
     socket.on("stealUpdate", (pkg: StealFromPackage) => {
       this.props.stealFromPlayer(pkg.stealee, pkg.stealer, pkg.resource);
+    });
+
+    socket.on("newKnight", (pkg: KnightUpdatePackage) => {
+      this.props.playAKnightDevCard(pkg.player);
     });
   }
 
@@ -533,22 +526,19 @@ export default class App extends React.Component<AppProps, UIState> {
               {this.endTurnButton()}
               <HighlightSet />
               {this.renderRoads()}
-              {this.renderBuildings()}
             </svg>
           </div>
 
           {this.generateAllPlayerCards()}
 
-          {/* <InHandDevCard
-            inGamePNum={this.props.inGamePlayerNumber}
-            code={"MONOPOLY"}
-            positionIndex={0}
-          /> */}
+          {/* <InHandDevCard code={"ROADS"} positionIndex={0} /> */}
           <DevCardHand />
 
           <VisibleActionButtonSet />
 
           <StealingModal />
+
+          <BuildingSet />
 
           {this.renderTrades()}
 

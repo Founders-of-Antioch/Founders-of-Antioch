@@ -3,15 +3,16 @@ import { hexRadius } from "./Board";
 import robber from "../icons/robber.svg";
 import { TileModel } from "../entities/TileModel";
 import { centerTileX, centerTileY } from "./Settlement";
-import { FoAppState, RobberCoordinates } from "../redux/reducers/reducers";
+import { FoAppState } from "../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import { bindActionCreators } from "redux";
 import { moveRobberTo } from "../redux/Actions";
 import { Dispatch } from "redux";
+import BoardPoint from "../entities/Points/BoardPoint";
 
 type RobberProps = {
   listOfTiles: Array<TileModel>;
-  robberCoordinates: RobberCoordinates;
+  robberCoordinates: BoardPoint;
 };
 
 function mapStateToProps(store: FoAppState): RobberProps {
@@ -50,7 +51,7 @@ class Robber extends React.Component<RobberRedProps, UIState> {
     for (const t of this.props.listOfTiles) {
       if (t.resource === "desert") {
         this.setState({ foundDesert: true });
-        this.props.moveRobberTo(t.boardXPos, t.boardYPos);
+        this.props.moveRobberTo(t.point);
         return;
       }
     }

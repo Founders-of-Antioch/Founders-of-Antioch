@@ -1,6 +1,6 @@
 import { FoAppState } from "../redux/reducers/reducers";
 import {
-  placeSettlement,
+  placeBuilding,
   placeRoad,
   declareBoard,
   declarePlayerNumber,
@@ -20,6 +20,7 @@ import {
   claimMonopolyForPlayer,
   moveRobberTo,
   stealFromPlayer,
+  playAKnightDevCard,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
@@ -60,7 +61,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     ...bindActionCreators(
       {
-        placeSettlement,
+        placeBuilding,
         placeRoad,
         declareBoard,
         declarePlayerNumber,
@@ -78,6 +79,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         claimMonopolyForPlayer,
         moveRobberTo,
         stealFromPlayer,
+        playAKnightDevCard,
       },
       dispatch
     ),

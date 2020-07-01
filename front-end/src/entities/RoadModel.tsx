@@ -1,21 +1,18 @@
 import { PlayerNumber } from "../../../types/Primitives";
 import { RoadModelProperties } from "../../../types/entities/RoadModel";
+import RoadPoint from "./Points/RoadPoint";
+import BoardPoint from "./Points/BoardPoint";
 
 export class RoadModel implements RoadModelProperties {
-  boardXPos: number;
-  boardYPos: number;
+  point: RoadPoint;
   playerNum: PlayerNumber;
-  hexEdgeNumber: number;
 
   constructor(
-    boardXPos: number,
-    boardYPos: number,
+    boardPoint: BoardPoint,
     playerNum: PlayerNumber,
     hexEdgeNumber: number
   ) {
-    this.boardXPos = boardXPos;
-    this.boardYPos = boardYPos;
+    this.point = new RoadPoint(boardPoint, hexEdgeNumber);
     this.playerNum = playerNum;
-    this.hexEdgeNumber = hexEdgeNumber;
   }
 }

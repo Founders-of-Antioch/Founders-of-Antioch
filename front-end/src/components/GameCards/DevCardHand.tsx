@@ -35,12 +35,7 @@ class DevCardHand extends Component<HandProps, {}> {
     let cards = [];
     for (const currCard of hand) {
       cards.push(
-        <InHandDevCard
-          inGamePNum={this.props.playerModel.playerNum}
-          positionIndex={key}
-          code={currCard.code}
-          key={key++}
-        />
+        <InHandDevCard positionIndex={key} code={currCard.code} key={key++} />
       );
     }
 

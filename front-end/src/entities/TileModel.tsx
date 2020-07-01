@@ -1,28 +1,20 @@
 import { TileProperties } from "../../../types/entities/TileModel";
 import { ResourceString } from "../../../types/Primitives";
+import BoardPoint from "./Points/BoardPoint";
 
 export class TileModel implements TileProperties {
   resource: ResourceString;
   counter: number;
-  boardXPos: number;
-  boardYPos: number;
-  // buildings: Array<Building>;
+  point: BoardPoint;
 
   constructor(
     resource: ResourceString,
     counter: number,
     boardXPos: number,
-    boardYpos: number
+    boardYPos: number
   ) {
     this.resource = resource;
     this.counter = counter;
-    this.boardXPos = boardXPos;
-    this.boardYPos = boardYpos;
-    // this.buildings = [];
+    this.point = new BoardPoint(boardXPos, boardYPos);
   }
-
-  // copyOverBuildings(t: TileModel) {
-  //   const cpy = [...t.buildings];
-  //   this.buildings = cpy;
-  // }
 }

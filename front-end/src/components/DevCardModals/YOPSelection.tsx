@@ -13,6 +13,7 @@ import PlayCardButton from "./PlayCardButton";
 type UIState = {
   currValues: Map<ResourceString, number>;
   modalOpen: boolean;
+  negNumberError: boolean;
 };
 
 type YOPProps = {
@@ -41,6 +42,7 @@ class YOPSelection extends Component<YearProps, UIState> {
     }
 
     this.state = {
+      negNumberError: false,
       currValues: emptyResMap,
       modalOpen: false,
     };
@@ -54,11 +56,16 @@ class YOPSelection extends Component<YearProps, UIState> {
   setNumRes(e: ChangeEvent<HTMLInputElement>) {
     const res = e.target.id.split("-")[0] as ResourceString;
     if (res !== undefined) {
+      const inputVal = Number(e.target.value);
+      if (inputVal > 0) {
+        this.setState({ ...this.state, negNumberError: true });
+      }
+
       const { currValues } = this.state;
       const nextMap = new Map([...currValues]);
-      nextMap.set(res, Number(e.target.value));
+      nextMap.set(res, inputVal);
 
-      this.setState({ currValues: nextMap });
+      this.setState({ ...this.state, currValues: nextMap });
     }
   }
 
@@ -161,7 +168,10 @@ class YOPSelection extends Component<YearProps, UIState> {
             </div>
             <Button.Group>
               <Button
-                disabled={this.absoluteNumberofResources() !== 2}
+                disabled={
+                  this.absoluteNumberofResources() !== 2 &&
+                  !this.state.negNumberError
+                }
                 positive
                 onClick={this.confirm}
               >
