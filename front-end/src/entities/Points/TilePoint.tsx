@@ -10,10 +10,10 @@ export default class TilePoint implements TilePointProperties {
     this.positionOnTile = pos;
   }
 
-  //   equals(t: TilePoint) {
-  //     return (
-  //       this.boardPoint.equals(t.boardPoint) &&
-  //       this.positionOnTile === t.positionOnTile
-  //     );
-  //   }
+  equals(t: TilePoint) {
+    return (
+      this.boardPoint.equals(t.boardPoint) &&
+      this.positionOnTile === t.positionOnTile
+    );
+  }
 }

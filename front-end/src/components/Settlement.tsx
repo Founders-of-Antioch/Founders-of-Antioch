@@ -26,6 +26,7 @@ export function centerTileY(boardYPos: number) {
 }
 
 // Gets the x value of a corner given a tile and a corner (0-5 starting at the tip and going clockwise)
+// TODO: Refactor to take in just a point
 export function xValofCorner(
   boardXPos: number,
   boardYPos: number,

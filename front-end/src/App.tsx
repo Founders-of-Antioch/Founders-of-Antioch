@@ -18,7 +18,6 @@ import "semantic-ui-css/semantic.min.css";
 import { AppProps } from "./containter-components/VisibleApp";
 import VisibleActionButtonSet from "./containter-components/VisibleActionButtonSet";
 import TradeProposed from "./components/Trading/TradeProposed";
-import { Port } from "./components/Port";
 import {
   DevCardCode,
   ResourceString,
@@ -42,7 +41,7 @@ import HighlightSet from "./components/Highlighting/HighlightSet";
 import StealingModal from "./components/Robber/StealingModal";
 import BuildingSet from "./components/Buildings/BuildingSet";
 import BoardPoint from "./entities/Points/BoardPoint";
-import InHandDevCard from "./components/GameCards/InHandDevCard";
+import PortSet from "./components/Ports/PortSet";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -455,36 +454,6 @@ export default class App extends React.Component<AppProps, UIState> {
     return resCardArr;
   }
 
-  constructPorts() {
-    // X, Y, Edge
-    const portLocations = [
-      [-1, -2, 2],
-      [-2, -2, 3],
-      [-2, -1, 4],
-      [-1, 1, 4],
-      [0, 2, 5],
-      [1, 2, 0],
-      [2, 1, 0],
-      [2, 0, 1],
-      [1, -1, 2],
-    ];
-
-    let portArr = [];
-    let key = 0;
-
-    for (const currLocation of portLocations) {
-      const x = currLocation[0];
-      const y = currLocation[1];
-      const e = currLocation[2];
-
-      portArr.push(
-        <Port key={key++} boardXPos={x} boardYPos={y} hexEdge={e} />
-      );
-    }
-
-    return portArr;
-  }
-
   render() {
     const { isLoading } = this.state;
 
@@ -539,6 +508,8 @@ export default class App extends React.Component<AppProps, UIState> {
           <StealingModal />
 
           <BuildingSet />
+
+          <PortSet />
 
           {this.renderTrades()}
 

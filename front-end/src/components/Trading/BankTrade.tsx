@@ -6,13 +6,13 @@ import { LIST_OF_RESOURCES } from "../../entities/Player";
 import { FoAppState } from "../../redux/reducers/reducers";
 import { Dispatch, bindActionCreators } from "redux";
 import { connect, ConnectedProps } from "react-redux";
-import { ResourceString } from "../../../../types/Primitives";
 import { socket } from "../../App";
 import { ResourceChangePackage } from "../../../../types/SocketPackages";
 
 type UIState = {
   open: boolean;
   givingResource: string;
+  givingAmount: number;
   gettingResource: string;
 };
 
@@ -20,6 +20,8 @@ function mapStateToProps(store: FoAppState) {
   return {
     playersByID: store.playersByID,
     inGamePlayerNumber: store.inGamePlayerNumber,
+    isTurn: store.currentPersonPlaying === store.inGamePlayerNumber,
+    turnNumber: store.turnNumber,
   };
 }
 
@@ -30,12 +32,15 @@ function mapDispatchToProps(dispatch: Dispatch) {
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type BankTradeProps = ConnectedProps<typeof connector>;
 
+type resourceRatioMap = { [index: string]: number };
+
 class BankTrade extends Component<BankTradeProps, UIState> {
   constructor(props: BankTradeProps) {
     super(props);
     this.state = {
       open: false,
       givingResource: "",
+      givingAmount: 0,
       gettingResource: "",
     };
 
@@ -46,18 +51,44 @@ class BankTrade extends Component<BankTradeProps, UIState> {
     this.trade = this.trade.bind(this);
   }
 
-  listOfBankRes(): Array<ResourceString> {
+  listOfBankRes(): resourceRatioMap {
     const { playersByID, inGamePlayerNumber } = this.props;
 
-    let resList: Array<ResourceString> = [];
+    let resList: resourceRatioMap = {};
 
     const getPlayer = playersByID.get(inGamePlayerNumber);
     if (getPlayer) {
-      for (const currRes of LIST_OF_RESOURCES) {
-        const currVal = getPlayer.resourceHand.get(currRes);
+      const ports = getPlayer.ports();
+      let playerHasAnyPort = false;
 
-        if (currVal !== undefined && currVal >= 4) {
-          resList.push(currRes);
+      for (const port of ports) {
+        if (port.resource === "any") {
+          playerHasAnyPort = true;
+        }
+      }
+
+      for (const currRes of LIST_OF_RESOURCES) {
+        const currVal = getPlayer.getNumberOfResources(currRes);
+
+        if (currVal >= 4) {
+          resList[currRes] = 4;
+        }
+
+        if (playerHasAnyPort && currVal >= 3) {
+          resList[currRes] = 3;
+        }
+      }
+
+      console.log(ports);
+      for (const port of ports) {
+        if (port.resource !== "any") {
+          const amount = port.getRatioNumber();
+          console.log(port.resource);
+          console.log(getPlayer.getNumberOfResources(port.resource));
+          console.log(amount);
+          if (getPlayer.getNumberOfResources(port.resource) >= amount) {
+            resList[port.resource] = amount;
+          }
         }
       }
     }
@@ -65,10 +96,11 @@ class BankTrade extends Component<BankTradeProps, UIState> {
     return resList;
   }
 
-  setGivingResource(res: string) {
+  setGivingResource(res: string, amount: number) {
     this.setState({
       ...this.state,
       givingResource: res,
+      givingAmount: amount,
     });
   }
 
@@ -79,10 +111,10 @@ class BankTrade extends Component<BankTradeProps, UIState> {
     });
   }
 
-  resourceOptions(tradeResources: Array<ResourceString>) {
+  resourceOptions(tradeResources: resourceRatioMap) {
     let arr = [];
     let key = 0;
-    for (const currRes of tradeResources) {
+    for (const currRes in tradeResources) {
       arr.push(
         <Button
           style={{
@@ -90,7 +122,9 @@ class BankTrade extends Component<BankTradeProps, UIState> {
             marginBottom: "5%",
           }}
           key={key++}
-          onClick={() => this.setGivingResource(currRes)}
+          onClick={() =>
+            this.setGivingResource(currRes, tradeResources[currRes])
+          }
         >
           <FontAwesomeIcon
             size="7x"
@@ -101,7 +135,7 @@ class BankTrade extends Component<BankTradeProps, UIState> {
             color={resColorMap[currRes]}
             icon={resIconMap[currRes]}
           />
-          <p style={{ marginTop: "10%" }}>4:1</p>
+          <p style={{ marginTop: "10%" }}>{tradeResources[currRes]}:1</p>
         </Button>
       );
     }
@@ -135,7 +169,6 @@ class BankTrade extends Component<BankTradeProps, UIState> {
             color={resColorMap[currRes]}
             icon={resIconMap[currRes]}
           />
-          <p style={{ marginTop: "10%" }}>4:1</p>
         </Button>
       );
     }
@@ -154,17 +187,23 @@ class BankTrade extends Component<BankTradeProps, UIState> {
     this.setState({
       ...this.state,
       open: false,
+      givingResource: "",
+      givingAmount: 0,
+      gettingResource: "",
     });
   }
 
   trade() {
-    const { givingResource, gettingResource } = this.state;
+    const { givingResource, gettingResource, givingAmount } = this.state;
     const { inGamePlayerNumber } = this.props;
 
     const pkg: ResourceChangePackage = {
       gameID: "1",
       playerNumber: inGamePlayerNumber,
-      resourceDeltaMap: { [givingResource]: -4, [gettingResource]: 1 },
+      resourceDeltaMap: {
+        [givingResource]: -givingAmount,
+        [gettingResource]: 1,
+      },
     };
 
     socket.emit("resourceChange", pkg);
@@ -173,15 +212,18 @@ class BankTrade extends Component<BankTradeProps, UIState> {
 
   render() {
     const availableBankRes = this.listOfBankRes();
-    // Use this for testing/debugging by commenting out this ^ and uncomment below
-    // const availableBankRes: Array<ResourceString> = ["wheat", "ore"];
     const { givingResource, gettingResource } = this.state;
+    const { turnNumber, isTurn } = this.props;
 
     return (
       <Modal
         trigger={
           <Button
-            disabled={availableBankRes.length === 0}
+            disabled={
+              !isTurn ||
+              turnNumber <= 2 ||
+              Object.keys(availableBankRes).length === 0
+            }
             onClick={this.openModal}
             color="yellow"
             icon="money bill alternate outline"

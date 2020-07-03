@@ -5,6 +5,7 @@ import { PlayerProperties } from "../../../types/entities/Player";
 import DevCard from "./DevCard";
 import { getOneAwayRoadSpots } from "./TilePointHelper";
 import RoadPoint from "./Points/RoadPoint";
+import { PORT_MODELS } from "../components/Ports/PortSet";
 
 // Should be moved into helper and given Array<ResourceString> type
 export const LIST_OF_RESOURCES: Array<ResourceString> = [
@@ -173,5 +174,19 @@ export class Player implements PlayerProperties {
     }
 
     return max;
+  }
+
+  ports() {
+    let portArr = [];
+
+    for (const build of this.buildings) {
+      for (const port of PORT_MODELS) {
+        if (build.point.equals(port.point)) {
+          portArr.push(port);
+        }
+      }
+    }
+
+    return portArr;
   }
 }

@@ -4,10 +4,6 @@ import { FoAppState } from "../../redux/reducers/reducers";
 import { connect, ConnectedProps } from "react-redux";
 import InHandDevCard from "./InHandDevCard";
 
-type DCProps = {
-  playerModel: Player;
-};
-
 function mapStateToProps(store: FoAppState) {
   const getPlayer = store.playersByID.get(store.inGamePlayerNumber);
 
