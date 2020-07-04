@@ -13,8 +13,8 @@ import { resColorMap } from "../../colors";
 import { LIST_OF_RESOURCES } from "../../entities/Player";
 import { socket } from "../../App";
 import { FoAppState } from "../../redux/reducers/reducers";
-import { connect } from "react-redux";
-import { PlayerNumber, ResourceString } from "../../../../types/Primitives";
+import { connect, ConnectedProps } from "react-redux";
+import { ResourceString } from "../../../../types/Primitives";
 import { ProposedTradeSocketPackage } from "../../../../types/SocketPackages";
 
 type PTState = {
@@ -26,17 +26,16 @@ type PTProps = {
   onClickCallback: () => void;
 };
 
-type redProps = {
-  playerNumber: PlayerNumber;
-};
-
-function mapStateToProps(store: FoAppState): redProps {
+function mapStateToProps(store: FoAppState) {
   return {
     playerNumber: store.inGamePlayerNumber,
+    playersByID: store.playersByID,
   };
 }
 
-type ProposeTradeProps = redProps & PTProps;
+const connector = connect(mapStateToProps);
+
+type ProposeTradeProps = ConnectedProps<typeof connector> & PTProps;
 
 class ProposeTrade extends Component<ProposeTradeProps, PTState> {
   constructor(props: ProposeTradeProps) {
@@ -57,6 +56,7 @@ class ProposeTrade extends Component<ProposeTradeProps, PTState> {
 
     this.handleResourceChange = this.handleResourceChange.bind(this);
     this.proposeTrade = this.proposeTrade.bind(this);
+    this.canTradeProposed = this.canTradeProposed.bind(this);
   }
 
   proposeTrade() {
@@ -167,6 +167,25 @@ class ProposeTrade extends Component<ProposeTradeProps, PTState> {
     return resDisplayArr;
   }
 
+  canTradeProposed() {
+    const { playerNumber, playersByID } = this.props;
+    const getPlayer = playersByID.get(playerNumber);
+
+    let canTrade = true;
+    if (getPlayer !== undefined) {
+      const { giveRes } = this.state;
+
+      giveRes.forEach((currVal, currRes) => {
+        const currInHand = getPlayer.getNumberOfResources(currRes);
+        if (currInHand < currVal || currVal < 0) {
+          canTrade = false;
+        }
+      });
+    }
+
+    return canTrade;
+  }
+
   render() {
     return (
       <div
@@ -189,7 +208,11 @@ class ProposeTrade extends Component<ProposeTradeProps, PTState> {
             <Card.Description>
               <div style={{ textAlign: "center" }}>
                 <Button.Group>
-                  <Button positive onClick={this.proposeTrade}>
+                  <Button
+                    positive
+                    disabled={!this.canTradeProposed()}
+                    onClick={this.proposeTrade}
+                  >
                     Propose
                   </Button>
                   <Button negative onClick={this.props.onClickCallback}>
@@ -205,4 +228,4 @@ class ProposeTrade extends Component<ProposeTradeProps, PTState> {
   }
 }
 
-export default connect(mapStateToProps)(ProposeTrade);
+export default connector(ProposeTrade);

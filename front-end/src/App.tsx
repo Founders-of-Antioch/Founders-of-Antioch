@@ -103,21 +103,30 @@ export default class App extends React.Component<AppProps, UIState> {
     if (this.state.showTrades) {
       let trades = [];
       let key = 0;
+
+      const { listOfPlayers, inGamePlayerNumber } = this.props;
+      const getPlayer = listOfPlayers.get(inGamePlayerNumber);
+
       // TODO: Fix for multiple trades
       for (const currTrade of this.state.trades) {
-        // Give/get are swapped because the trade is giving resources from
-        // player x to y, but in the view of player y, it's getting
-        // from player x
-        trades.push(
-          <TradeProposed
-            key={key++}
-            getResources={currTrade.playerGiveResources}
-            giveResources={currTrade.playerGetResources}
-            playerTrading={currTrade.playerNumber}
-            tradeIndex={key - 1}
-            closeWindowCB={this.closeTradeWindow}
-          />
-        );
+        if (
+          getPlayer !== undefined &&
+          getPlayer.hasAvailableResources(currTrade.playerGetResources)
+        ) {
+          // Give/get are swapped because the trade is giving resources from
+          // player x to y, but in the view of player y, it's getting
+          // from player x
+          trades.push(
+            <TradeProposed
+              key={key++}
+              getResources={currTrade.playerGiveResources}
+              giveResources={currTrade.playerGetResources}
+              playerTrading={currTrade.playerNumber}
+              tradeIndex={key - 1}
+              closeWindowCB={this.closeTradeWindow}
+            />
+          );
+        }
       }
 
       return trades;

@@ -189,4 +189,15 @@ export class Player implements PlayerProperties {
 
     return portArr;
   }
+
+  hasAvailableResources(resMap: { [index: string]: number }) {
+    for (const currRes in resMap) {
+      const currVal = this.resourceHand.get(currRes);
+      if (currVal !== undefined && currVal < resMap[currRes]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
