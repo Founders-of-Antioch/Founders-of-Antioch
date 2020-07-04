@@ -15,12 +15,12 @@ export default class City extends Component<CityProps, {}> {
     const { buildModel } = this.props;
 
     const x = xValofCorner(
-      buildModel.point.boardPoint.boardXPos,
-      buildModel.point.boardPoint.boardYPos,
+      buildModel.point.boardXPos,
+      buildModel.point.boardYPos,
       buildModel.point.positionOnTile
     );
     const y = yValofCorner(
-      buildModel.point.boardPoint.boardYPos,
+      buildModel.point.boardYPos,
       buildModel.point.positionOnTile
     );
 

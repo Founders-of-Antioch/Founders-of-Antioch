@@ -60,8 +60,8 @@ function tilesPointIsOnGeneral(
   directions.push([0, 0]);
 
   for (const currDirection of directions) {
-    const expecX = currDirection[0] + point.boardPoint.boardXPos;
-    const expecY = currDirection[1] + point.boardPoint.boardYPos;
+    const expecX = currDirection[0] + point.boardXPos;
+    const expecY = currDirection[1] + point.boardYPos;
     const expecPoint = new BoardPoint(expecX, expecY);
 
     if (includeOB) {
@@ -96,8 +96,8 @@ function tilesPointIsOnWithOB(point: TilePoint) {
 }
 
 function p2IsLeftOfP1(p1: TilePoint, p2: TilePoint) {
-  const deltaX = p2.boardPoint.boardXPos - p1.boardPoint.boardXPos;
-  const deltaY = p2.boardPoint.boardYPos - p1.boardPoint.boardYPos;
+  const deltaX = p2.boardXPos - p1.boardXPos;
+  const deltaY = p2.boardYPos - p1.boardYPos;
 
   const leftDeltaArr = [
     [0, 1],
@@ -128,13 +128,21 @@ function areSamePointsGeneral(
   const rightMap = [4, 5, 0, 1, 2, 3];
 
   for (const currTile of p1TouchingTiles) {
-    if (currTile.point.equals(p2.boardPoint)) {
-      if (p2.boardPoint.equals(p1.boardPoint)) {
+    if (currTile.point.equals(p2)) {
+      if (p2.boardXPos === p1.boardXPos && p2.boardYPos === p1.boardYPos) {
         return p2.positionOnTile === p1.positionOnTile;
       } else {
         if (p2IsLeftOfP1(p1, p2)) {
           return p2.positionOnTile === leftMap[p1.positionOnTile];
         } else {
+          if (
+            p2.boardXPos === 0 &&
+            p2.boardYPos === 0 &&
+            p2.positionOnTile === 4
+          ) {
+            console.log(p1);
+            console.log(p2);
+          }
           return p2.positionOnTile === rightMap[p1.positionOnTile];
         }
       }
@@ -192,12 +200,16 @@ export function getEquivPoints(p1: TilePoint) {
 
   for (const currTile of obTiles) {
     for (let i = 0; i < 6; i++) {
-      const p2 = new TilePoint(currTile.point, i);
+      const p2 = new TilePoint(
+        currTile.point.boardXPos,
+        currTile.point.boardYPos,
+        i
+      );
       if (areSamePointsWithOB(p1, p2)) {
         if (numOutBoundTiles < 2) {
           arr.push(p2);
         } else if (
-          pointIsInBounds(p2.boardPoint) ||
+          pointIsInBounds(p2) ||
           i !== edgeOutOfBoundsMap[p1.positionOnTile]
         ) {
           arr.push(p2);
@@ -205,7 +217,6 @@ export function getEquivPoints(p1: TilePoint) {
       }
     }
   }
-
   return arr;
 }
 
@@ -222,13 +233,13 @@ export function getOneAwayRoadSpots(p1: RoadPoint) {
     rightSameTile = 0;
   }
 
-  const l1 = new RoadPoint(p1.boardPoint, leftSameTile);
-  const r1 = new RoadPoint(p1.boardPoint, rightSameTile);
+  const l1 = new RoadPoint(p1.boardXPos, p1.boardYPos, leftSameTile);
+  const r1 = new RoadPoint(p1.boardXPos, p1.boardYPos, rightSameTile);
 
   const oppositeDirection = NEIGHBOR_DIRECTIONS[p1.positionOnTile];
   const oppositeTile = new BoardPoint(
-    p1.boardPoint.boardXPos + oppositeDirection[0],
-    p1.boardPoint.boardYPos + oppositeDirection[1]
+    p1.boardXPos + oppositeDirection[0],
+    p1.boardYPos + oppositeDirection[1]
   );
   const oppositeEdge = roadEdgeMap[p1.positionOnTile];
 
@@ -242,8 +253,16 @@ export function getOneAwayRoadSpots(p1: RoadPoint) {
     oppRight = 0;
   }
 
-  const l2 = new RoadPoint(oppositeTile, oppLeft);
-  const r2 = new RoadPoint(oppositeTile, oppRight);
+  const l2 = new RoadPoint(
+    oppositeTile.boardXPos,
+    oppositeTile.boardYPos,
+    oppLeft
+  );
+  const r2 = new RoadPoint(
+    oppositeTile.boardXPos,
+    oppositeTile.boardYPos,
+    oppRight
+  );
 
   return [l1, r1, l2, r2];
 }
@@ -251,13 +270,13 @@ export function getOneAwayRoadSpots(p1: RoadPoint) {
 export function roadPointToTouchingBuildingPoints(r: RoadPoint) {
   if (r.positionOnTile === 5) {
     return [
-      new BuildingPoint(r.boardPoint, r.positionOnTile),
-      new BuildingPoint(r.boardPoint, 0),
+      new BuildingPoint(r.boardXPos, r.boardYPos, r.positionOnTile),
+      new BuildingPoint(r.boardXPos, r.boardYPos, 0),
     ];
   } else {
     return [
-      new BuildingPoint(r.boardPoint, r.positionOnTile),
-      new BuildingPoint(r.boardPoint, r.positionOnTile + 1),
+      new BuildingPoint(r.boardXPos, r.boardYPos, r.positionOnTile),
+      new BuildingPoint(r.boardXPos, r.boardYPos, r.positionOnTile + 1),
     ];
   }
 }

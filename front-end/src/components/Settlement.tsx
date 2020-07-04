@@ -62,8 +62,7 @@ export function yValofCorner(boardYPos: number, corner: number) {
 export class Settlement extends React.Component<SettlementProps, {}> {
   render() {
     const { playerNum, point } = this.props;
-    const { boardPoint, positionOnTile: corner } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos, positionOnTile: corner } = point;
 
     const startX = xValofCorner(boardXPos, boardYPos, corner);
     const startY = yValofCorner(boardYPos, corner);

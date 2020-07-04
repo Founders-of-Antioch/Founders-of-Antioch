@@ -31,8 +31,7 @@ export class Port extends React.Component<PortProps, {}> {
 
   render() {
     const { point } = this.props.model;
-    const { boardPoint, positionOnTile } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos, positionOnTile } = point;
     /**
      * 🔥🔥🔥🔥🔥🔥 HORRIBLE CODE ALERT 🔥🔥🔥🔥🔥🔥
      * This is easily some of the worst I've written, and I'm quite ashamed of it

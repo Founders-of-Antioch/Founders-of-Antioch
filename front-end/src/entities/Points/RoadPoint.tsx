@@ -6,7 +6,8 @@ const roadEdgeMap = [3, 4, 5, 0, 1, 2];
 export default class RoadPoint extends TilePoint {
   equals(r: RoadPoint) {
     if (
-      this.boardPoint.equals(r.boardPoint) &&
+      this.boardXPos === r.boardXPos &&
+      this.boardYPos === r.boardYPos &&
       this.positionOnTile === r.positionOnTile
     ) {
       return true;
@@ -17,8 +18,8 @@ export default class RoadPoint extends TilePoint {
       const deltaX = currDirection[0];
       const deltaY = currDirection[1];
       if (
-        r.boardPoint.boardXPos === this.boardPoint.boardXPos + deltaX &&
-        r.boardPoint.boardYPos === this.boardPoint.boardYPos + deltaY
+        r.boardXPos === this.boardXPos + deltaX &&
+        r.boardYPos === this.boardYPos + deltaY
       ) {
         return roadEdgeMap[i] === r.positionOnTile && i === this.positionOnTile;
       }

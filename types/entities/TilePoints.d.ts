@@ -1,6 +1,5 @@
 import { BoardPointProperties } from "./BoardPoint";
 
-export interface TilePointProperties {
-  boardPoint: BoardPointProperties;
+export interface TilePointProperties extends BoardPointProperties {
   positionOnTile: number;
 }

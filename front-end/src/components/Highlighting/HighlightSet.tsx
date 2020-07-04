@@ -140,7 +140,13 @@ class HighlightSet extends Component<RedProps, {}> {
           <HighlightPoint
             key={key++}
             typeOfHighlight={"robber"}
-            point={new TilePoint(currTile.point, -1)}
+            point={
+              new TilePoint(
+                currTile.point.boardXPos,
+                currTile.point.boardYPos,
+                -1
+              )
+            }
             playerWhoSelected={inGamePlayerNumber}
           />
         );
@@ -169,7 +175,11 @@ class HighlightSet extends Component<RedProps, {}> {
         for (const currPoint of equiv) {
           if (
             !roadSpaceIsOccupied(
-              new RoadPoint(currPoint.boardPoint, currPoint.positionOnTile),
+              new RoadPoint(
+                currPoint.boardXPos,
+                currPoint.boardYPos,
+                currPoint.positionOnTile
+              ),
               playersByID
             )
           ) {
@@ -190,7 +200,9 @@ class HighlightSet extends Component<RedProps, {}> {
           for (const currSpot of closeSpots) {
             if (
               !roadSpaceIsOccupied(currSpot, playersByID) &&
-              pointIsInBounds(currSpot.boardPoint)
+              pointIsInBounds(
+                new BoardPoint(currSpot.boardXPos, currSpot.boardYPos)
+              )
             ) {
               arr.push(
                 <HighlightPoint
@@ -238,7 +250,7 @@ class HighlightSet extends Component<RedProps, {}> {
               // If there is already a building in the spot, don't highlight it
               for (const pl of playersByID.values()) {
                 for (const setl of pl.buildings) {
-                  const p1 = new BuildingPoint(new BoardPoint(x, y), corner);
+                  const p1 = new BuildingPoint(x, y, corner);
                   if (
                     areSamePoints(
                       p1,
@@ -255,7 +267,7 @@ class HighlightSet extends Component<RedProps, {}> {
               spots.push(
                 <HighlightPoint
                   key={keyForHighlights++}
-                  point={new BuildingPoint(new BoardPoint(x, y), corner)}
+                  point={new BuildingPoint(x, y, corner)}
                   playerWhoSelected={inGamePlayerNumber}
                   typeOfHighlight={"settlement"}
                 />

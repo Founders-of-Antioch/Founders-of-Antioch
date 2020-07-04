@@ -3,7 +3,6 @@ import { PlayerNumber } from "../../../types/Primitives";
 import { BuildingProperties } from "../../../types/entities/Building";
 import { tilesPointIsOn } from "./TilePointHelper";
 import TilePoint from "./Points/TilePoint";
-import BoardPoint from "./Points/BoardPoint";
 import BuildingPoint from "./Points/BuildingPoint";
 
 export class Building implements BuildingProperties {
@@ -19,14 +18,15 @@ export class Building implements BuildingProperties {
   }
 
   constructor(
-    boardPoint: BoardPoint,
+    boardXPos: number,
+    boardYPos: number,
     corn: number,
     playerNum: PlayerNumber,
     turnPlaced: number,
     typeOfBuilding: "settlement" | "city",
     tiles: Array<TileModel>
   ) {
-    this.point = new BuildingPoint(boardPoint, corn);
+    this.point = new BuildingPoint(boardXPos, boardYPos, corn);
     this.playerNum = playerNum;
     this.touchingTiles = this.tilesBuildingIsOn(tiles);
     this.turnPlaced = turnPlaced;
@@ -34,9 +34,6 @@ export class Building implements BuildingProperties {
   }
 
   spacesAreSame(b: Building) {
-    return (
-      this.point.boardPoint.equals(b.point.boardPoint) &&
-      this.point.positionOnTile === b.point.positionOnTile
-    );
+    return this.point.equals(b.point);
   }
 }

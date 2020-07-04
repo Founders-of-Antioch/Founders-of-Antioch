@@ -195,7 +195,8 @@ export default class App extends React.Component<AppProps, UIState> {
     const { boardToBePlayed } = this.props;
 
     const build = new Building(
-      new BoardPoint(pkg.boardXPos, pkg.boardYPos),
+      pkg.boardXPos,
+      pkg.boardYPos,
       pkg.positionOnTile,
       pkg.playerNum,
       this.props.turnNumber,
@@ -234,7 +235,8 @@ export default class App extends React.Component<AppProps, UIState> {
     socket.on("roadUpdate", (pkg: AddRoadPackage) => {
       this.props.placeRoad(
         new RoadModel(
-          new BoardPoint(pkg.boardXPos, pkg.boardYPos),
+          pkg.boardXPos,
+          pkg.boardYPos,
           pkg.playerNum,
           pkg.positionOnTile
         )

@@ -1,18 +1,20 @@
 import { TilePointProperties } from "../../../../types/entities/TilePoints";
-import BoardPoint from "./BoardPoint";
 
 export default class TilePoint implements TilePointProperties {
-  boardPoint: BoardPoint;
   positionOnTile: number;
+  boardXPos: number;
+  boardYPos: number;
 
-  constructor(boardPoint: BoardPoint, pos: number) {
-    this.boardPoint = boardPoint;
+  constructor(boardXPos: number, boardYPos: number, pos: number) {
+    this.boardXPos = boardXPos;
+    this.boardYPos = boardYPos;
     this.positionOnTile = pos;
   }
 
   equals(t: TilePoint) {
     return (
-      this.boardPoint.equals(t.boardPoint) &&
+      this.boardXPos === t.boardXPos &&
+      this.boardYPos === t.boardYPos &&
       this.positionOnTile === t.positionOnTile
     );
   }

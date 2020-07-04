@@ -79,7 +79,6 @@ class BankTrade extends Component<BankTradeProps, UIState> {
         }
       }
 
-      console.log(ports);
       for (const port of ports) {
         if (port.resource !== "any") {
           const amount = port.getRatioNumber();

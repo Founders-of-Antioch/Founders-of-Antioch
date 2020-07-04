@@ -88,8 +88,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
   selectedACitySpot() {
     const { playerWhoSelected, inGamePlayerNumber, point } = this.props;
 
-    const { boardPoint, positionOnTile } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos, positionOnTile } = point;
 
     const pkg: BuildingUpdatePackage = {
       gameID: "1",
@@ -123,8 +122,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       boardToBePlayed,
     } = this.props;
 
-    const { boardPoint, positionOnTile } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos, positionOnTile } = point;
 
     const pkg: BuildingUpdatePackage = {
       gameID: "1",
@@ -190,8 +188,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
       }
     }
 
-    const { boardPoint, positionOnTile } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos, positionOnTile } = point;
 
     const pkg: AddRoadPackage = {
       boardXPos,
@@ -220,8 +217,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
   // TODO: Fix GameID
   selectedARobberSpot() {
     const { point, playersByID, inGamePlayerNumber } = this.props;
-    const { boardPoint } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos } = point;
 
     const pkg: MoveRobberPackage = {
       gameID: "1",
@@ -272,8 +268,7 @@ class HighlightPoint extends Component<HighlightProps, {}> {
 
   render() {
     const { point, typeOfHighlight } = this.props;
-    const { boardPoint, positionOnTile: corner } = point;
-    const { boardXPos, boardYPos } = boardPoint;
+    const { boardXPos, boardYPos, positionOnTile: corner } = point;
 
     const isRoad = typeOfHighlight === "road";
     const isRobber = typeOfHighlight === "robber";

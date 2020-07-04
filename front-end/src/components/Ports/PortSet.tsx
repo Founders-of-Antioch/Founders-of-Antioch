@@ -1,28 +1,27 @@
 import React, { Component } from "react";
 import { Port } from "../Port";
 import TilePoint from "../../entities/Points/TilePoint";
-import BoardPoint from "../../entities/Points/BoardPoint";
 import PortModel from "../../entities/PortModel";
 
 const PORT_BUILDING_SPOTS = [
-  new TilePoint(new BoardPoint(-1, -2), 2),
-  new TilePoint(new BoardPoint(-1, -2), 3),
-  new TilePoint(new BoardPoint(1, -1), 2),
-  new TilePoint(new BoardPoint(1, -1), 3),
-  new TilePoint(new BoardPoint(2, 0), 1),
-  new TilePoint(new BoardPoint(2, 0), 2),
-  new TilePoint(new BoardPoint(2, 1), 0),
-  new TilePoint(new BoardPoint(2, 1), 1),
-  new TilePoint(new BoardPoint(1, 2), 0),
-  new TilePoint(new BoardPoint(1, 2), 1),
-  new TilePoint(new BoardPoint(0, 2), 5),
-  new TilePoint(new BoardPoint(0, 2), 0),
-  new TilePoint(new BoardPoint(-1, 1), 4),
-  new TilePoint(new BoardPoint(-1, 1), 5),
-  new TilePoint(new BoardPoint(-2, -1), 4),
-  new TilePoint(new BoardPoint(-2, -1), 5),
-  new TilePoint(new BoardPoint(-2, -2), 3),
-  new TilePoint(new BoardPoint(-2, -2), 4),
+  new TilePoint(-1, -2, 2),
+  new TilePoint(-1, -2, 3),
+  new TilePoint(1, -1, 2),
+  new TilePoint(1, -1, 3),
+  new TilePoint(2, 0, 1),
+  new TilePoint(2, 0, 2),
+  new TilePoint(2, 1, 0),
+  new TilePoint(2, 1, 1),
+  new TilePoint(1, 2, 0),
+  new TilePoint(1, 2, 1),
+  new TilePoint(0, 2, 5),
+  new TilePoint(0, 2, 0),
+  new TilePoint(-1, 1, 4),
+  new TilePoint(-1, 1, 5),
+  new TilePoint(-2, -1, 4),
+  new TilePoint(-2, -1, 5),
+  new TilePoint(-2, -2, 3),
+  new TilePoint(-2, -2, 4),
 ];
 
 const PORT_RES = [
