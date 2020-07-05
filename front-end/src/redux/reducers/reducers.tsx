@@ -21,6 +21,7 @@ import isCurrentlyPlacingCity from "./isCurrentlyPlacingCity";
 import BoardPoint from "../../entities/Points/BoardPoint";
 import isPlayingRoadDevCard from "./isPlayingRoadDevCard";
 import extraRoadsPlayed from "./extraRoadsPlayed";
+import winner from "./winner";
 
 export interface StealingInfo {
   isStealing: boolean;
@@ -50,6 +51,8 @@ export interface FoAppState {
   stealingInfo: StealingInfo;
   isPlayingRoadDevCard: boolean;
   extraRoadsPlayed: number;
+  // -1 if no one yet
+  winner: PlayerNumber;
 }
 
 // Unfortunately `Map`'s are not serializable for JSON's, so seed state has to be slightly different
@@ -87,4 +90,5 @@ export const FoAPP = combineReducers({
   robberCoordinates,
   isPlayingRoadDevCard,
   extraRoadsPlayed,
+  winner,
 });

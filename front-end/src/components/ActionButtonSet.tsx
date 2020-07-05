@@ -167,6 +167,7 @@ export default class ActionButtonSet extends Component<ABSProps, UIState> {
   canBuyCity() {
     return (
       !this.props.isPlacingRobber &&
+      !(this.getNumberOfCities() > 4) &&
       this.props.hasRolled &&
       this.isTurn() &&
       this.getResAmount("ore") >= 3 &&

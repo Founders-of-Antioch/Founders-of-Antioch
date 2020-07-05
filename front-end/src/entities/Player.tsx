@@ -31,7 +31,7 @@ export class Player implements PlayerProperties {
 
   constructor(playNum: PlayerNumber) {
     this.playerNum = playNum;
-    this.victoryPoints = 0;
+    this.victoryPoints = 9;
     this.buildings = [];
     this.roads = [];
     this.knights = 0;
@@ -63,13 +63,7 @@ export class Player implements PlayerProperties {
   }
 
   numberOfCardsInHand() {
-    let sum = 0;
-
-    this.resourceHand.forEach((val) => {
-      sum += val;
-    });
-
-    return sum;
+    return [...this.resourceHand.values()].reduce((acc, curr) => acc + curr, 0);
   }
 
   changeResourceVal(res: ResourceString, val: number) {
@@ -199,5 +193,10 @@ export class Player implements PlayerProperties {
     }
 
     return true;
+  }
+
+  // Was in a functional mood today
+  numberOfVPCards() {
+    return this.devCardHand.filter((card) => card.code === "VP").length;
   }
 }

@@ -42,6 +42,7 @@ import StealingModal from "./components/Robber/StealingModal";
 import BuildingSet from "./components/Buildings/BuildingSet";
 import BoardPoint from "./entities/Points/BoardPoint";
 import PortSet from "./components/Ports/PortSet";
+import WinModal from "./components/WinModal";
 
 // const unsubscribe =
 store.subscribe(() => console.log(store.getState()));
@@ -88,6 +89,7 @@ export default class App extends React.Component<AppProps, UIState> {
 
   componentDidUpdate() {
     this.props.evaluateTurn();
+    this.props.evaluateWinState();
   }
 
   closeTradeWindow(index: number) {
@@ -521,6 +523,8 @@ export default class App extends React.Component<AppProps, UIState> {
           <BuildingSet />
 
           <PortSet />
+
+          <WinModal />
 
           {this.renderTrades()}
 

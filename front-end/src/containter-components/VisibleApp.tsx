@@ -21,6 +21,7 @@ import {
   moveRobberTo,
   stealFromPlayer,
   playAKnightDevCard,
+  evaluateWinState,
 } from "../redux/Actions";
 import { Player } from "../entities/Player";
 import { TileModel } from "../entities/TileModel";
@@ -80,6 +81,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         moveRobberTo,
         stealFromPlayer,
         playAKnightDevCard,
+        evaluateWinState,
       },
       dispatch
     ),

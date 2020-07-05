@@ -10,6 +10,7 @@ import {
 import store from "./store";
 import DevCard from "../entities/DevCard";
 import BoardPoint from "../entities/Points/BoardPoint";
+import { Player } from "../entities/Player";
 
 // Action types
 export const CHANGE_PLAYER = "CHANGE_PLAYER";
@@ -46,6 +47,7 @@ export const PLAY_KNIGHT_CARD = "PLAY_KNIGHT_CARD";
 export const IS_PLAYING_ROAD_DEV_CARD = "IS_PLAYING_ROAD_DEV_CARD";
 export const PLAY_EXTRA_ROAD = "PLAY_EXTRA_ROAD";
 export const STOP_EXTRA_ROADS = "STOP_EXTRA_ROADS";
+export const CHECK_WIN_STATE = "CHECK_WIN_STATE";
 
 export interface ChangePlayerAction {
   type: typeof CHANGE_PLAYER;
@@ -220,6 +222,11 @@ interface StopExtraRoadsAction {
 }
 
 export type ExtraRoadActions = PlayExtraRoadAction | StopExtraRoadsAction;
+
+export interface CheckWinStateAction {
+  type: typeof CHECK_WIN_STATE;
+  playersByID: Map<PlayerNumber, Player>;
+}
 
 /** Action creators */
 export function hasRolledTheDice(hasRolled: boolean): HasRolledAction {
@@ -465,4 +472,13 @@ export function playExtraRoadForPlayer(): PlayExtraRoadAction {
 
 export function stopExtraRoadForPlayer(): StopExtraRoadsAction {
   return { type: STOP_EXTRA_ROADS };
+}
+
+export function evaluateWinState(): CheckWinStateAction {
+  const getState = store.getState();
+
+  return {
+    type: CHECK_WIN_STATE,
+    playersByID: getState.playersByID,
+  };
 }
