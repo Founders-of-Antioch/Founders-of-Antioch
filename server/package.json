@@ -42,6 +42,6 @@
     "postgresql": "0.0.1",
     "reflect-metadata": "^0.1.13",
     "socket.io": "^2.3.0",
-    "typeorm": "^0.2.24"
+    "typeorm": "^0.2.25"
   }
 }
